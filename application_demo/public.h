@@ -39,16 +39,33 @@ typedef uint8_t *uintPtr_t;
 
 enum _command 
 { 
-    _NODE_MEMREQ,           /* func(_NODE_RESET, *instance, 0, 0) */
-    _NODE_RESET,            /* func(_NODE_RESET, *instance, 0, 0) */
-    _NODE_RUN,              /* func(_NODE_RUN, *instance, *in, *param) */
+    NODE_MEMREQ,            /* func(NODE_RESET, *instance, 0, 0) */
+    NODE_RESET,             /* func(NODE_RESET, *instance, 0, 0) */
+    NODE_RUN,               /* func(NODE_RUN, *instance, *in, *param) */
+    NODE_SET_PARAMETER,     /* func(NODE_SET_PARAMETER, *instance, index, *param) */
 };
 
-typedef union cast32 
-{
-    uint32_t *ptr;
-    uint32_t data;
-} cast32_t;    
+enum _memory_types
+{   
+    DMEM = 0, 
+    FAST_DMEM = 1,  
+    MEMBANK_TYPES,  
+};
+
+
+// assuming "int" is also the same size as "*int"
+#ifdef PLATFORM_ARCH_32BIT 
+#define PTR_INT unsigned long
+#endif
+#ifdef PLATFORM_ARCH_64BIT 
+#define PTR_INT unsigned long long
+#endif
+
+typedef struct {
+  PTR_INT data_struct[2];
+} data_buffer_t;
+
+
 
 #endif /* #ifndef __link_PUBLIC_H__ */
 /*
