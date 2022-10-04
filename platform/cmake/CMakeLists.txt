@@ -4,7 +4,10 @@ project(sec-tls
 	LANGUAGES C
 	VERSION 0.0.0)
 
-set(CMAKE_C_FLAGS "-pedantic -std=c99 -g -O0 -Wall -Wno-unused-function  -Wno-newline-eof")
+set(CMAKE_C_FLAGS "-pedantic -std=c99 -g -O0 -Wall")
+# Perhaps we can remove these after cleaning up the SpeeX code.
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-newline-eof")
 
 include_directories(../../application_demo)
 include_directories(../../libraries/DSP/Include)
@@ -13,8 +16,17 @@ include_directories(../../components/xiph/speexdsp/include)
 include_directories(../../components/xiph/speexdsp/include/speex)
 include_directories(../../components/xiph/speexdsp/libspeexdsp)
 
-# Note: Changing configuration in `config.h` will require different sources
-add_definitions(-DHAVE_CONFIG_H)
+# Note on configuration of LibSpeeX:
+# We can configure with the file `components/speexdsp/libspeexdsp/config.h`
+# by setting `-DHAVE_CONFIG_H`, but this might lead to a conflict with EEMBC
+# configuration files. For now, let's isolate all configuration to the build
+# tool and then decide what TODO how to handle a global `config.h` file. Here
+# are two settings taken from that `config.h` which set the FFT to CMSIS and
+# uses fixed-point (see `fftwrap.c` for the excitement).
+add_definitions(-DFIXED_POINT)
+add_definitions(-DUSE_CMSIS_DSP)
+# This macro is used extensively in LibSpeeX for function visibility.
+add_definitions(-DEXPORT=)
 
 set(SOURCE
 	../../application_demo/main.c
