@@ -1,5 +1,5 @@
 /* Copyright (C) 2007 Jean-Marc Valin
-      
+
    File: os_support.h
    This is the (tiny) OS abstraction layer. Aside from math.h, this is the
    only place where system headers are allowed.
@@ -39,41 +39,46 @@
 #include <stdlib.h>
 
 #ifdef HAVE_CONFIG_H
-#include "../include/speex/config.h"
+#include "config.h"
 #endif
 #ifdef OS_SUPPORT_CUSTOM
 #include "os_support_custom.h"
 #endif
 
-/** Speex wrapper for calloc. To do your own dynamic allocation, all you need to do is replace this function, speex_realloc and speex_free 
+/** Speex wrapper for calloc. To do your own dynamic allocation, all you need to do is replace this function, speex_realloc and speex_free
     NOTE: speex_alloc needs to CLEAR THE MEMORY */
 #ifndef OVERRIDE_SPEEX_ALLOC
-
-extern char *spxGlobalHeapPtr, *spxGlobalHeapEnd;
-extern long cumulatedMalloc;
-
 static inline void *speex_alloc (int size)
 {
-    void *ptr;
+   /* WARNING: this is not equivalent to malloc(). If you want to use malloc()
+      or your own allocator, YOU NEED TO CLEAR THE MEMORY ALLOCATED. Otherwise
+      you will experience strange bugs */
+   return calloc(size,1);
+}
+#else
+extern char *spxGlobalHeapPtr, *spxGlobalHeapEnd;
+extern char *spxGlobalScratchPtr, *spxGlobalScratchEnd;
+extern long cumulatedMalloc;
+/* Make sure that all structures are aligned to largest type */
+#define BLOCK_MASK      (sizeof(long double)-1)    
+static inline void *speex_alloc (int size)
+{
+    char *ptr, *clr;
+    long i;
     cumulatedMalloc += size;
-    ptr = (void *) (((long long)spxGlobalHeapPtr + 3) & ~3); 
+    ptr = (char *) (((long long)spxGlobalHeapPtr + BLOCK_MASK) & ~BLOCK_MASK);  //Start on 8 boundary
+
     spxGlobalHeapPtr = (char *)((long long)ptr + size);	    // Update pointer to next free location
     if ((long long)spxGlobalHeapPtr > (long long)spxGlobalHeapEnd )
-    {
-#ifdef VERBOSE_ALLOC
-	    fprintf (stderr, "insufficient space for persistent alloc request %d bytes\n", size);
-#endif
-       return 0;
+    {   return 0;
     }
-    return ptr;
-}
-//static inline void *speex_alloc (int size)
-//{
-//   /* WARNING: this is not equivalent to malloc(). If you want to use malloc() 
-//      or your own allocator, YOU NEED TO CLEAR THE MEMORY ALLOCATED. Otherwise
-//      you will experience strange bugs */
-//   return calloc(size,1);
-//}
+
+    clr = ptr;
+    for (i = 0; i < size; i++)
+        *clr++ = 0;
+    //memset(ptr, 0, size);
+    return (void *)ptr;
+}    
 #endif
 
 /** Same as speex_alloc, except that the area is only needed inside a Speex call (might cause problem with wideband though) */
@@ -81,7 +86,7 @@ static inline void *speex_alloc (int size)
 static inline void *speex_alloc_scratch (int size)
 {
    /* Scratch space doesn't need to be cleared */
-   return 0; //return calloc(size,1);
+   return calloc(size,1);
 }
 #endif
 
@@ -89,7 +94,7 @@ static inline void *speex_alloc_scratch (int size)
 #ifndef OVERRIDE_SPEEX_REALLOC
 static inline void *speex_realloc (void *ptr, int size)
 {
-   return 0; //return realloc(ptr, size);
+   return realloc(ptr, size);
 }
 #endif
 
@@ -97,7 +102,11 @@ static inline void *speex_realloc (void *ptr, int size)
 #ifndef OVERRIDE_SPEEX_FREE
 static inline void speex_free (void *ptr)
 {
-   //free(ptr);
+   free(ptr);
+}
+#else
+static inline void speex_free (void *ptr)
+{
 }
 #endif
 
@@ -105,7 +114,7 @@ static inline void speex_free (void *ptr)
 #ifndef OVERRIDE_SPEEX_FREE_SCRATCH
 static inline void speex_free_scratch (void *ptr)
 {
-   //free(ptr);
+   free(ptr);
 }
 #endif
 
@@ -129,8 +138,8 @@ static inline void speex_free_scratch (void *ptr)
 #ifndef OVERRIDE_SPEEX_FATAL
 static inline void _speex_fatal(const char *str, const char *file, int line)
 {
-   //fprintf (stderr, "Fatal (internal) error in %s, line %d: %s\n", file, line, str);
-   //exit(1);
+   fprintf (stderr, "Fatal (internal) error in %s, line %d: %s\n", file, line, str);
+   exit(1);
 }
 #endif
 
@@ -138,7 +147,7 @@ static inline void _speex_fatal(const char *str, const char *file, int line)
 static inline void speex_warning(const char *str)
 {
 #ifndef DISABLE_WARNINGS
-   //fprintf (stderr, "warning: %s\n", str);
+   fprintf (stderr, "warning: %s\n", str);
 #endif
 }
 #endif
@@ -156,7 +165,7 @@ static inline void speex_warning_int(const char *str, int val)
 static inline void speex_notify(const char *str)
 {
 #ifndef DISABLE_NOTIFICATIONS
-   //fprintf (stderr, "notification: %s\n", str);
+   fprintf (stderr, "notification: %s\n", str);
 #endif
 }
 #endif
@@ -165,8 +174,8 @@ static inline void speex_notify(const char *str)
 /** Speex wrapper for putc */
 static inline void _speex_putc(int ch, void *file)
 {
-   //FILE *f = (FILE *)file;
-   //fprintf(f, "%c", ch);
+   FILE *f = (FILE *)file;
+   fprintf(f, "%c", ch);
 }
 #endif
 
@@ -176,11 +185,11 @@ static inline void _speex_putc(int ch, void *file)
 #ifndef RELEASE
 static inline void print_vec(float *vec, int len, char *name)
 {
-   //int i;
-   //printf ("%s ", name);
-   //for (i=0;i<len;i++)
-   //   printf (" %f", vec[i]);
-   //printf ("\n");
+   int i;
+   printf ("%s ", name);
+   for (i=0;i<len;i++)
+      printf (" %f", vec[i]);
+   printf ("\n");
 }
 #endif
 

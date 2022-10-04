@@ -108,7 +108,7 @@ static void _arm_radix4_butterfly_f32_mve(const arm_cfft_instance_f32 * S,float3
     n2 = fftLen;
     n1 = n2;
     n2 >>= 2u;
-    for (uint32_tk = fftLen / 4u; k > 1; k >>= 2)
+    for (int k = fftLen / 4u; k > 1; k >>= 2)
     {
         float32_t const     *p_rearranged_twiddle_tab_stride1 =
                             &S->rearranged_twiddle_stride1[
@@ -121,7 +121,7 @@ static void _arm_radix4_butterfly_f32_mve(const arm_cfft_instance_f32 * S,float3
                             S->rearranged_twiddle_tab_stride3_arr[stage]];
 
         float32_t * pBase = pSrc;
-        for (uint32_ti = 0; i < iter; i++)
+        for (int i = 0; i < iter; i++)
         {
             float32_t    *inA = pBase;
             float32_t    *inB = inA + n2 * CMPLX_DIM;
@@ -316,7 +316,7 @@ static void _arm_radix4_butterfly_inverse_f32_mve(const arm_cfft_instance_f32 * 
     n2 = fftLen;
     n1 = n2;
     n2 >>= 2u;
-    for (uint32_tk = fftLen / 4; k > 1; k >>= 2)
+    for (int k = fftLen / 4; k > 1; k >>= 2)
     {
         float32_t const *p_rearranged_twiddle_tab_stride1 =
                 &S->rearranged_twiddle_stride1[
@@ -329,7 +329,7 @@ static void _arm_radix4_butterfly_inverse_f32_mve(const arm_cfft_instance_f32 * 
                 S->rearranged_twiddle_tab_stride3_arr[stage]];
 
         float32_t * pBase = pSrc;
-        for (uint32_ti = 0; i < iter; i++)
+        for (int i = 0; i < iter; i++)
         {
             float32_t    *inA = pBase;
             float32_t    *inB = inA + n2 * CMPLX_DIM;
@@ -657,36 +657,37 @@ extern void arm_bitreversal_32(
   @code
                    const static arm_cfft_instance_f32 *S;
                    ...
-                     switch (length) {
-                       case 16:
-                         S = &arm_cfft_sR_f32_len16;
-                         break;
-                       case 32:
-                         S = &arm_cfft_sR_f32_len32;
-                         break;
-                       case 64:
-                         S = &arm_cfft_sR_f32_len64;
-                         break;
-                       case 128:
-                         S = &arm_cfft_sR_f32_len128;
-                         break;
-                       case 256:
-                         S = &arm_cfft_sR_f32_len256;
-                         break;
-                       case 512:
-                         S = &arm_cfft_sR_f32_len512;
-                         break;
-                       case 1024:
-                         S = &arm_cfft_sR_f32_len1024;
-                         break;
-                       case 2048:
-                         S = &arm_cfft_sR_f32_len2048;
-                         break;
-                       case 4096:
-                         S = &arm_cfft_sR_f32_len4096;
-                         break;
-                     }
+                   switch (length) {
+                     case 16:
+                       S = &arm_cfft_sR_f32_len16;
+                       break;
+                     case 32:
+                       S = &arm_cfft_sR_f32_len32;
+                       break;
+                     case 64:
+                       S = &arm_cfft_sR_f32_len64;
+                       break;
+                     case 128:
+                       S = &arm_cfft_sR_f32_len128;
+                       break;
+                     case 256:
+                       S = &arm_cfft_sR_f32_len256;
+                       break;
+                     case 512:
+                       S = &arm_cfft_sR_f32_len512;
+                       break;
+                     case 1024:
+                       S = &arm_cfft_sR_f32_len1024;
+                       break;
+                     case 2048:
+                       S = &arm_cfft_sR_f32_len2048;
+                       break;
+                     case 4096:
+                       S = &arm_cfft_sR_f32_len4096;
+                       break;
+                   }
   @endcode
+
   @par
                    The new arm_cfft_init_f32 can also be used.
   @par Q15 and Q31

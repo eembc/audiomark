@@ -52,8 +52,10 @@ enum _memory_types
     MEMBANK_TYPES,  
 };
 
+#define PLATFORM_ARCH_64BIT
 
 // assuming "int" is also the same size as "*int"
+// ptorelli: Why not use uint32_t and uint64_t to be more precise?
 #ifdef PLATFORM_ARCH_32BIT 
 #define PTR_INT unsigned long
 #endif

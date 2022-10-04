@@ -47,13 +47,13 @@ extern int32_t xiph_libspeex_anr_f32 (int32_t command, void **instance, void *da
 #else
 #define DATA_SIZE (211*128)
 const int16_t downlink_audio [DATA_SIZE] = {
-    #include "../../application_demo/debug_data/noise.txt"
+    #include "../application_demo/debug_data/noise.txt"
 };
 const int16_t left_microphone_capture [DATA_SIZE] = {
-    #include "../../application_demo/debug_data/left0.txt"
+    #include "../application_demo/debug_data/left0.txt"
 };
 const int16_t right_microphone_capture [DATA_SIZE] = {
-    #include "../../application_demo/debug_data/right0.txt"
+    #include "../application_demo/debug_data/right0.txt"
 };
 
 static int16_t loudspeaker [DATA_SIZE];

@@ -337,9 +337,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>FIXED_POINT HAVE_CONFIG_H DISABLE_WARNINGS DISABLE_NOTIFICATIONS</Define>
+              <Define>FIXED_POINT HAVE_CONFIG_H DISABLE_WARNINGS DISABLE_NOTIFICATIONS PLATFORM_ARCH_32BIT</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\libraries\DSP\Include;..\..\components\xiph\speexdsp\include\speex;..\..\components\xiph\speexdsp\libspeexdsp;..\..\application_demo\debug_data</IncludePath>
+              <IncludePath>..\..\components\xiph\speexdsp\include\speex;..\..\components\xiph\speexdsp\libspeexdsp;..\..\components\xiph\speexdsp;..\..\libraries\DSP\Include;..\..\application_demo\debug_data; ..\..\components\xiph\speexdsp\include; ..\..\application_demo</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -397,16 +397,6 @@
               <FileName>arm_beamformer_tables_f32.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\components\arm\audio_beamformer\src\arm_beamformer_tables_f32.c</FilePath>
-            </File>
-            <File>
-              <FileName>hard_coded_demo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\application_demo\arm_mdk_fvp\hard_coded_demo.c</FilePath>
-            </File>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\application_demo\arm_mdk_fvp\main.c</FilePath>
             </File>
             <File>
               <FileName>xiph_aec.c</FileName>
@@ -472,6 +462,21 @@
               <FileName>smallft.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\components\xiph\speexdsp\libspeexdsp\smallft.c</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\application_demo\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>arm_libspeex_kernels.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\components\xiph\speexdsp\libspeexdsp\arm_libspeex_kernels.c</FilePath>
+            </File>
+            <File>
+              <FileName>audiomark.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\application_demo\audiomark.c</FilePath>
             </File>
           </Files>
         </Group>
