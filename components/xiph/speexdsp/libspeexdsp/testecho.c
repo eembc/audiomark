@@ -16,7 +16,7 @@
 
 int main(int argc, char **argv)
 {
-/*    FILE *echo_fd, *ref_fd, *e_fd;
+   FILE *echo_fd, *ref_fd, *e_fd;
    short echo_buf[NN], ref_buf[NN], e_buf[NN];
    SpeexEchoState *st;
    SpeexPreprocessState *den;
@@ -49,5 +49,5 @@ int main(int argc, char **argv)
    fclose(e_fd);
    fclose(echo_fd);
    fclose(ref_fd);
-   return 0; */
+   return 0;
 }

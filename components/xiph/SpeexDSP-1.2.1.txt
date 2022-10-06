@@ -1,0 +1,12 @@
+https://gitlab.xiph.org/xiph/speexdsp/-/tree/SpeexDSP-1.2.1
+and
+https://android.googlesource.com/platform/external/speex/+/refs/heads/master/libspeexdsp/
+
+
+for comparisons : 
+arch.h LIBSPEEX 1.2.1 line 47
+    #if defined(ARM4_ASM) + defined(ARM5E_ASM) + defined(BFIN_ASM) > 1
+arch.h LIBSPEEX 1.2.0 line 47
+    #if ((defined (ARM4_ASM)||defined (ARM4_ASM)) && defined(BFIN_ASM)) || (defined (ARM4_ASM)&&defined(ARM5E_ASM))
+arch.h LIBSPEEX 1.1.12 line 47
+    typedef spx_int16_t spx_word16_t;

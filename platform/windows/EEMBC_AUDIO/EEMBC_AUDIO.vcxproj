@@ -19,13 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\application_demo\windows\hard_coded_demo.c" />
-    <ClCompile Include="..\..\..\application_demo\windows\main.c" />
+    <ClCompile Include="..\..\..\application_demo\audiomark.c" />
+    <ClCompile Include="..\..\..\application_demo\main.c" />
     <ClCompile Include="..\..\..\components\arm\audio_beamformer\src\arm_beamformer_f32.c" />
     <ClCompile Include="..\..\..\components\arm\audio_beamformer\src\arm_beamformer_process_f32.c" />
     <ClCompile Include="..\..\..\components\arm\audio_beamformer\src\arm_beamformer_tables_f32.c" />
     <ClCompile Include="..\..\..\components\xiph\echo_canceller\src\xiph_aec.c" />
     <ClCompile Include="..\..\..\components\xiph\preprocess\src\xiph_anr.c" />
+    <ClCompile Include="..\..\..\components\xiph\speexdsp\libspeexdsp\arm_libspeex_kernels.c" />
     <ClCompile Include="..\..\..\components\xiph\speexdsp\libspeexdsp\buffer.c" />
     <ClCompile Include="..\..\..\components\xiph\speexdsp\libspeexdsp\fftwrap.c" />
     <ClCompile Include="..\..\..\components\xiph\speexdsp\libspeexdsp\filterbank.c" />
@@ -37,11 +38,28 @@
     <ClCompile Include="..\..\..\components\xiph\speexdsp\libspeexdsp\resample.c" />
     <ClCompile Include="..\..\..\components\xiph\speexdsp\libspeexdsp\scal.c" />
     <ClCompile Include="..\..\..\components\xiph\speexdsp\libspeexdsp\smallft.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\BasicMathFunctions\arm_absmax.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\BasicMathFunctions\arm_abs_q15.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\BasicMathFunctions\arm_shift_q15.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\CommonTables\CommonTables.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\SupportFunctions\arm_copy_q15.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\TransformFunctions\arm_bitreversal.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\TransformFunctions\arm_bitreversal2.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\TransformFunctions\arm_cfft_init_q15.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\TransformFunctions\arm_cfft_q15.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\TransformFunctions\arm_cfft_radix2_q15.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\TransformFunctions\arm_cfft_radix4_init_q15.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\TransformFunctions\arm_cfft_radix4_q15.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\TransformFunctions\arm_rfft_init_q15.c" />
+    <ClCompile Include="..\..\..\libraries\DSP\Source\TransformFunctions\arm_rfft_q15.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\application_demo\public.h" />
     <ClInclude Include="..\..\..\components\arm\audio_beamformer\src\arm_beamformer_f32.h" />
-    <ClInclude Include="..\..\..\components\xiph\echo_canceller\src\xiph_aec_internal.h" />
-    <ClInclude Include="..\..\..\components\xiph\preprocess\src\xiph_anr_internal.h" />
+    <ClInclude Include="..\..\..\components\xiph\speexdsp\config.h" />
+    <ClInclude Include="..\..\..\components\xiph\speexdsp\include\os_support_custom.h" />
+    <ClInclude Include="..\..\..\components\xiph\speexdsp\libspeexdsp\os_support.h" />
+    <ClInclude Include="..\..\..\components\xiph\speexdsp\speex_kernels.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -97,22 +115,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\laulef01\OneDrive - Arm\bigdisk\AppStore\EEMBC\libraries\DSP\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\libraries\DSP\Include;..\..\..\components\xiph\speexdsp;..\..\..\components\xiph\speexdsp\libspeexdsp;..\..\..\components\xiph\speexdsp\include;..\..\..\components\xiph\speexdsp\include\speex;C:\Users\laulef01\OneDrive - Arm\bigdisk\AppStore\EEMBC\libraries\DSP\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>..\..\..\application_demo;..\..\..\libraries\DSP\Include;..\..\..\components\xiph\speexdsp\libspeexdsp;..\..\..\components\xiph\speexdsp;..\..\..\components\xiph\speexdsp\include\speex;..\..\..\components\xiph\speexdsp\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level2</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;HAVE_CONFIG_H;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_ARCH_64BIT;HAVE_CONFIG_H;ARM_ALL_FFT_TABLES</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -138,9 +157,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level2</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;ARM_ALL_FFT_TABLES;PLATFORM_ARCH_64BIT</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>

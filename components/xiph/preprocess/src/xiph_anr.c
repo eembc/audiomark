@@ -28,18 +28,21 @@
   * -------------------------------------------------------------------- */
 
 
-#include "../../../../application_demo/public.h"
+#include "public.h"
 
-#include "../../speexdsp/include/speex/config.h"
-#include "../../speexdsp/include/speex/speex_preprocess.h"
-#include "../../speexdsp/libspeexdsp/arch.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#include "os_support.h"
+#endif
 
-#define XPH_ANR_INSTANCE_SIZE 29000
+#include "speex_preprocess.h"
+#include "arch.h"
 
-
-// for libspeex malloc
-extern char* spxGlobalHeapPtr, * spxGlobalHeapEnd;
-extern uint32_t cumulatedMalloc;
+#ifdef OS_SUPPORT_CUSTOM
+    #define XPH_ANR_INSTANCE_SIZE 29000
+    extern char* spxGlobalHeapPtr, * spxGlobalHeapEnd;
+    extern long cumulatedMalloc;
+#endif
 
 const uint32_t param_anr_f32[1][2] = {{
     256,   // NN
@@ -57,31 +60,37 @@ int32_t xiph_libspeex_anr_f32 (int32_t command, void **instance, void *data, voi
     {
         /*  return the memory requirements of xiph_libspeex_anr_f32
             
-            usage arm_beamformer_f32(_NODE_MEMREQ, 
+            usage arm_beamformer_f32(NODE_MEMREQ, 
                     **data requirement pointer,  
                     0, 
                     parameters used for memory needed
         */
-        case _NODE_MEMREQ:
+        case NODE_MEMREQ:
         {   
+            #ifdef OS_SUPPORT_CUSTOM
             *(uint32_t *)(*instance) = XPH_ANR_INSTANCE_SIZE;
+            #else
+            *(uint32_t *)(*instance) = 0;
+            #endif
             break;
         }
 
 
-        /* usage arm_beamformer_f32(_NODE_RESET, 
+        /* usage arm_beamformer_f32(NODE_RESET, 
                     **instance pointer,  can be modified
                     0, 
-                    parameters used use-case tuning 
+                    parameters, default configuration index + patch parameters
         */
-        case _NODE_RESET: 
+        case NODE_RESET: 
         {   
             uint32_t nn, fs, configuration_index;
             SpeexPreprocessState *ptr_intance;
 
+            #ifdef OS_SUPPORT_CUSTOM
             /* memory alignment on 32bits */
-            spxGlobalHeapPtr = (char *)(((uint32_t)(*instance) + 3) & ~3);
+            spxGlobalHeapPtr = (char *)(((PTR_INT)(*instance) + 3) & ~3);
             spxGlobalHeapEnd = spxGlobalHeapPtr + XPH_ANR_INSTANCE_SIZE;
+            #endif
 
             configuration_index = *(uint32_t *)parameters;
             nn = param_anr_f32[configuration_index][0];
@@ -94,20 +103,21 @@ int32_t xiph_libspeex_anr_f32 (int32_t command, void **instance, void *data, voi
             break;
         }
 
-        /* usage arm_beamformer_f32(_NODE_RUN, 
+        /* usage arm_beamformer_f32(NODE_RUN, 
                     *instance pointer,  
                     pointer to pairs of (ptr,size) 
                     execution parameters 
         */ 
-        case _NODE_RUN:       
+        case NODE_RUN:       
         {
-            uint32_t buffer_size, *pt_pt=0;
+            PTR_INT *pt_pt=0;
+            uint32_t buffer_size;
             int32_t nb_input_samples;
             uint8_t *in_place_buffer=0;
 
             /* parameter points to input { (*,n),(*,n),..} updated at the end */
 
-            pt_pt = (uint32_t *)data;
+            pt_pt = (PTR_INT *)data;
             in_place_buffer = (uint8_t *)(*pt_pt++);
             buffer_size =     (uint32_t )(*pt_pt++);
             nb_input_samples = buffer_size / sizeof(int16_t);

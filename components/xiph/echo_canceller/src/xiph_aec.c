@@ -27,18 +27,22 @@
   * Target Processor:  Cortex-M cores
   * -------------------------------------------------------------------- */
 
-#include "../../../../application_demo/public.h"
+#include "public.h"
 
-#include "../../speexdsp/include/speex/config.h"
-#include "../../speexdsp/include/speex/speex_preprocess.h"
-#include "../../speexdsp/libspeexdsp/arch.h"
-#include "../../speexdsp/include/speex/speex_echo.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-#define XPH_AEC_INSTANCE_SIZE 45000
+#include "speex_preprocess.h"
+#include "arch.h"
+#include "speex_echo.h"
 
-// for libspeex malloc
-extern char* spxGlobalHeapPtr, * spxGlobalHeapEnd;
-extern uint32_t cumulatedMalloc;
+
+#ifdef OS_SUPPORT_CUSTOM
+    #define XPH_AEC_INSTANCE_SIZE 45000
+    extern char* spxGlobalHeapPtr, * spxGlobalHeapEnd;
+    extern long cumulatedMalloc;
+#endif
 
 const uint32_t param_aec_f32[1][3] = {{
     256,   // NN
@@ -57,32 +61,37 @@ int32_t xiph_libspeex_aec_f32 (int32_t command, void **instance, void *data, voi
     {
         /*  return the memory requirements of xiph_libspeex_anr_f32
             
-            usage arm_beamformer_f32(_NODE_MEMREQ, 
+            usage arm_beamformer_f32(NODE_MEMREQ, 
                     **data requirement pointer,  
                     0, 
                     parameters used for memory needed
         */
-        case _NODE_MEMREQ:
+        case NODE_MEMREQ:
         {   
+            #ifdef OS_SUPPORT_CUSTOM
             *(uint32_t *)(*instance) = XPH_AEC_INSTANCE_SIZE;
+            #else
+            *(uint32_t *)(*instance) = 0;
+            #endif
             break;
         }
 
 
-        /* usage arm_beamformer_f32(_NODE_RESET, 
+        /* usage arm_beamformer_f32(NODE_RESET, 
                     **instance pointer,  can be modified
                     0, 
-                    parameters used use-case tuning 
+                    parameters, default configuration index + patch parameters
         */
-        case _NODE_RESET: 
+        case NODE_RESET: 
         {   
             uint32_t nn, tail, fs, configuration_index;
             SpeexEchoState *ptr_intance;
 
+            #ifdef OS_SUPPORT_CUSTOM
             /* memory alignment on 32bits */
-            spxGlobalHeapPtr = (char *)(((uint32_t)(*instance) + 3) & ~3);
+            spxGlobalHeapPtr = (char *)(((PTR_INT)(*instance) + 3) & ~3);
             spxGlobalHeapEnd = spxGlobalHeapPtr + XPH_AEC_INSTANCE_SIZE;
-
+            #endif
             configuration_index = *(uint32_t *)parameters;
             nn   = param_aec_f32[configuration_index][0];
             tail = param_aec_f32[configuration_index][1];
@@ -91,25 +100,25 @@ int32_t xiph_libspeex_aec_f32 (int32_t command, void **instance, void *data, voi
             ptr_intance = speex_echo_state_init(nn, tail);
             speex_echo_ctl(ptr_intance, SPEEX_ECHO_SET_SAMPLING_RATE, &Fs);
             *(void **)instance = ptr_intance;
-
             break;
         }
 
 
-        /* usage arm_beamformer_f32(_NODE_RUN, 
+        /* usage arm_beamformer_f32(NODE_RUN, 
                     *instance pointer,  
                     pointer to pairs of (ptr,size) 
                     execution parameters 
         */                                       
-        case _NODE_RUN:       
+        case NODE_RUN:       
         {
-            uint32_t buffer_size, *pt_pt=0;
+            PTR_INT *pt_pt=0;
+            uint32_t buffer_size;
             int32_t nb_input_samples;
             uint8_t *reference=0, *echo=0, *outBufs;
 
             /* parameter points to input { (*,n),(*,n),..} updated at the end */
 
-            pt_pt = (uint32_t *)data;
+            pt_pt = (PTR_INT *)data;
             reference = (uint8_t *)(*pt_pt++);
             buffer_size = (uint32_t )(*pt_pt++);
             echo = (uint8_t *)(*pt_pt++);

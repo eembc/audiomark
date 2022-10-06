@@ -27,9 +27,7 @@
   * Target Processor:  Cortex-M cores
   * -------------------------------------------------------------------- */
 
-#include "../../../../application_demo/public.h"
-
-
+#include "public.h"
 #include "arm_beamformer_f32.h"     /* definition of struct beamformer_f32_instance */
 
 beamformer_f32_instance bf_instance;
@@ -76,42 +74,43 @@ int32_t arm_beamformer_f32(int32_t command, void **instance, void *data, void *p
 
     switch (command)
     {
-        /* usage arm_beamformer_f32(_NODE_MEMREQ, 
+        /* usage arm_beamformer_f32(NODE_MEMREQ, 
                     **instance pointer,  will be mo
                     0, 
                     parameters[] = 
         */
-        case _NODE_MEMREQ:
+        case NODE_MEMREQ:
         {   // static variables
             *(uint32_t *)(*instance)= 0;
             break; 
         }
-        /* usage arm_beamformer_f32(_NODE_RESET, 
+        /* usage arm_beamformer_f32(NODE_RESET, 
                     **instance pointer,  will be mo
                     0, 
                     parameters[] = 
         */
-        case _NODE_RESET: 
+        case NODE_RESET: 
         {   
             arm_beamformer_f32_reset();
             break;
         }
                                       
         
-        /* usage arm_beamformer_f32(_NODE_RUN, 
+        /* usage arm_beamformer_f32(NODE_RUN, 
                     *instance pointer,  
                     pointer to pairs of (ptr,size) 
                     execution parameters 
         */ 
-        case _NODE_RUN:     /* func(LINK_NODE_RUN, instance, ptr to data, 0) */         
+        case NODE_RUN:     /* func(LINKNODE_RUN, instance, ptr to data, 0) */         
         {
-            uint32_t buffer1_size, buffer2_size, *pt_pt=0;
+            PTR_INT *pt_pt=0;
+            uint32_t buffer1_size, buffer2_size;
             int32_t nb_input_samples, input_samples_consumed, output_samples_produced;
             uint8_t *inBufs1stChannel=0, *inBufs2ndChannel=0, *outBufs;
 
             /* parameter points to input { (*,n),(*,n),..} */
 
-            pt_pt = (uint32_t *)data;
+            pt_pt = (PTR_INT *)data;
             inBufs1stChannel = (uint8_t *)(*pt_pt++);
             buffer1_size =     (uint32_t )(*pt_pt++);
             inBufs2ndChannel = (uint8_t *)(*pt_pt++);

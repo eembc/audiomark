@@ -58,7 +58,7 @@
 #include "arm_vec_fft.h"
 #include "arm_mve_tables.h"
 
-arm_status arm_cfft_radix4by2_rearrange_twiddles_f32(arm_cfft_instance_f32 *S, uint32_ttwidCoefModifier)
+arm_status arm_cfft_radix4by2_rearrange_twiddles_f32(arm_cfft_instance_f32 *S, int twidCoefModifier)
 {
                                                                   
         switch (S->fftLen >> (twidCoefModifier - 1)) {  

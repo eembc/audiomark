@@ -28,12 +28,12 @@
   * -------------------------------------------------------------------- */
 
 
-#include "../../../../application_demo/public.h"
-//#include <string.h>
-//#include "../../../../libraries/DSP/Include/arm_math_types.h"
-//#include "../../../../libraries/DSP/Include/dsp/transform_functions.h"
-//#include "../../../../libraries/DSP/Include/dsp/statistics_functions.h"
-//#include "../../../../libraries/DSP/Include/dsp/support_functions.h"
+#include <string.h>
+#include "public.h"
+#include "arm_math_types.h"
+#include "dsp/transform_functions.h"
+#include "dsp/statistics_functions.h"
+#include "dsp/support_functions.h"
 
 #include "arm_beamformer_f32.h"
 
@@ -46,7 +46,7 @@ void arm_beamformer_f32_run(swc_instance *instance,
                         int32_t* returned_state)
 {
     int i;
-#if 1 // waiting the adaptive filter of Ashutosh
+#if 1 // waiting the adaptive filter
     for (i = 0; i < input_buffer_size; i++)
         output_buffer[i] = input_buffer_left[i];
 #else

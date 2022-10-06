@@ -1,23 +1,23 @@
-/* Copyright (C) 2005-2006 Jean-Marc Valin 
+/* Copyright (C) 2005-2006 Jean-Marc Valin
    File: fftwrap.c
 
-   Wrapper for various FFTs 
+   Wrapper for various FFTs
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-   
+
    - Redistributions of source code must retain the above copyright
    notice, this list of conditions and the following disclaimer.
-   
+
    - Redistributions in binary form must reproduce the above copyright
    notice, this list of conditions and the following disclaimer in the
    documentation and/or other materials provided with the distribution.
-   
+
    - Neither the name of the Xiph.org Foundation nor the names of its
    contributors may be used to endorse or promote products derived from
    this software without specific prior written permission.
-   
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -33,7 +33,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include "../include/speex/config.h"
+#include "config.h"
 #endif
 
 #include "arch.h"
@@ -62,7 +62,7 @@ static int maximize_range(spx_word16_t *in, spx_word16_t *out, spx_word16_t boun
    for (i=0;i<len;i++)
    {
       out[i] = SHL16(in[i], shift);
-   }   
+   }
    return shift;
 }
 
@@ -270,7 +270,7 @@ void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
     out[i] = optr[i+1];
 }
 
-void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out) 
+void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
 {
   int i;
   struct fftw_config *t = (struct fftw_config *) table;
@@ -285,7 +285,7 @@ void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
   iptr[N+1] = 0.0f;
 
   fftwf_execute(t->ifft);
-  
+
   for(i=0;i<N;++i)
     out[i] = optr[i];
 }
@@ -351,6 +351,43 @@ void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
    kiss_fftri2(t->backward, in, out);
 }
 
+void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
+{
+   int i;
+   float scale;
+   struct kiss_config *t = (struct kiss_config *)table;
+   scale = 1./t->N;
+   kiss_fftr2(t->forward, in, out);
+   for (i=0;i<t->N;i++)
+      out[i] *= scale;
+}
+
+#elif defined(USE_CMSIS_DSP)
+
+extern void *arm_spx_fft_init(int size);
+extern void arm_spx_fft_destroy(void *table);
+extern void arm_spx_fft(void *table, spx_word16_t *in, spx_word16_t *out);
+extern void arm_spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out);
+
+void *spx_fft_init(int size)
+{
+   return arm_spx_fft_init(size);
+}
+
+void spx_fft_destroy(void *table)
+{
+    arm_spx_fft_destroy(table);
+}
+
+void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
+{
+    arm_spx_fft(table, in, out);
+}
+
+void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
+{
+    arm_spx_ifft(table, in, out);
+}
 
 #else
 
@@ -358,8 +395,9 @@ void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
 
 #endif
 
-
-#ifdef FIXED_POINT
+//ptorelli: is the following line a bug? FIXED_POINT cannot use float()
+//#ifdef FIXED_POINT
+#ifndef FIXED_POINT
 /*#include "smallft.h"*/
 
 
@@ -370,8 +408,9 @@ void spx_fft_float(void *table, float *in, float *out)
    int N = ((struct drft_lookup *)table)->n;
 #elif defined(USE_KISS_FFT)
    int N = ((struct kiss_config *)table)->N;
+#elif defined(USE_CMSIS_DSP)
+   int N = 0;
 #else
-    int N;
 #endif
 #ifdef VAR_ARRAYS
    spx_word16_t _in[N];
@@ -385,19 +424,6 @@ void spx_fft_float(void *table, float *in, float *out)
    spx_fft(table, _in, _out);
    for (i=0;i<N;i++)
       out[i] = _out[i];
-#if 0
-   if (!fixed_point)
-   {
-      float scale;
-      struct drft_lookup t;
-      spx_drft_init(&t, ((struct kiss_config *)table)->N);
-      scale = 1./((struct kiss_config *)table)->N;
-      for (i=0;i<((struct kiss_config *)table)->N;i++)
-         out[i] = scale*in[i];
-      spx_drft_forward(&t, out);
-      spx_drft_clear(&t);
-   }
-#endif
 }
 
 void spx_ifft_float(void *table, float *in, float *out)
@@ -407,6 +433,8 @@ void spx_ifft_float(void *table, float *in, float *out)
    int N = ((struct drft_lookup *)table)->n;
 #elif defined(USE_KISS_FFT)
    int N = ((struct kiss_config *)table)->N;
+#elif defined(USE_CMSIS_DSP)
+   int N = 0;
 #else
 #endif
 #ifdef VAR_ARRAYS
@@ -421,18 +449,6 @@ void spx_ifft_float(void *table, float *in, float *out)
    spx_ifft(table, _in, _out);
    for (i=0;i<N;i++)
       out[i] = _out[i];
-#if 0
-   if (!fixed_point)
-   {
-      int i;
-      struct drft_lookup t;
-      spx_drft_init(&t, ((struct kiss_config *)table)->N);
-      for (i=0;i<((struct kiss_config *)table)->N;i++)
-         out[i] = in[i];
-      spx_drft_backward(&t, out);
-      spx_drft_clear(&t);
-   }
-#endif
 }
 
 #else

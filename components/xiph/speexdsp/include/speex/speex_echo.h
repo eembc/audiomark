@@ -38,10 +38,26 @@
  *  @{
  */
 #include "speexdsp_types.h"
+#include "pseudofloat.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#ifdef FIXED_POINT
+#define WEIGHT_SHIFT 11
+#define NORMALIZE_SCALEDOWN 5
+#define NORMALIZE_SCALEUP 3
+#define TOP16(x) ((x)>>16)
+#else
+#define WEIGHT_SHIFT 0
+#define TOP16(x) (x)    
+#endif
+
 
 /** Obtain frame size used by the AEC */
 #define SPEEX_ECHO_GET_FRAME_SIZE 3
@@ -63,7 +79,7 @@ extern "C" {
 struct SpeexEchoState_;
 
 /** @class SpeexEchoState
- * This holds the state of the echo canceller. You need one per channel. 
+ * This holds the state of the echo canceller. You need one per channel.
 */
 
 /** Internal echo canceller state. Should never be accessed directly. */
@@ -85,7 +101,7 @@ SpeexEchoState *speex_echo_state_init(int frame_size, int filter_length);
  */
 SpeexEchoState *speex_echo_state_init_mc(int frame_size, int filter_length, int nb_mic, int nb_speakers);
 
-/** Destroys an echo canceller state 
+/** Destroys an echo canceller state
  * @param st Echo canceller state
 */
 void speex_echo_state_destroy(SpeexEchoState *st);
@@ -117,7 +133,7 @@ void speex_echo_capture(SpeexEchoState *st, const spx_int16_t *rec, spx_int16_t 
 */
 void speex_echo_playback(SpeexEchoState *st, const spx_int16_t *play);
 
-/** Reset the echo canceller to its original state 
+/** Reset the echo canceller to its original state
  * @param st Echo canceller state
  */
 void speex_echo_state_reset(SpeexEchoState *st);
@@ -139,7 +155,7 @@ typedef struct SpeexDecorrState_ SpeexDecorrState;
 
 
 /** Create a state for the channel decorrelation algorithm
-    This is useful for multi-channel echo cancellation only 
+    This is useful for multi-channel echo cancellation only
  * @param rate Sampling rate
  * @param channels Number of channels (it's a bit pointless if you don't have at least 2)
  * @param frame_size Size of the frame to process at ones (counting samples *per* channel)
@@ -155,7 +171,7 @@ SpeexDecorrState *speex_decorrelate_new(int rate, int channels, int frame_size);
 */
 void speex_decorrelate(SpeexDecorrState *st, const spx_int16_t *in, spx_int16_t *out, int strength);
 
-/** Destroy a Decorrelation state 
+/** Destroy a Decorrelation state
  * @param st State to destroy
 */
 void speex_decorrelate_destroy(SpeexDecorrState *st);

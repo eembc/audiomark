@@ -24,7 +24,7 @@ noinst_HEADERS = 	arch.h 	bfin.h \
 		fixed_arm4.h \
 		fixed_arm5e.h 	fixed_bfin.h 	fixed_debug.h 	\
 		math_approx.h 		misc_bfin.h 	\
-		stack_alloc.h 	fftwrap.h \
+		fftwrap.h \
 	filterbank.h fixed_generic.h os_support.h \
 	pseudofloat.h smallft.h vorbis_psy.h resample_sse.h resample_neon.h
 
@@ -32,7 +32,7 @@ libspeexdsp_la_LDFLAGS = -no-undefined -version-info @SPEEXDSP_LT_CURRENT@:@SPEE
 libspeexdsp_la_LIBADD = $(LIBM)
 
 if BUILD_EXAMPLES
-noinst_PROGRAMS = testdenoise testecho testjitter testresample
+noinst_PROGRAMS = testdenoise testecho testjitter testresample testresample2
 testdenoise_SOURCES = testdenoise.c
 testdenoise_LDADD = libspeexdsp.la @FFT_LIBS@
 testecho_SOURCES = testecho.c
@@ -41,4 +41,6 @@ testjitter_SOURCES = testjitter.c
 testjitter_LDADD = libspeexdsp.la @FFT_LIBS@
 testresample_SOURCES = testresample.c
 testresample_LDADD = libspeexdsp.la @FFT_LIBS@ @LIBM@
+testresample2_SOURCES = testresample2.c
+testresample2_LDADD = libspeexdsp.la @FFT_LIBS@ @LIBM@
 endif
