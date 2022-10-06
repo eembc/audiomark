@@ -4,6 +4,10 @@ project(sec-tls
 	LANGUAGES C
 	VERSION 0.0.0)
 
+set(PRECISION "float" CACHE STRING "precision")
+option(PRECISION "Set to `fixed` or `float` [def] (q15 or fp32 for now)")
+message("Precision set to ${PRECISION}")
+
 set(CMAKE_C_FLAGS "-pedantic -std=c99 -g -O0 -Wall")
 # Perhaps we can remove these after cleaning up the SpeeX code.
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
@@ -23,8 +27,17 @@ include_directories(../../components/xiph/speexdsp/libspeexdsp)
 # tool and then decide what TODO how to handle a global `config.h` file. Here
 # are two settings taken from that `config.h` which set the FFT to CMSIS and
 # uses fixed-point (see `fftwrap.c` for the excitement).
-add_definitions(-DFIXED_POINT)
-add_definitions(-DUSE_CMSIS_DSP)
+
+if (PRECISION MATCHES "fixed")
+	add_definitions(-DFIXED_POINT)
+	add_definitions(-DUSE_CMSIS_DSP)
+elseif(PRECISION MATCHES "float")
+	add_definitions(-DFLOATING_POINT)
+	add_definitions(-DUSE_SMALLFT)
+else()
+	message(FATAL_ERROR "`PRECISION` must be `fixed` or `float`")
+endif()
+
 # This macro is used extensively in LibSpeeX for function visibility.
 add_definitions(-DEXPORT=)
 
