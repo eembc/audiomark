@@ -65,6 +65,10 @@ set(SOURCE
 	../../components/xiph/speexdsp/libspeexdsp/resample.c
 	../../components/xiph/speexdsp/libspeexdsp/scal.c
 	../../components/xiph/speexdsp/libspeexdsp/smallft.c
+	../../libraries/DSP/Source/CommonTables/CommonTables.c
+	../../libraries/DSP/Source/BasicMathFunctions/BasicMathFunctions.c
+	../../libraries/DSP/Source/FastMathFunctions/FastMathFunctions.c
+	../../libraries/DSP/Source/ComplexMathFunctions/ComplexMathFunctions.c
 )
 
 add_executable(audiomark ${SOURCE})
