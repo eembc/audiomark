@@ -122,7 +122,7 @@ void adapBF(float32_t *bf_cmplx_in_pt, float32_t *bm_cmplx_in_pt, float32_t* ada
     bf_mem->GSC_det_avg = 0.9f * bf_mem->GSC_det_avg + 0.1f * sum0 / (sum1 + bf_prms.ep_GSC);
     if (bf_mem->GSC_det_avg > 2.0f) bf_mem->GSC_det_avg = 2.0f;
     //generate output
-    for (int i = 0; i < (NFFT/2) - 2; i++) {
+    for (int i = 0; i < (NFFT/2) - 1; i++) {
         adap_cmplx_out_pt[2 * i + NFFT + 2] = adap_cmplx_out_pt[NFFT - 2*i - 2];
         adap_cmplx_out_pt[1 + 2 * i + NFFT + 2] = -adap_cmplx_out_pt[NFFT - 2*i - 1];
     }
@@ -227,7 +227,7 @@ int adapBF_test(void)
 
     //Calculate output SNR compared with Matlab reference
     S0 = 0, N0 = 0;
-    for (int i = 0; i < NFFT; i++)
+    for (int i = 0; i < 2*NFFT; i++)
     {
         S0 += adapBF_out[i] * adapBF_out[i];
         N0 += (adapBF_out[i] - adap_cmplx_out_pt[i]) * (adapBF_out[i] - adap_cmplx_out_pt[i]);
