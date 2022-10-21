@@ -395,9 +395,8 @@ void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
 
 #endif
 
-//ptorelli: is the following line a bug? FIXED_POINT cannot use float()
-//#ifdef FIXED_POINT
-#ifndef FIXED_POINT
+
+#ifdef FIXED_POINT
 /*#include "smallft.h"*/
 
 
