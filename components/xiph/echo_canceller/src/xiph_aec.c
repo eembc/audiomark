@@ -39,7 +39,11 @@
 
 
 #ifdef OS_SUPPORT_CUSTOM
+#ifdef FIXED_POINT
     #define XPH_AEC_INSTANCE_SIZE 45000
+#else
+    #define XPH_AEC_INSTANCE_SIZE 68100
+#endif
     extern char* spxGlobalHeapPtr, * spxGlobalHeapEnd;
     extern long cumulatedMalloc;
 #endif
@@ -135,4 +139,3 @@ int32_t xiph_libspeex_aec_f32 (int32_t command, void **instance, void *data, voi
     }
     return swc_returned_status;
 }
-
