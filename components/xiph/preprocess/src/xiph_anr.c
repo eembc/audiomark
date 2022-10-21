@@ -39,7 +39,11 @@
 #include "arch.h"
 
 #ifdef OS_SUPPORT_CUSTOM
+#ifdef FIXED_POINT
     #define XPH_ANR_INSTANCE_SIZE 29000
+#else
+    #define XPH_ANR_INSTANCE_SIZE 45250
+#endif
     extern char* spxGlobalHeapPtr, * spxGlobalHeapEnd;
     extern long cumulatedMalloc;
 #endif
@@ -128,4 +132,3 @@ int32_t xiph_libspeex_anr_f32 (int32_t command, void **instance, void *data, voi
     }
     return swc_returned_status;
 }
-
