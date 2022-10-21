@@ -83,7 +83,7 @@ static int32_t *pt_BF_f32_instance;
 static int32_t *pt_aec_f32_instance;
 static int32_t *pt_anr_f32_instance;
 
-#define MAX_ALLOC_WORDS 24000
+#define MAX_ALLOC_WORDS 28500
 static uint32_t all_instances[MAX_ALLOC_WORDS], idx_malloc;
 
 // for libspeex malloc() 
@@ -177,7 +177,7 @@ void audiomark_initialize(void)
     pt_aec_f32_instance = &(all_instances[idx_malloc]); idx_malloc += 1+memreq_aec_f32[0]/4;
     pt_anr_f32_instance = &(all_instances[idx_malloc]); idx_malloc += 1+memreq_anr_f32[0]/4;
     if (idx_malloc >= MAX_ALLOC_WORDS)
-    {   // memory allocation overflow
+    {   while (1);
     }
 
     arm_beamformer_f32    (NODE_RESET, (void *)&pt_BF_f32_instance,  0, parameters);
@@ -203,29 +203,58 @@ void audiomark_run(void)
     uint32_t i;
   
 
-  //+-----------audio_input--------------------------------------------------------------------------->
-  //                                     |
-  //                                     |
-  //                                     |
-  //          +--------+             +---v----+                        +--------+
-  //<---OUT---+  ANR   +<-aec_output-+ AEC    +<---beamformer_output---+  BF     <==left/right_capture===
-  //          +--------+             +--------+                        +--------+
+  // ------------audio_input (from application processor)---------------------TO LOUDSPEAKER------------->
+  //                                      |
+  //                                      |
+  //                                      |
+  //           +--------+             +---v----+                        +--------+
+  // <--TO ASR-+  ANR   +<-aec_output-+ AEC    +<---beamformer_output---+  BF    +<==left/right_capture===
+  //           +--------+             +--------+                        +--------+
 
 	do 
-    {   // read audio and MIC data
+    {   // read audio and MIC data, N=number of bytes per mono audio packet
         copy_audio (audio_input, 0);    
         copy_audio (left_capture, 0);   
         copy_audio (right_capture, 0);  
 
+#define TEST_BF  0  // beamformer test
+#define TEST_AEC 0  // acoustic echo canceller test
+#define TEST_ANR 0  // adaptive noise reduction test
+#define TESTS (TEST_BF + TEST_AEC + TEST_ANR)
+
+#if TESTS == 0
         // linear feedback of the loudspeaker to the MICs
         for (i=0; i<N/2; i++)
-        {   left_capture[i] = left_capture[i] + audio_input[i]; 
+        {   
+            left_capture[i] = left_capture[i] + audio_input[i]; 
             right_capture[i] = right_capture[i] + audio_input[i];
         }
-
         arm_beamformer_f32    (NODE_RUN, (void *)&pt_BF_f32_instance, data_BF_f32, 0);
         xiph_libspeex_aec_f32 (NODE_RUN, (void *)&pt_aec_f32_instance, data_aec_f32, 0);
         xiph_libspeex_anr_f32 (NODE_RUN, (void *)&pt_anr_f32_instance, data_anr_f32, 0);
+
+#else
+    #if TEST_BF 
+        arm_beamformer_f32    (NODE_RUN, (void *)&pt_BF_f32_instance, data_BF_f32, 0);
+        memmove(aec_output, beamformer_output, N);
+    #endif 
+
+    #if TEST_AEC
+        // linear feedback of the loudspeaker to the MICs
+        for (i=0; i<N/2; i++)
+        {   
+            left_capture[i] = left_capture[i] + audio_input[i]; 
+            right_capture[i] = right_capture[i] + audio_input[i];
+        }
+        memmove(beamformer_output, left_capture, N);
+        xiph_libspeex_aec_f32 (NODE_RUN, (void *)&pt_aec_f32_instance, data_aec_f32, 0);
+    #endif
+
+    #if TEST_ANR
+        memmove(aec_output, audio_input, N);
+        xiph_libspeex_anr_f32 (NODE_RUN, (void *)&pt_anr_f32_instance, data_anr_f32, 0);
+    #endif
+#endif
 
         // save the cleaned audio for ASR
         copy_audio (aec_output, 0);
