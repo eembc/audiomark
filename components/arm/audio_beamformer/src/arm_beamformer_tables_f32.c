@@ -56,7 +56,7 @@ const float w_hanning_div2 [] =
     idxLag = 1;
     for ilag=LagRange
         wrot(idxLag, :) = exp(2*pi*1i*(0:NFFT-1)*ilag/NFFT)';
-        fwd_print_coef_float(wrot(idxLag, :));
+        fwd_print_coef_float(wrot(idxLag, 1:NFFT));
         fprintf(1, '\n');
         idxLag = idxLag +1;
     end
