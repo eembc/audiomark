@@ -229,7 +229,7 @@ void arm_mdf_adjust_prop(const spx_word32_t *W, int N, int M, int P, spx_word16_
    /*printf ("\n");*/
 }
 
-
+#ifdef FIXED_POINT
 static int maximize_range(spx_word16_t *in, spx_word16_t *out, spx_word16_t bound, int len)
 {
    int i, shift;
@@ -263,11 +263,34 @@ static void renorm_range(spx_word16_t *in, spx_word16_t *out, int shift, int len
    }
 }
 
+void arm_spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
+{
+   int shift;
+   struct kiss_config *t = (struct kiss_config *)table;
+   shift = maximize_range(in, in, 32000, t->N);
+   kiss_fftr2(t->forward, in, out);
+   renorm_range(in, in, shift, t->N);
+   renorm_range(out, out, shift, t->N);
+}
+#else
+
 struct kiss_config {
    kiss_fftr_cfg forward;
    kiss_fftr_cfg backward;
    int N;
 };
+
+void arm_spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
+{
+   int i;
+   float scale;
+   struct kiss_config *t = (struct kiss_config *)table;
+   scale = 1./t->N;
+   kiss_fftr2(t->forward, in, out);
+   for (i=0;i<t->N;i++)
+      out[i] *= scale;
+}
+#endif
 
 void *arm_spx_fft_init(int size)
 {
@@ -287,15 +310,6 @@ void arm_spx_fft_destroy(void *table)
    speex_free(table);
 }
 
-void arm_spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
-{
-   int shift;
-   struct kiss_config *t = (struct kiss_config *)table;
-   shift = maximize_range(in, in, 32000, t->N);
-   kiss_fftr2(t->forward, in, out);
-   renorm_range(in, in, shift, t->N);
-   renorm_range(out, out, shift, t->N);
-}
 
 void arm_spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
 {

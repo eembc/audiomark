@@ -39,7 +39,7 @@ beamformer_f32_fastdata_working_t beamformer_f32_fastdata_working;
 /*
    swc_run - "the" subroutine  ------------------------------------------
 */
-extern void arm_beamformer_f32_run(swc_instance *instance, 
+extern void arm_beamformer_f32_run(beamformer_f32_instance *instance, 
     int16_t* input_buffer_left, int16_t* input_buffer_right, int32_t input_buffer_size, 
     int16_t* output_buffer, int32_t *input_samples_consumed, int32_t *output_samples_produced, 
     int32_t* returned_state);
@@ -57,12 +57,21 @@ void arm_beamformer_f32_reset(void)
     bf_instance.wrot = (float *)rotation;
     bf_instance.st = &beamformer_f32_fastdata_static;
     bf_instance.w = &beamformer_f32_fastdata_working;
-    bf_instance.st->FFT128 = 0;  
 
-    for (i = 0; i < NFFT*REAL; i++)         /* reset internal buffers */
+    for (i = 0; i < NFFT; i++)                         /* reset static buffers */
     {   bf_instance.st->old_left[i] = 0;
         bf_instance.st->old_right[i] = 0;
     }
+    for (i = 0; i < NFFTD2; i++)             
+    {   bf_instance.st->ola_new[i] = 0;
+    }
+
+    arm_rfft_fast_init_f32(&((bf_instance.st)->rS), NFFT);  /* init rFFT tables */
+    arm_cfft_init_f32(&((bf_instance.st)->cS), NFFT);       /* init cFFT tables */
+
+    adapBF_init(&bf_prms, &bf_mem);                     /* adaptive filter reset */
+    bf_mem.GSC_det_avg = 0; //0.94083f;
+    bf_mem.adptBF_coefs_update_enable = 1;
 }
 
 /*
@@ -118,7 +127,7 @@ int32_t arm_beamformer_f32(int32_t command, void **instance, void *data, void *p
             outBufs = (uint8_t *)(*pt_pt++); 
 
             nb_input_samples = buffer1_size / sizeof(int16_t);
-            arm_beamformer_f32_run(*instance, (int16_t *)inBufs1stChannel,  
+            arm_beamformer_f32_run(&bf_instance, (int16_t *)inBufs1stChannel,  
                                          (int16_t *)inBufs2ndChannel, nb_input_samples, 
                                          (int16_t *)outBufs, 
                                          &input_samples_consumed, 

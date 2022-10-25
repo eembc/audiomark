@@ -55,12 +55,11 @@ enum _memory_types
 #define PLATFORM_ARCH_64BIT
 
 // assuming "int" is also the same size as "*int"
-// ptorelli: Why not use uint32_t and uint64_t to be more precise?
 #ifdef PLATFORM_ARCH_32BIT 
-#define PTR_INT unsigned long
+#define PTR_INT uint32_t
 #endif
 #ifdef PLATFORM_ARCH_64BIT 
-#define PTR_INT unsigned long long
+#define PTR_INT uint64_t
 #endif
 
 typedef struct {
