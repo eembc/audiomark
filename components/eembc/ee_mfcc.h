@@ -1,8 +1,8 @@
 #ifndef __EE_MFCC_H
 #define __EE_MFCC_H
 
-#include "ee_types.h"
 #include "ee_mfccdata.h"
+#include "ee_types.h"
 #include <math.h>
 
 extern ee_mfcc_fft_f32_t g_mfcc_fft_instance;

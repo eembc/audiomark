@@ -1,7 +1,7 @@
 
-#include "ee_mfcc.h"
-#include "dsp/none.h"
 #include "arm_nnfunctions.h"
+#include "dsp/none.h"
+#include "ee_mfcc.h"
 #include "ee_nn_weights.h"
 
 ee_status_t

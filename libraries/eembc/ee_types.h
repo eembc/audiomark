@@ -1,8 +1,8 @@
 #ifndef __EE_TYPES_H
 #define __EE_TYPES_H
 
-#include <inttypes.h>
 #include "th_types.h"
+#include <inttypes.h>
 
 typedef TH_FLOAT32_TYPE                   ee_f32_t;
 typedef TH_MFCC_FFT_INSTANCE_FLOAT32_TYPE ee_mfcc_fft_f32_t;

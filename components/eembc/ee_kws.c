@@ -202,15 +202,15 @@ ee_kws_f32(int32_t command, void **pp_instance, void *p_data, void *p_params)
             ee_kws_init();
             break;
         case NODE_RUN:
-            p_ptr          = (PTR_INT *)p_data;
-            p_inbuf        = (uint8_t *)(*p_ptr++);
-            inbuf_size     = (uint32_t *)(*p_ptr++);
-            p_audio_fifo   = (uint8_t *)(*p_ptr++);
+            p_ptr           = (PTR_INT *)p_data;
+            p_inbuf         = (uint8_t *)(*p_ptr++);
+            inbuf_size      = (uint32_t *)(*p_ptr++);
+            p_audio_fifo    = (uint8_t *)(*p_ptr++);
             audio_fifo_size = (uint32_t *)(*p_ptr++);
-            p_mfcc_fifo    = (uint8_t *)(*p_ptr++);
-            mfcc_fifo_size = (uint32_t *)(*p_ptr++);
-            p_classes      = (uint8_t *)(*p_ptr++);
-            classes_size   = (uint32_t *)(*p_ptr++);
+            p_mfcc_fifo     = (uint8_t *)(*p_ptr++);
+            mfcc_fifo_size  = (uint32_t *)(*p_ptr++);
+            p_classes       = (uint8_t *)(*p_ptr++);
+            classes_size    = (uint32_t *)(*p_ptr++);
 
             ee_kws((int16_t *)p_inbuf, (int *)p_classes);
             break;
