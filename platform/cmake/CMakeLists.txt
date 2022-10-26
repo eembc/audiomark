@@ -81,3 +81,4 @@ set(SOURCE
 )
 
 add_executable(audiomark ${SOURCE})
+target_link_libraries(audiomark m)
