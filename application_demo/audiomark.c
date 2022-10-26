@@ -58,9 +58,9 @@ static int16_t left_capture[AUDIO_NB_SAMPLES];      // 2
 static int16_t right_capture[AUDIO_NB_SAMPLES];     // 3
 static int16_t beamformer_output[AUDIO_NB_SAMPLES]; // 4
 static int16_t aec_output[AUDIO_NB_SAMPLES];        // 5
-static int16_t audio_fifo[13 * 64];        // 6 ptorelli FIXME TODO
-static int8_t mfcc_fifo[490];         // 7 ptorelli FIXME TODO
-static int8_t classes[12];           // 8 ptorelli FIXME TODO
+static int16_t audio_fifo[13 * 64];                 // 6 ptorelli FIXME TODO
+static int8_t  mfcc_fifo[490];                      // 7 ptorelli FIXME TODO
+static int8_t  classes[12];                         // 8 ptorelli FIXME TODO
 
 /* The above buffers are programmed into these XDAIS structures on init. */
 static xdais_buffer_t xdais_bmf[3];
@@ -92,9 +92,9 @@ reset_audio(void)
 int
 copy_audio(int16_t *pt, int16_t debug)
 {
-    uint32_t *     idx = NULL;
+    uint32_t      *idx = NULL;
     const int16_t *src = NULL;
-    int16_t *      dst = NULL;
+    int16_t       *dst = NULL;
 
     if (debug > 0)
     {
@@ -186,8 +186,8 @@ audiomark_initialize(void)
 
     SETUP_XDAIS(xdais_kws[0], aec_output, N);
     SETUP_XDAIS(xdais_kws[1], audio_fifo, 13 * 64 * 2); // ptorelli: fixme
-    SETUP_XDAIS(xdais_kws[2], mfcc_fifo, 490);  // ptorelli: fixme
-    SETUP_XDAIS(xdais_kws[3], classes, 12);    // ptorelli: fixme
+    SETUP_XDAIS(xdais_kws[2], mfcc_fifo, 490);          // ptorelli: fixme
+    SETUP_XDAIS(xdais_kws[3], classes, 12);             // ptorelli: fixme
 
     parameters[0] = 0; // take the first set of parameters
 

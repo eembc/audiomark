@@ -57,7 +57,7 @@ void th_nn_classify(int8_t input[490], int8_t output[12]);
 /* TOTAL_CHUNKS = (CHUNK_WATERMARK + CHUNKS_PER_INPUT_BUFFER - 1) */
 
 static int16_t *p_audio_fifo = NULL; // [TOTAL_CHUNKS * SAMPLES_PER_CHUNK];
-static int8_t * p_mfcc_fifo  = NULL; // [NUM_MFCC_FRAMES * FEATURES_PER_FRAME];
+static int8_t  *p_mfcc_fifo  = NULL; // [NUM_MFCC_FRAMES * FEATURES_PER_FRAME];
 
 static int32_t chunk_idx = 0;
 
@@ -162,7 +162,7 @@ ee_kws_f32(int32_t command, void **pp_instance, void *p_data, void *p_params)
     PTR_INT *p_ptr = NULL;
 
     int16_t *p_inbuf       = NULL;
-    int8_t * p_predictions = NULL;
+    int8_t  *p_predictions = NULL;
 
     uint32_t inbuf_size       = 0;
     uint32_t audio_fifo_size  = 0;

@@ -27,46 +27,44 @@
 * Target Processor: any
 * -------------------------------------------------------------------- */
 
-
 #ifndef __PUBLIC_H__
 #define __PUBLIC_H__
 
 #include <stdint.h>
 #include <string.h>
 
-typedef void *swc_instance;
+typedef void    *swc_instance;
 typedef uint8_t *uintPtr_t;
 
-enum _command 
-{ 
-    NODE_MEMREQ,            /* func(NODE_RESET, *instance, 0, 0) */
-    NODE_RESET,             /* func(NODE_RESET, *instance, 0, 0) */
-    NODE_RUN,               /* func(NODE_RUN, *instance, *in, *param) */
-    NODE_SET_PARAMETER,     /* func(NODE_SET_PARAMETER, *instance, index, *param) */
+enum _command
+{
+    NODE_MEMREQ,        /* func(NODE_RESET, *instance, 0, 0) */
+    NODE_RESET,         /* func(NODE_RESET, *instance, 0, 0) */
+    NODE_RUN,           /* func(NODE_RUN, *instance, *in, *param) */
+    NODE_SET_PARAMETER, /* func(NODE_SET_PARAMETER, *instance, index, *param) */
 };
 
 enum _memory_types
-{   
-    DMEM = 0, 
-    FAST_DMEM = 1,  
-    MEMBANK_TYPES,  
+{
+    DMEM      = 0,
+    FAST_DMEM = 1,
+    MEMBANK_TYPES,
 };
 
 #define PLATFORM_ARCH_64BIT
 
 // assuming "int" is also the same size as "*int"
-#ifdef PLATFORM_ARCH_32BIT 
+#ifdef PLATFORM_ARCH_32BIT
 #define PTR_INT uint32_t
 #endif
-#ifdef PLATFORM_ARCH_64BIT 
+#ifdef PLATFORM_ARCH_64BIT
 #define PTR_INT uint64_t
 #endif
 
-typedef struct {
-  PTR_INT p_data;
-  PTR_INT size;
+typedef struct
+{
+    PTR_INT p_data;
+    PTR_INT size;
 } xdais_buffer_t;
-
-
 
 #endif /* #ifndef __link_PUBLIC_H__ */

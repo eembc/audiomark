@@ -12,8 +12,8 @@ void        ee_mfcc_compute(const int16_t *audio_data, int8_t *mfcc_out);
 
 ee_status_t th_mfcc_fft_init_f32(ee_mfcc_fft_f32_t *p_instance, int fft_length);
 void        th_mfcc_fft_f32(ee_mfcc_fft_f32_t *pInstance,
-                            ee_f32_t *         pIn,
-                            ee_f32_t *         pOut);
+                            ee_f32_t          *pIn,
+                            ee_f32_t          *pOut);
 
 /* This borrows _heavily_ from Arm CMSIS/DSP see copyright. */
 

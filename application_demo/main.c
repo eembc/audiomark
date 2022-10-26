@@ -16,13 +16,12 @@
  * limitations under the License.
  *---------------------------------------------------------------------------*/
 
-
-int main(void)
+int
+main(void)
 {
-extern void audiomark_initialize(void);
-extern void audiomark_run(void);
+    extern void audiomark_initialize(void);
+    extern void audiomark_run(void);
 
-    audiomark_initialize();  // Initialize hard-coded graph
+    audiomark_initialize(); // Initialize hard-coded graph
     audiomark_run();
-
 }

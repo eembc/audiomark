@@ -19,8 +19,8 @@ th_mfcc_fft_init_f32(ee_mfcc_fft_f32_t *p_instance, int fft_length)
 
 void
 th_mfcc_fft_f32(TH_MFCC_FFT_INSTANCE_FLOAT32_TYPE *p_context,
-                ee_f32_t *                         p_in,
-                ee_f32_t *                         p_out)
+                ee_f32_t                          *p_in,
+                ee_f32_t                          *p_out)
 {
     arm_rfft_fast_f32(p_context, p_in, p_out, 0);
 }
@@ -209,9 +209,9 @@ static const q7_t conv5_pw_bias[CONV5_OUT_CH]              = CONV5_PW_BIAS;
 static const q7_t final_fc_wt[CONV5_OUT_CH * OUT_DIM]      = FINAL_FC_WT;
 static const q7_t final_fc_bias[OUT_DIM]                   = FINAL_FC_BIAS;
 static q7_t       scratch_pad[SCRATCH_BUFFER_SIZE];
-static q7_t *     col_buffer;
-static q7_t *     buffer1;
-static q7_t *     buffer2;
+static q7_t      *col_buffer;
+static q7_t      *buffer1;
+static q7_t      *buffer2;
 
 void
 th_nn_init(void)
@@ -223,7 +223,7 @@ th_nn_init(void)
 
 void
 arm_avepool_q7_HWC_nonsquare(
-    const q7_t *   Im_in,        // input image
+    const q7_t    *Im_in,        // input image
     const uint16_t dim_im_in_x,  // input image dimension
     const uint16_t dim_im_in_y,  // input image dimension
     const uint16_t ch_im_in,     // number of input image channels
@@ -235,8 +235,8 @@ arm_avepool_q7_HWC_nonsquare(
     const uint16_t stride_y,     // stride
     const uint16_t dim_im_out_x, // output image dimension
     const uint16_t dim_im_out_y, // output image dimension
-    q7_t *         bufferA,      // a buffer for local storage
-    q7_t *         Im_out,       // output feature
+    q7_t          *bufferA,      // a buffer for local storage
+    q7_t          *Im_out,       // output feature
     const uint16_t out_lshift)   // output left shift (scaling)
 {
     int16_t i_ch_in, i_x, i_y;
