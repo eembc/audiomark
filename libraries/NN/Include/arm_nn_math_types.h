@@ -82,7 +82,7 @@ typedef int64_t q63_t;
 #endif
 
 //ptorelli--start
-#elif defined ( __APPLE_CC__ )
+#elif defined ( __APPLE_CC__ ) || defined ( __GNUC__ )
 #include <stdint.h>
 #define  __ALIGNED(x) __attribute__((aligned(x)))
 #define __STATIC_FORCEINLINE static inline __attribute__((always_inline)) 

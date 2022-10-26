@@ -75,6 +75,8 @@ set(SOURCE
 	../../components/xiph/speexdsp/libspeexdsp/scal.c
 	../../components/xiph/speexdsp/libspeexdsp/smallft.c
 
+	# Separate the implementation code from the benchmark code
+	
 	../../libraries/DSP/Source/BasicMathFunctions/BasicMathFunctions.c
 	../../libraries/DSP/Source/CommonTables/CommonTables.c
 	../../libraries/DSP/Source/ComplexMathFunctions/ComplexMathFunctions.c
@@ -91,11 +93,6 @@ set(SOURCE
 	../../libraries/NN/Source/ConvolutionFunctions/arm_depthwise_separable_conv_HWC_q7_nonsquare.c
 	../../libraries/NN/Source/FullyConnectedFunctions/arm_fully_connected_q7.c
 	../../libraries/NN/Source/ActivationFunctions/arm_relu_q7.c
-
-
-	# For new beamformer
-	# TODO: FFT here and in Xiph, reduce to one?
-
 )
 
 add_executable(audiomark ${SOURCE})
