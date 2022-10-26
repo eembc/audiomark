@@ -97,5 +97,9 @@ typedef struct
 
 extern adapBF_f32_fastdata_prms_t bf_prms;
 extern  adapBF_f32_fastdata_static_t bf_mem;
-
+void adapBF_init(adapBF_f32_fastdata_prms_t* bf_prms, adapBF_f32_fastdata_static_t* bf_mem);
+void arm_beamformer_f32_run(beamformer_f32_instance *instance, 
+                        int16_t* input_buffer_left, int16_t* input_buffer_right, int32_t input_buffer_size, 
+                        int16_t* output_buffer, int32_t *input_samples_consumed, int32_t *output_samples_produced, 
+                        int32_t* returned_state);
 #endif

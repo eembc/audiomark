@@ -69,6 +69,15 @@ set(SOURCE
 	../../libraries/DSP/Source/BasicMathFunctions/BasicMathFunctions.c
 	../../libraries/DSP/Source/FastMathFunctions/FastMathFunctions.c
 	../../libraries/DSP/Source/ComplexMathFunctions/ComplexMathFunctions.c
+
+	# For new beamformer
+	# TODO: FFT here and in Xiph, reduce to one?
+	../../libraries/DSP/Source/TransformFunctions/TransformFunctions.c
+	../../libraries/DSP/Source/MatrixFunctions/MatrixFunctions.c
+	../../libraries/DSP/Source/StatisticsFunctions/StatisticsFunctions.c
+	../../libraries/DSP/Source/SupportFunctions/arm_q15_to_float.c
+	../../libraries/DSP/Source/SupportFunctions/arm_float_to_q15.c
+
 )
 
 add_executable(audiomark ${SOURCE})
