@@ -67,7 +67,7 @@ extern "C"
 #define __STATIC_FORCEINLINE static __forceinline
 #define __STATIC_INLINE static __inline
 #define __ALIGNED(x) __declspec(align(x))
-#elif defined ( __APPLE_CC__ )
+#elif defined ( __APPLE_CC__ ) || defined ( __GNUC__ )
 #include <stdint.h>
 #define  __ALIGNED(x) __attribute__((aligned(x)))
 #define __STATIC_FORCEINLINE static inline __attribute__((always_inline)) 
