@@ -110,23 +110,25 @@ ee_kws(int16_t *p_buffer, int8_t *p_prediction)
 
     if (chunk_idx >= CHUNK_WATERMARK)
     {
+        /* Shift off the oldest features to make room for the new ones. */
+        th_memcpy(p_mfcc_fifo,
+                  p_mfcc_fifo + FEATURES_PER_FRAME,
+                  (NUM_MFCC_FRAMES - 1) * FEATURES_PER_FRAME);
+
+        /* Compute a new frames worth of MFCC features */
         ee_mfcc_compute(
             p_audio_fifo,
             &p_mfcc_fifo[(NUM_MFCC_FRAMES - 1) * FEATURES_PER_FRAME]);
-        /* Shift off last set of features, don't need to zeroize. */
-        th_memcpy(p_mfcc_fifo,
-                  p_mfcc_fifo + FEATURES_PER_FRAME,
-                  (NUM_MFCC_FRAMES - 1) * FEATURES_PER_FRAME
-                      * BYTES_PER_FEATURE);
 
-        /* Shift off the chunks used by the MFCC. */
+        /* Run the inference */
+        th_nn_classify(p_mfcc_fifo, p_prediction);
+        th_softmax_i8(p_prediction, OUT_DIM, p_prediction);
+
+        /* Shift off the aduio buffer chunks used by the MFCC. */
         chunk_idx -= CHUNKS_PER_MFCC_SLIDE;
         th_memcpy(p_audio_fifo,
                   p_audio_fifo + SAMPLES_PER_OUTPUT_MFCC,
                   chunk_idx * SAMPLES_PER_CHUNK * BYTES_PER_SAMPLE);
-
-        th_nn_classify(p_mfcc_fifo, p_prediction);
-        th_softmax_i8(p_prediction, OUT_DIM, p_prediction);
     }
 }
 
@@ -192,7 +194,7 @@ ee_kws_f32(int32_t command, void **pp_instance, void *p_data, void *p_params)
             CHECK_SIZE(predictions_size, OUT_DIM);
 
             ee_kws(p_inbuf, p_predictions);
-            
+
             break;
             /* case default: */
     }
