@@ -41,7 +41,7 @@
 extern int32_t arm_beamformer_f32    (int32_t command, void **instance, void *data, void *parameters);
 extern int32_t xiph_libspeex_aec_f32 (int32_t command, void **instance, void *data, void *parameters);
 extern int32_t xiph_libspeex_anr_f32 (int32_t command, void **instance, void *data, void *parameters);
-
+extern int32_t ee_kws_f32            (int32_t command, void **instance, void *data, void *parameters);
 
 #ifdef _MSC_VER 
 #else
@@ -77,11 +77,15 @@ static int16_t left_capture      [AUDIO_NB_SAMPLES]; //2
 static int16_t right_capture     [AUDIO_NB_SAMPLES]; //3
 static int16_t beamformer_output [AUDIO_NB_SAMPLES]; //4
 static int16_t aec_output        [AUDIO_NB_SAMPLES]; //5
+static int16_t audio_fifo        [AUDIO_NB_SAMPLES]; //6
+static int16_t mfcc_fifo         [AUDIO_NB_SAMPLES]; //7
+static int16_t classes           [AUDIO_NB_SAMPLES]; //8
 
 // instances of the components
 static int32_t *pt_BF_f32_instance;
 static int32_t *pt_aec_f32_instance;
 static int32_t *pt_anr_f32_instance;
+static int32_t *pt_kws_f32_instance;
 
 #define MAX_ALLOC_WORDS 28500
 static uint32_t all_instances[MAX_ALLOC_WORDS], idx_malloc;
@@ -95,10 +99,13 @@ uint32_t *prq;
 uint32_t memreq_BF_f32 [1];   // memreq will grow later
 uint32_t memreq_aec_f32[1];
 uint32_t memreq_anr_f32[1];
+uint32_t memreq_kws_f32[1]; // TODO: ptorelli: what is this?
 
+// TODO: ptorelli: why are these 2x the size, i.e., 6/6/4 when we only use 3/3/2?
 data_buffer_t data_BF_f32  [6];    // XDAIS format
 data_buffer_t data_aec_f32 [6];
 data_buffer_t data_anr_f32 [4];
+data_buffer_t data_kws_f32 [8];
 
 uint32_t parameters[1];       // pre-computed parameter index 
 
@@ -164,7 +171,14 @@ void audiomark_initialize(void)
     
     // ANR : one pair [*,n] for mono input and one pair [*,n] for output
     data_anr_f32[0].data_struct[0] = (PTR_INT)aec_output; data_anr_f32[0].data_struct[1] = N;
+    /* TODO: ptorelli: it appears ANR output over-writes its input, correct? */
     data_anr_f32[1].data_struct[0] = (PTR_INT)aec_output; data_anr_f32[1].data_struct[1] = N;
+
+    // KWS
+    data_kws_f32[0].data_struct[0] = (PTR_INT)aec_output; data_kws_f32[0].data_struct[1] = N;
+    data_kws_f32[1].data_struct[0] = (PTR_INT)audio_fifo; data_kws_f32[1].data_struct[1] = N; // TODO: not N, but we are in dev mode
+    data_kws_f32[2].data_struct[0] = (PTR_INT)mfcc_fifo;  data_kws_f32[2].data_struct[1] = N; // TODO: not N, but we are in dev mode
+    data_kws_f32[3].data_struct[0] = (PTR_INT)classes;    data_kws_f32[3].data_struct[1] = N; // TODO: not N, but we are in dev mode
 
     parameters[0] = 0;   // take the first set of parameters
 
@@ -172,17 +186,22 @@ void audiomark_initialize(void)
     prq = memreq_BF_f32;  arm_beamformer_f32    (NODE_MEMREQ, (void *)&prq, 0, parameters);
     prq = memreq_aec_f32; xiph_libspeex_aec_f32 (NODE_MEMREQ, (void *)&prq, 0, parameters);
     prq = memreq_anr_f32; xiph_libspeex_anr_f32 (NODE_MEMREQ, (void *)&prq, 0, parameters);
+    prq = memreq_kws_f32; ee_kws_f32            (NODE_MEMREQ, (void *)&prq, 0, parameters);
 
+    // TODO: ptorelli: clarify what is going on here.
     pt_BF_f32_instance  = &(all_instances[idx_malloc]); idx_malloc += 1+memreq_BF_f32[0]/4;
     pt_aec_f32_instance = &(all_instances[idx_malloc]); idx_malloc += 1+memreq_aec_f32[0]/4;
     pt_anr_f32_instance = &(all_instances[idx_malloc]); idx_malloc += 1+memreq_anr_f32[0]/4;
+    pt_kws_f32_instance = &(all_instances[idx_malloc]); idx_malloc += 1+memreq_kws_f32[0]/4;
     if (idx_malloc >= MAX_ALLOC_WORDS)
-    {   while (1);
+    {
+        while (1) {};
     }
 
     arm_beamformer_f32    (NODE_RESET, (void *)&pt_BF_f32_instance,  0, parameters);
     xiph_libspeex_aec_f32 (NODE_RESET, (void *)&pt_aec_f32_instance, 0, parameters);
     xiph_libspeex_anr_f32 (NODE_RESET, (void *)&pt_anr_f32_instance, 0, parameters);
+    ee_kws_f32            (NODE_RESET, (void *)&pt_kws_f32_instance, 0, parameters);
 
     global_no_error = 1;
 
@@ -232,6 +251,7 @@ void audiomark_run(void)
         arm_beamformer_f32    (NODE_RUN, (void *)&pt_BF_f32_instance, data_BF_f32, 0);
         xiph_libspeex_aec_f32 (NODE_RUN, (void *)&pt_aec_f32_instance, data_aec_f32, 0);
         xiph_libspeex_anr_f32 (NODE_RUN, (void *)&pt_anr_f32_instance, data_anr_f32, 0);
+        ee_kws_f32            (NODE_RUN, (void *)&pt_kws_f32_instance, data_kws_f32, 0);
 
 #else
     #if TEST_BF 

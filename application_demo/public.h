@@ -62,6 +62,7 @@ enum _memory_types
 #define PTR_INT uint64_t
 #endif
 
+/* TODO: why have an array when we can use labels? .data_ptr, .data_size */
 typedef struct {
   PTR_INT data_struct[2];
 } data_buffer_t;
