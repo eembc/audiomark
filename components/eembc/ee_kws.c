@@ -66,42 +66,14 @@ ee_kws_init(void)
 {
     ee_mfcc_init();
     th_nn_init();
-#if 0
-    /* Absolutely necessary so that the FIFO starts with silence. */
-    th_memset(
-        mfcc_fifo, 0, NUM_MFCC_FRAMES * FEATURES_PER_FRAME * BYTES_PER_FEATURE);
-    /* Not really necessary, but good for debugging. */
-    th_memset(
-        p_audio_fifo, 0, TOTAL_CHUNKS * SAMPLES_PER_CHUNK * BYTES_PER_SAMPLE);
-#endif
-}
-
-static void
-debug_audio_fifo(void)
-{
-    printf("p_audio_fifo ... chunk_idx=%d\n", chunk_idx);
-    for (int i = 0; i < TOTAL_CHUNKS; ++i)
-    {
-        printf("i[%02d]: ", i);
-        for (int j = 0; j < SAMPLES_PER_CHUNK; ++j)
-        {
-            printf("%02d ", p_audio_fifo[i * SAMPLES_PER_CHUNK + j]);
-        }
-        if (i == chunk_idx)
-        {
-            printf(" *");
-        }
-        printf("\n");
-        if (i == (CHUNK_WATERMARK - 1))
-        {
-            printf("---------WATERMARK---------\n");
-        }
-    }
 }
 
 void
-ee_kws(int16_t *p_buffer, int8_t *p_prediction)
+ee_kws(const int16_t *p_buffer, int8_t *p_prediction, int *p_new_inference)
 {
+    /* KWS might not call an inference this time if the FIFO isn't ready. */
+    *p_new_inference = 0;
+
     /* Store the incoming 16ms frame as 4 chunk */
     th_memcpy(&p_audio_fifo[chunk_idx * SAMPLES_PER_CHUNK],
               p_buffer,
@@ -123,6 +95,7 @@ ee_kws(int16_t *p_buffer, int8_t *p_prediction)
         /* Run the inference */
         th_nn_classify(p_mfcc_fifo, p_prediction);
         th_softmax_i8(p_prediction, OUT_DIM, p_prediction);
+        *p_new_inference = 1;
 
         /* Shift off the aduio buffer chunks used by the MFCC. */
         chunk_idx -= CHUNKS_PER_MFCC_SLIDE;
@@ -132,30 +105,13 @@ ee_kws(int16_t *p_buffer, int8_t *p_prediction)
     }
 }
 
-void
-ee_kws_test(void)
-{
-    int16_t paudio[SAMPLES_PER_INPUT_BUFFER];
-    int8_t  predictions[OUT_DIM];
-    ee_kws_init();
-
-    /* Test 1sec audio at 16kHz */
-    for (int i = 0; i < 1000; ++i)
-    {
-        for (int j = 0; j < SAMPLES_PER_INPUT_BUFFER; ++j)
-        {
-            paudio[j] = i;
-        }
-        ee_kws(paudio, predictions);
-    }
-}
-
 #define CHECK_SIZE(X, Y)                          \
     if (X != Y)                                   \
     {                                             \
         printf("Size mismatch %d != %d\n", X, Y); \
         return 1;                                 \
     }
+
 int32_t
 ee_kws_f32(int32_t command, void **pp_instance, void *p_data, void *p_params)
 {
@@ -168,6 +124,7 @@ ee_kws_f32(int32_t command, void **pp_instance, void *p_data, void *p_params)
     uint32_t audio_fifo_size  = 0;
     uint32_t mfcc_fifo_size   = 0;
     uint32_t predictions_size = 0;
+    int      new_inference    = 0;
 
     switch (command)
     {
@@ -193,7 +150,7 @@ ee_kws_f32(int32_t command, void **pp_instance, void *p_data, void *p_params)
             CHECK_SIZE(mfcc_fifo_size, NUM_MFCC_FRAMES * FEATURES_PER_FRAME);
             CHECK_SIZE(predictions_size, OUT_DIM);
 
-            ee_kws(p_inbuf, p_predictions);
+            ee_kws(p_inbuf, p_predictions, &new_inference);
 
             break;
             /* case default: */
