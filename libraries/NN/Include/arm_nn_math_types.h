@@ -80,6 +80,11 @@ typedef int64_t q63_t;
 #ifndef __ALIGNED
 #define __ALIGNED(x) __declspec(align(x))
 #endif
+//ptorelli--start
+#ifndef   __RESTRICT
+#define __RESTRICT                             __restrict
+#endif
+//ptorelli--end
 
 //ptorelli--start
 #elif defined ( __APPLE_CC__ ) || defined ( __GNUC__ )
