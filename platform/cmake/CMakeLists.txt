@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(sec-tls
+project(audiomark
 	DESCRIPTION "Firmware for the AudoMark Self-Hosted Benchmark"
 	LANGUAGES C
 	VERSION 0.0.0)
@@ -9,9 +9,12 @@ option(PRECISION "Set to `fixed` or `float` [def] (q15 or fp32 for now)")
 message("Precision set to ${PRECISION}")
 
 set(CMAKE_C_FLAGS "-pedantic -std=c99 -g -O0 -Wall")
-# Perhaps we can remove these after cleaning up the SpeeX code.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-newline-eof")
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+	# Perhaps we can remove these after cleaning up the SpeeX code.
+	# These are not ignored by MSVC
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-newline-eof")
+endif()
 
 include_directories(../../application_demo)
 include_directories(../../libraries/DSP/Include)
@@ -96,4 +99,8 @@ set(SOURCE
 )
 
 add_executable(audiomark ${SOURCE})
-target_link_libraries(audiomark m)
+
+if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+else()
+	target_link_libraries(audiomark m)
+endif()
