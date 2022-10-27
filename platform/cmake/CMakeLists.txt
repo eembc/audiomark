@@ -103,6 +103,15 @@ set(TEST_NN_SOURCE
 )
 add_executable(test_nn ${TEST_NN_SOURCE})
 
+set(TEST_KWS_SOURCE
+	../../components/eembc/ee_kws.c
+	../../components/eembc/ee_mfcc.c
+	../../components/eembc/ee_mfccdata.c
+	${TH_SOURCE}
+	../../tests/test_kws.c
+)
+add_executable(test_kws ${TEST_KWS_SOURCE})
+
 add_executable(audiomark ${EE_SOURCE} ${TH_SOURCE})
 if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
 else()
