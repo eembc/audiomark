@@ -27,49 +27,66 @@
 * Target Processor: any
 * -------------------------------------------------------------------- */
 
-
 #ifndef __PUBLIC_H__
 #define __PUBLIC_H__
 
 #include <stdint.h>
 #include <string.h>
 
-typedef void *swc_instance;
+typedef void    *swc_instance;
 typedef uint8_t *uintPtr_t;
 
-enum _command 
-{ 
-    NODE_MEMREQ,            /* func(NODE_RESET, *instance, 0, 0) */
-    NODE_RESET,             /* func(NODE_RESET, *instance, 0, 0) */
-    NODE_RUN,               /* func(NODE_RUN, *instance, *in, *param) */
-    NODE_SET_PARAMETER,     /* func(NODE_SET_PARAMETER, *instance, index, *param) */
+enum _command
+{
+    NODE_MEMREQ,        /* func(NODE_RESET, *instance, 0, 0) */
+    NODE_RESET,         /* func(NODE_RESET, *instance, 0, 0) */
+    NODE_RUN,           /* func(NODE_RUN, *instance, *in, *param) */
+    NODE_SET_PARAMETER, /* func(NODE_SET_PARAMETER, *instance, index, *param) */
 };
 
 enum _memory_types
-{   
-    DMEM = 0, 
-    FAST_DMEM = 1,  
-    MEMBANK_TYPES,  
+{
+    DMEM      = 0,
+    FAST_DMEM = 1,
+    MEMBANK_TYPES,
 };
 
 #define PLATFORM_ARCH_64BIT
 
 // assuming "int" is also the same size as "*int"
-#ifdef PLATFORM_ARCH_32BIT 
+#ifdef PLATFORM_ARCH_32BIT
 #define PTR_INT uint32_t
 #endif
-#ifdef PLATFORM_ARCH_64BIT 
+#ifdef PLATFORM_ARCH_64BIT
 #define PTR_INT uint64_t
 #endif
 
-/* TODO: why have an array when we can use labels? .data_ptr, .data_size */
-typedef struct {
-  PTR_INT data_struct[2];
-} data_buffer_t;
+typedef struct
+{
+    PTR_INT p_data;
+    PTR_INT size;
+} xdais_buffer_t;
 
+
+#define SETUP_XDAIS(SRC, DATA, SIZE) \
+    {                                \
+        SRC.p_data = (PTR_INT)DATA;  \
+        SRC.size   = SIZE;           \
+    }
+
+#define CALL_MEMREQ(FUNC, REQ, PARAMS)                 \
+    {                                                  \
+        uint32_t *p_req = REQ;                         \
+        FUNC(NODE_MEMREQ, (void **)&p_req, 0, PARAMS); \
+    }
+
+// TODO: ptorelli: this assumes all pointers are uint32_t bytes. FIXME.
+// TODO: ptorelli: why is req / 4?
+#define LOCAL_ALLOC(PINST, REQ)               \
+    {                                         \
+        PINST = &(all_instances[idx_malloc]); \
+        idx_malloc += 1 + REQ / 4;            \
+    }
 
 
 #endif /* #ifndef __link_PUBLIC_H__ */
-/*
- * -----------------------------------------------------------------------
- */

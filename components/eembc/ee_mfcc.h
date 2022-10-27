@@ -5,6 +5,15 @@
 #include "ee_types.h"
 #include <math.h>
 
+/* 40ms frame of 16 kHz audio is 640 16-bit samples. */
+#define FRAME_LEN 640
+/* Pre-defined */
+#define NUM_MFCC_FEATURES 10
+#define MFCC_DEC_BITS     1
+// frame_len_padded = pow(2,ceil((log(FRAME_LEN)/log(2)))); == 1024
+#define PADDED_FRAME_LEN 1024
+#define FFT_LEN          PADDED_FRAME_LEN
+
 extern ee_mfcc_fft_f32_t g_mfcc_fft_instance;
 
 ee_status_t ee_mfcc_init(void);

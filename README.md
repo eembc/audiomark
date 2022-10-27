@@ -31,11 +31,36 @@ up on your system today and report questions or issues.
 TODO. Eventually we will need to start adding `make`-friendly unit-tests to
 automate code reviews and CI-on-PR via GitHUb.
 
+# Building
+
+## cmake
+
+There is a `platforms/cmake` area which contains a `CMakeList.txt` file that works with
+GCC, macOS Clang, Cygwin, and MSVC. The first three platforms' `cmake` generate a standard
+`Makefile` for use with `make`. Compiling with MSVC `cmake` produces a solution
+file `audiomark.sln` which can be opened from the MSVC IDE and compiled/debugged.
+
 # Coding style & guidelines
 
-TODO. EEMBC formats according to Barr-C Embedded Standards. There is a config
-file for `clang-format` (v14+) [here](https://github.com/petertorelli/clang-format-barr-c).
-Eventually we will move to this.
+## Formatting
+
+EEMBC formats according to Barr-C Embedded Standards. The `.clang-format` file
+in the root directory observes this. This file can be used within VSCode or
+MSVC, however it isn't clear if this behaves the same as `clang-format`
+version 14 (which aligns pointer stars differently).
+
+## Function and file naming
+
+Traditionally, all functions and files start with either `ee_` or `th_`, where
+the former notation indicates "thou shall not change" and the latter must be
+changed in order to port the code (i.e., the Test Harness, hence `th_`).
+
+Since there is so much code from Xiph that we are including, we will not change
+all of their code but might have to change some (like FFT wrappers). It may
+require a Run Rule to avoid this code being altered. Ideally every function
+should fall into a simple `th_api` folder or collection of files so that it is
+obvious what needs to be ported. Currently the `components/eembc` folder
+illustrates this by separating all of the Arm-specific code into `th_api.c`.
 
 # Copyright & license
 

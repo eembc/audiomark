@@ -1,17 +1,16 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(sec-tls
+project(audiomark
 	DESCRIPTION "Firmware for the AudoMark Self-Hosted Benchmark"
 	LANGUAGES C
 	VERSION 0.0.0)
 
-set(PRECISION "float" CACHE STRING "precision")
-option(PRECISION "Set to `fixed` or `float` [def] (q15 or fp32 for now)")
-message("Precision set to ${PRECISION}")
-
 set(CMAKE_C_FLAGS "-pedantic -std=c99 -g -O0 -Wall")
-# Perhaps we can remove these after cleaning up the SpeeX code.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-newline-eof")
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+	# Perhaps we can remove these after cleaning up the SpeeX code.
+	# These are not ignored by MSVC
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-newline-eof")
+endif()
 
 include_directories(../../application_demo)
 include_directories(../../libraries/DSP/Include)
@@ -31,20 +30,14 @@ include_directories(../../components/eembc)
 # are two settings taken from that `config.h` which set the FFT to CMSIS and
 # uses fixed-point (see `fftwrap.c` for the excitement).
 
-if (PRECISION MATCHES "fixed")
-	add_definitions(-DFIXED_POINT)
-	add_definitions(-DUSE_CMSIS_DSP)
-elseif(PRECISION MATCHES "float")
-	add_definitions(-DFLOATING_POINT)
-	add_definitions(-DUSE_SMALLFT)
-else()
-	message(FATAL_ERROR "`PRECISION` must be `fixed` or `float`")
-endif()
+# For Xiph we are using Float by default
+add_definitions(-DFLOATING_POINT)
+add_definitions(-DUSE_SMALLFT)
 
 # This macro is used extensively in LibSpeeX for function visibility.
 add_definitions(-DEXPORT=)
 
-set(SOURCE
+set(EE_SOURCE
 	../../application_demo/main.c
 	../../application_demo/audiomark.c
 
@@ -59,8 +52,6 @@ set(SOURCE
 	../../components/eembc/ee_kws.c
 	../../components/eembc/ee_mfcc.c
 	../../components/eembc/ee_mfccdata.c
-	../../components/eembc/ee_nn.c
-	../../components/eembc/th_api.c
 
 	../../components/xiph/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 	../../components/xiph/speexdsp/libspeexdsp/buffer.c
@@ -74,8 +65,11 @@ set(SOURCE
 	../../components/xiph/speexdsp/libspeexdsp/resample.c
 	../../components/xiph/speexdsp/libspeexdsp/scal.c
 	../../components/xiph/speexdsp/libspeexdsp/smallft.c
+)
 
+set(TH_SOURCE
 	# Separate the implementation code from the benchmark code
+	../../components/eembc/th_api.c
 	
 	../../libraries/DSP/Source/BasicMathFunctions/BasicMathFunctions.c
 	../../libraries/DSP/Source/CommonTables/CommonTables.c
@@ -95,5 +89,40 @@ set(SOURCE
 	../../libraries/NN/Source/ActivationFunctions/arm_relu_q7.c
 )
 
-add_executable(audiomark ${SOURCE})
-target_link_libraries(audiomark m)
+set(TEST_MFCC_SOURCE
+	../../components/eembc/ee_mfcc.c
+	../../components/eembc/ee_mfccdata.c
+	${TH_SOURCE}
+	../../tests/test_mfcc.c
+)
+add_executable(test_mfcc ${TEST_MFCC_SOURCE})
+
+set(TEST_NN_SOURCE
+	${TH_SOURCE}
+	../../tests/test_nn.c
+)
+add_executable(test_nn ${TEST_NN_SOURCE})
+
+set(TEST_KWS_SOURCE
+	../../components/eembc/ee_kws.c
+	../../components/eembc/ee_mfcc.c
+	../../components/eembc/ee_mfccdata.c
+	${TH_SOURCE}
+	../../tests/test_kws.c
+)
+add_executable(test_kws ${TEST_KWS_SOURCE})
+
+add_executable(audiomark ${EE_SOURCE} ${TH_SOURCE})
+
+if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+else()
+	target_link_libraries(audiomark m)
+endif()
+
+add_custom_target(check
+	COMMENT "Running unit tests..."
+	COMMAND ./test_mfcc
+	COMMAND ./test_nn
+	COMMAND ./test_kws
+	DEPENDS test_mfcc test_nn test_kws
+)

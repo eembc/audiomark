@@ -276,7 +276,7 @@ arm_avepool_q7_HWC_nonsquare(
 }
 
 void
-th_nn_classify(uint8_t in_data[490], int8_t out_data[12])
+th_nn_classify(const uint8_t *in_data, int8_t *out_data)
 {
     // CONV1 : regular convolution
     arm_convolve_HWC_q7_basic_nonsquare(in_data,

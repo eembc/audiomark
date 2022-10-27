@@ -1,15 +1,6 @@
-//#include "ds_cnn.h"
 #include "ee_mfcc.h"
 
-/* 40ms frame of 16 kHz audio is 640 16-bit samples. */
-#define FRAME_LEN 640
-/* Pre-defined */
-#define NUM_MFCC_FEATURES 10
-#define MFCC_DEC_BITS     1
-// frame_len_padded = pow(2,ceil((log(FRAME_LEN)/log(2)))); == 1024
-#define PADDED_FRAME_LEN 1024
-#define FFT_LEN          PADDED_FRAME_LEN
-
+/* TODO: ptorelli: does EVERYTHING need to be memreq'd? */
 static ee_f32_t g_mfcc_input_frame[FFT_LEN];
 static ee_f32_t g_mfcc_out[NUM_MFCC_FEATURES];
 /* Used for several things, max size is complex FFT = FFT_LEN + 2 */
@@ -76,13 +67,14 @@ ee_mfcc_init(void)
 }
 
 void
-ee_mfcc_compute(const int16_t *audio_data, int8_t *mfcc_out)
+ee_mfcc_compute(const int16_t *p_audio_data, int8_t *p_mfcc_out)
 {
     /* TensorFlow way of normalizing .wav data to (-1,1) */
     for (int i = 0; i < FRAME_LEN; i++)
     {
-        g_mfcc_input_frame[i] = (ee_f32_t)audio_data[i] / (1 << 15);
+        g_mfcc_input_frame[i] = (ee_f32_t)p_audio_data[i] / (1 << 15);
     }
+    
     /* Pad the remaining frame with zeroes, since FFT_LEN >= FRAME_LEN */
     memset(&(g_mfcc_input_frame[FRAME_LEN]),
            0,
@@ -98,15 +90,15 @@ ee_mfcc_compute(const int16_t *audio_data, int8_t *mfcc_out)
         sum = round(sum);
         if (sum >= 127)
         {
-            mfcc_out[i] = 127;
+            p_mfcc_out[i] = 127;
         }
         else if (sum <= -128)
         {
-            mfcc_out[i] = -128;
+            p_mfcc_out[i] = -128;
         }
         else
         {
-            mfcc_out[i] = sum;
+            p_mfcc_out[i] = sum;
         }
     }
 }
