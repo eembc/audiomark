@@ -145,26 +145,6 @@ copy_audio(int16_t *pt, int16_t debug)
     return 0;
 }
 
-#define SETUP_XDAIS(SRC, DATA, SIZE) \
-    {                                \
-        SRC.p_data = (PTR_INT)DATA;  \
-        SRC.size   = SIZE;           \
-    }
-
-#define CALL_MEMREQ(FUNC, REQ, PARAMS)                 \
-    {                                                  \
-        uint32_t *p_req = REQ;                         \
-        FUNC(NODE_MEMREQ, (void **)&p_req, 0, PARAMS); \
-    }
-
-// TODO: ptorelli: this assumes all pointers are uint32_t bytes. FIXME.
-// TODO: ptorelli: why is req / 4?
-#define LOCAL_ALLOC(PINST, REQ)               \
-    {                                         \
-        PINST = &(all_instances[idx_malloc]); \
-        idx_malloc += 1 + REQ / 4;            \
-    }
-
 void
 audiomark_initialize(void)
 {
@@ -231,7 +211,7 @@ audiomark_initialize(void)
 void
 audiomark_run(void)
 {
-    for (int j = 0; j < 5; ++j)
+    for (int j = 0; j < 1; ++j)
     {
         reset_audio();
         while (1)
