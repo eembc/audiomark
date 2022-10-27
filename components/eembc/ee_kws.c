@@ -36,7 +36,7 @@ void *th_memcpy(void *restrict dst, const void *restrict src, size_t n);
 void *th_memset(void *b, int c, size_t len);
 void th_softmax_i8(const int8_t *vec_in, const uint16_t dim_vec, int8_t *p_out);
 void th_nn_init(void);
-void th_nn_classify(int8_t input[490], int8_t output[12]);
+void th_nn_classify(const int8_t *p_input, int8_t *p_output);
 
 /* TODO: Coalesce the massive amount of #defines! */
 

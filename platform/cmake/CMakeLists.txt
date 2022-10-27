@@ -52,7 +52,6 @@ set(EE_SOURCE
 	../../components/eembc/ee_kws.c
 	../../components/eembc/ee_mfcc.c
 	../../components/eembc/ee_mfccdata.c
-	../../components/eembc/ee_nn.c
 
 	../../components/xiph/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 	../../components/xiph/speexdsp/libspeexdsp/buffer.c
@@ -98,6 +97,11 @@ set(TEST_MFCC_SOURCE
 )
 add_executable(test_mfcc ${TEST_MFCC_SOURCE})
 
+set(TEST_NN_SOURCE
+	${TH_SOURCE}
+	../../tests/test_nn.c
+)
+add_executable(test_nn ${TEST_NN_SOURCE})
 
 add_executable(audiomark ${EE_SOURCE} ${TH_SOURCE})
 if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
