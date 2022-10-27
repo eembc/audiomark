@@ -117,6 +117,9 @@ add_executable(audiomark ${EE_SOURCE} ${TH_SOURCE})
 if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
 else()
 	target_link_libraries(audiomark m)
+	target_link_libraries(test_mfcc m)
+	target_link_libraries(test_nn m)
+	target_link_libraries(test_kws m)
 endif()
 
 add_custom_target(check
