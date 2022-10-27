@@ -113,7 +113,16 @@ set(TEST_KWS_SOURCE
 add_executable(test_kws ${TEST_KWS_SOURCE})
 
 add_executable(audiomark ${EE_SOURCE} ${TH_SOURCE})
+
 if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
 else()
 	target_link_libraries(audiomark m)
 endif()
+
+add_custom_target(check
+	COMMENT "Running unit tests..."
+	COMMAND ./test_mfcc
+	COMMAND ./test_nn
+	COMMAND ./test_kws
+	DEPENDS test_mfcc test_nn test_kws
+)
