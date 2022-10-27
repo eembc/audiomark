@@ -35,8 +35,8 @@ automate code reviews and CI-on-PR via GitHUb.
 
 ## cmake
 
-There is a `platforms/cmake` are which contains a CMake file that works with
-GCC, macOS Clang, Cygwin, and MSVC. The first three tools generate a standard
+There is a `platforms/cmake` area which contains a `CMakeList.txt` file that works with
+GCC, macOS Clang, Cygwin, and MSVC. The first three platforms' `cmake` generate a standard
 `Makefile` for use with `make`. Compiling with MSVC `cmake` produces a solution
 file `audiomark.sln` which can be opened from the MSVC IDE and compiled/debugged.
 
