@@ -115,17 +115,16 @@ int32_t arm_beamformer_f32(int32_t command, void **instance, void *data, void *p
             PTR_INT *pt_pt=0;
             uint32_t buffer1_size, buffer2_size;
             int32_t nb_input_samples, input_samples_consumed, output_samples_produced;
-            uint8_t *inBufs1stChannel=0, *inBufs2ndChannel=0, *outBufs;
+            int16_t *inBufs1stChannel=0, *inBufs2ndChannel=0, *outBufs;
 
             /* parameter points to input { (*,n),(*,n),..} */
 
             pt_pt = (PTR_INT *)data;
-            inBufs1stChannel = (uint8_t *)(*pt_pt++);
+            inBufs1stChannel = (int16_t *)(*pt_pt++);
             buffer1_size =     (uint32_t )(*pt_pt++);
-            inBufs2ndChannel = (uint8_t *)(*pt_pt++);
+            inBufs2ndChannel = (int16_t *)(*pt_pt++);
             buffer2_size =     (uint32_t )(*pt_pt++);
-            outBufs = (uint8_t *)(*pt_pt++); 
-
+            outBufs = (int16_t *)(*pt_pt++); 
             nb_input_samples = buffer1_size / sizeof(int16_t);
             arm_beamformer_f32_run(&bf_instance, (int16_t *)inBufs1stChannel,  
                                          (int16_t *)inBufs2ndChannel, nb_input_samples, 

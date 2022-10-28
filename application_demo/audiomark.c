@@ -229,10 +229,10 @@ audiomark_run(void)
             }
 
             // TODO: ptorelli: return status should be checked!
-            arm_beamformer_f32(NODE_RUN, (void *)&p_bmf_inst, xdais_bmf, 0);
-            xiph_libspeex_aec_f32(NODE_RUN, (void *)&p_aec_inst, xdais_aec, 0);
-            xiph_libspeex_anr_f32(NODE_RUN, (void *)&p_anr_inst, xdais_anr, 0);
-            ee_kws_f32(NODE_RUN, (void *)&p_kws_inst, xdais_kws, 0);
+            arm_beamformer_f32(NODE_RUN, (void **)&p_bmf_inst, xdais_bmf, 0);
+            xiph_libspeex_aec_f32(NODE_RUN, (void **)&p_aec_inst, xdais_aec, 0);
+            xiph_libspeex_anr_f32(NODE_RUN, (void **)&p_anr_inst, xdais_anr, 0);
+            ee_kws_f32(NODE_RUN, (void **)&p_kws_inst, xdais_kws, 0);
 
 #else
 #if TEST_BF
