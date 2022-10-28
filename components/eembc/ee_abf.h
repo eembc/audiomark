@@ -84,4 +84,11 @@ void arm_beamformer_f32_run(beamformer_f32_instance *instance,
                             int32_t                 *output_samples_produced,
                             int32_t                 *returned_state);
 
+
+int32_t
+arm_beamformer_f32(int32_t command,
+                   void  **instance,
+                   void   *data,
+                   void   *parameters);
+
 #endif

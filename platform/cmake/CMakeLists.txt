@@ -87,6 +87,17 @@ set(TH_SOURCE
 	../../libraries/NN/Source/ActivationFunctions/arm_relu_q7.c
 )
 
+set(TEST_ABF_SOURCE
+	../../components/eembc/ee_abf.c
+	../../components/eembc/ee_abf_tables.c
+	${TH_SOURCE}
+	../../tests/data/abf_f32_channel1_test_data.c
+	../../tests/data/abf_f32_channel2_test_data.c
+	../../tests/data/abf_f32_expected_test_data.c
+	../../tests/test_abf.c
+)
+add_executable(test_abf ${TEST_ABF_SOURCE})
+
 set(TEST_MFCC_SOURCE
 	../../components/eembc/ee_mfcc.c
 	../../components/eembc/ee_mfccdata.c
@@ -115,6 +126,7 @@ add_executable(audiomark ${EE_SOURCE} ${TH_SOURCE})
 if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
 else()
 	target_link_libraries(audiomark m)
+	target_link_libraries(test_abf m)
 	target_link_libraries(test_mfcc m)
 	target_link_libraries(test_nn m)
 	target_link_libraries(test_kws m)
