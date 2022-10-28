@@ -1,4 +1,4 @@
-#include "ee_mfcc.h"
+#include "ee_mfcc_f32.h"
 
 const int16_t p_input[FRAME_LEN] = {
     -10,  -1,   -21,  -5,   -14,  -4,   -7,   -6,   -5,   3,    -3,   -3,

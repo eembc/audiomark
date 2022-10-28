@@ -62,13 +62,6 @@ int32_t xiph_libspeex_anr_f32 (int32_t command, void **instance, void *data, voi
 
     switch (command)
     {
-        /*  return the memory requirements of xiph_libspeex_anr_f32
-            
-            usage arm_beamformer_f32(NODE_MEMREQ, 
-                    **data requirement pointer,  
-                    0, 
-                    parameters used for memory needed
-        */
         case NODE_MEMREQ:
         {   
             #ifdef OS_SUPPORT_CUSTOM
@@ -78,13 +71,6 @@ int32_t xiph_libspeex_anr_f32 (int32_t command, void **instance, void *data, voi
             #endif
             break;
         }
-
-
-        /* usage arm_beamformer_f32(NODE_RESET, 
-                    **instance pointer,  can be modified
-                    0, 
-                    parameters, default configuration index + patch parameters
-        */
         case NODE_RESET: 
         {   
             uint32_t nn, fs, configuration_index;
@@ -106,12 +92,6 @@ int32_t xiph_libspeex_anr_f32 (int32_t command, void **instance, void *data, voi
 
             break;
         }
-
-        /* usage arm_beamformer_f32(NODE_RUN, 
-                    *instance pointer,  
-                    pointer to pairs of (ptr,size) 
-                    execution parameters 
-        */ 
         case NODE_RUN:       
         {
             PTR_INT *pt_pt=0;

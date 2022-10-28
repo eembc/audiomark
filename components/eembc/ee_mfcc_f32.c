@@ -1,4 +1,4 @@
-#include "ee_mfcc.h"
+#include "ee_mfcc_f32.h"
 
 /* TODO: ptorelli: does EVERYTHING need to be memreq'd? */
 static ee_f32_t g_mfcc_input_frame[FFT_LEN];
@@ -7,7 +7,7 @@ static ee_f32_t g_mfcc_out[NUM_MFCC_FEATURES];
 static ee_f32_t g_tmp[FFT_LEN + 2];
 
 /* This code only ever instantiates one MFCC; this can be global. */
-ee_mfcc_fft_f32_t g_mfcc_fft_instance;
+ee_rfft_f32_t g_rfft_instance;
 
 /**
  * @brief
@@ -26,7 +26,7 @@ ee_mfcc_f32(ee_f32_t *p_src, ee_f32_t *p_dst)
         p_src, (ee_f32_t *)ee_mfcc_window_coefs_f32, p_src, FFT_LEN);
 
     /* Compute spectrum magnitude, g_tmp is now the FFT */
-    th_mfcc_fft_f32(&g_mfcc_fft_instance, p_src, g_tmp);
+    th_rfft_f32(&g_rfft_instance, p_src, g_tmp, 0);
 
     /* Unpack real values */
     g_tmp[FFT_LEN]     = g_tmp[1];
@@ -58,23 +58,23 @@ ee_mfcc_f32(ee_f32_t *p_src, ee_f32_t *p_dst)
 }
 
 ee_status_t
-ee_mfcc_init(void)
+ee_mfcc_f32_init(void)
 {
     ee_status_t status;
     /* TODO What other INIT should we put here? */
-    status = th_mfcc_fft_init_f32(&g_mfcc_fft_instance, FFT_LEN);
+    status = th_rfft_init_f32(&g_rfft_instance, FFT_LEN);
     return status;
 }
 
 void
-ee_mfcc_compute(const int16_t *p_audio_data, int8_t *p_mfcc_out)
+ee_mfcc_f32_compute(const int16_t *p_audio_data, int8_t *p_mfcc_out)
 {
     /* TensorFlow way of normalizing .wav data to (-1,1) */
     for (int i = 0; i < FRAME_LEN; i++)
     {
         g_mfcc_input_frame[i] = (ee_f32_t)p_audio_data[i] / (1 << 15);
     }
-    
+
     /* Pad the remaining frame with zeroes, since FFT_LEN >= FRAME_LEN */
     memset(&(g_mfcc_input_frame[FRAME_LEN]),
            0,

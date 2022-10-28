@@ -1,4 +1,4 @@
-#include "ee_mfcc.h"
+#include "ee_mfcc_f32.h"
 #include "public.h"
 #include <stdio.h>
 
@@ -32,12 +32,6 @@
  * 6. 12 classifier outputs
  */
 
-void *th_memcpy(void *restrict dst, const void *restrict src, size_t n);
-void *th_memset(void *b, int c, size_t len);
-void th_softmax_i8(const int8_t *vec_in, const uint16_t dim_vec, int8_t *p_out);
-void th_nn_init(void);
-void th_nn_classify(const int8_t *p_input, int8_t *p_output);
-
 /* TODO: Coalesce the massive amount of #defines! */
 
 #define OUT_DIM            12
@@ -64,12 +58,12 @@ static int32_t chunk_idx = 0;
 void
 ee_kws_init(void)
 {
-    ee_mfcc_init();
+    ee_mfcc_f32_init();
     th_nn_init();
 }
 
 void
-ee_kws(const int16_t *p_buffer, int8_t *p_prediction, int *p_new_inference)
+ee_kws_run(const int16_t *p_buffer, int8_t *p_prediction, int *p_new_inference)
 {
     /* KWS might not call an inference this time if the FIFO isn't ready. */
     *p_new_inference = 0;
@@ -88,7 +82,7 @@ ee_kws(const int16_t *p_buffer, int8_t *p_prediction, int *p_new_inference)
                   (NUM_MFCC_FRAMES - 1) * FEATURES_PER_FRAME);
 
         /* Compute a new frames worth of MFCC features */
-        ee_mfcc_compute(
+        ee_mfcc_f32_compute(
             p_audio_fifo,
             &p_mfcc_fifo[(NUM_MFCC_FRAMES - 1) * FEATURES_PER_FRAME]);
 
@@ -150,7 +144,7 @@ ee_kws_f32(int32_t command, void **pp_instance, void *p_data, void *p_params)
             CHECK_SIZE(mfcc_fifo_size, NUM_MFCC_FRAMES * FEATURES_PER_FRAME);
             CHECK_SIZE(predictions_size, OUT_DIM);
 
-            ee_kws(p_inbuf, p_predictions, &new_inference);
+            ee_kws_run(p_inbuf, p_predictions, &new_inference);
 
             break;
             /* case default: */

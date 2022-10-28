@@ -45,11 +45,11 @@ set(EE_SOURCE
 
 	../../components/xiph/preprocess/src/xiph_anr.c
 
-	../../components/eembc/ee_abf.c
-	../../components/eembc/ee_abf_tables.c
+	../../components/eembc/ee_abf_f32.c
+	../../components/eembc/ee_abf_f32_tables.c
 	../../components/eembc/ee_kws.c
-	../../components/eembc/ee_mfcc.c
-	../../components/eembc/ee_mfccdata.c
+	../../components/eembc/ee_mfcc_f32.c
+	../../components/eembc/ee_mfcc_f32_tables.c
 
 	../../components/xiph/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 	../../components/xiph/speexdsp/libspeexdsp/buffer.c
@@ -87,24 +87,25 @@ set(TH_SOURCE
 	../../libraries/NN/Source/ActivationFunctions/arm_relu_q7.c
 )
 
-set(TEST_ABF_SOURCE
-	../../components/eembc/ee_abf.c
-	../../components/eembc/ee_abf_tables.c
+set(TEST_ABF_F32_SOURCE
+	../../components/eembc/ee_abf_f32.c
+	../../components/eembc/ee_abf_f32_tables.c
 	${TH_SOURCE}
 	../../tests/data/abf_f32_channel1_test_data.c
 	../../tests/data/abf_f32_channel2_test_data.c
 	../../tests/data/abf_f32_expected_test_data.c
-	../../tests/test_abf.c
+	../../tests/test_abf_f32.c
 )
-add_executable(test_abf ${TEST_ABF_SOURCE})
+add_executable(test_abf_f32 ${TEST_ABF_F32_SOURCE})
 
-set(TEST_MFCC_SOURCE
-	../../components/eembc/ee_mfcc.c
-	../../components/eembc/ee_mfccdata.c
+set(TEST_MFCC_F32_SOURCE
+	../../components/eembc/ee_mfcc_f32.c
+	../../components/eembc/ee_mfcc_f32_tables.c
 	${TH_SOURCE}
-	../../tests/test_mfcc.c
+	../../tests/data/mfcc_f32_test_data.c
+	../../tests/test_mfcc_f32.c
 )
-add_executable(test_mfcc ${TEST_MFCC_SOURCE})
+add_executable(test_mfcc_f32 ${TEST_MFCC_F32_SOURCE})
 
 set(TEST_NN_SOURCE
 	${TH_SOURCE}
@@ -114,8 +115,8 @@ add_executable(test_nn ${TEST_NN_SOURCE})
 
 set(TEST_KWS_SOURCE
 	../../components/eembc/ee_kws.c
-	../../components/eembc/ee_mfcc.c
-	../../components/eembc/ee_mfccdata.c
+	../../components/eembc/ee_mfcc_f32.c
+	../../components/eembc/ee_mfcc_f32_tables.c
 	${TH_SOURCE}
 	../../tests/test_kws.c
 )
@@ -126,16 +127,17 @@ add_executable(audiomark ${EE_SOURCE} ${TH_SOURCE})
 if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
 else()
 	target_link_libraries(audiomark m)
-	target_link_libraries(test_abf m)
-	target_link_libraries(test_mfcc m)
+	target_link_libraries(test_abf_f32 m)
+	target_link_libraries(test_mfcc_f32 m)
 	target_link_libraries(test_nn m)
 	target_link_libraries(test_kws m)
 endif()
 
 add_custom_target(check
 	COMMENT "Running unit tests..."
-	COMMAND ./test_mfcc
+	COMMAND ./test_mfcc_f32
 	COMMAND ./test_nn
 	COMMAND ./test_kws
-	DEPENDS test_mfcc test_nn test_kws
+	COMMAND ./test_abf_f32
+	DEPENDS test_mfcc_f32 test_nn test_kws test_abf_f32
 )

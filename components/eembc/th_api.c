@@ -1,11 +1,33 @@
 
+#include "ee_api.h"
+#include "ee_nn_weights.h"
 #include "arm_nnfunctions.h"
 #include "dsp/none.h"
-#include "ee_mfcc.h"
-#include "ee_nn_weights.h"
 
 ee_status_t
-th_mfcc_fft_init_f32(ee_mfcc_fft_f32_t *p_instance, int fft_length)
+th_cfft_init_f32(ee_cfft_f32_t *p_instance, int fft_length)
+{
+    arm_status status;
+
+    status = arm_cfft_init_f32(p_instance, fft_length);
+    if (!status)
+    {
+        return EE_STATUS_ERROR;
+    }
+    return EE_STATUS_OK;
+}
+
+void
+th_cfft_f32(ee_cfft_f32_t *p_context,
+            ee_f32_t      *p_buf,
+            uint8_t        ifftFlag,
+            uint8_t        bitReverseFlagR)
+{
+    arm_cfft_f32(p_context, p_buf, ifftFlag, bitReverseFlagR);
+}
+
+ee_status_t
+th_rfft_init_f32(ee_rfft_f32_t *p_instance, int fft_length)
 {
     arm_status status;
 
@@ -18,11 +40,68 @@ th_mfcc_fft_init_f32(ee_mfcc_fft_f32_t *p_instance, int fft_length)
 }
 
 void
-th_mfcc_fft_f32(TH_MFCC_FFT_INSTANCE_FLOAT32_TYPE *p_context,
-                ee_f32_t                          *p_in,
-                ee_f32_t                          *p_out)
+th_rfft_f32(ee_rfft_f32_t *p_context,
+            ee_f32_t      *p_in,
+            ee_f32_t      *p_out,
+            uint8_t        ifftFlag)
 {
-    arm_rfft_fast_f32(p_context, p_in, p_out, 0);
+    arm_rfft_fast_f32(p_context, p_in, p_out, ifftFlag);
+}
+
+void
+th_absmax_f32(const ee_f32_t *p_in,
+              uint32_t        len,
+              ee_f32_t       *p_max,
+              uint32_t       *p_index)
+{
+    arm_absmax_f32(p_in, len, p_max, p_index);
+}
+void
+th_cmplx_mult_cmplx_f32(const ee_f32_t *p_a,
+                        const ee_f32_t *p_b,
+                        ee_f32_t       *p_c,
+                        uint32_t        len)
+{
+    arm_cmplx_mult_cmplx_f32(p_a, p_b, p_c, len);
+}
+
+void
+th_cmplx_conj_f32(const ee_f32_t *p_a, ee_f32_t *p_c, uint32_t len)
+{
+    arm_cmplx_conj_f32(p_a, p_c, len);
+}
+
+void
+th_cmplx_dot_prod_f32(const ee_f32_t *p_a,
+                      const ee_f32_t *p_b,
+                      uint32_t        len,
+                      ee_f32_t       *p_r,
+                      ee_f32_t       *p_i)
+{
+    arm_cmplx_dot_prod_f32(p_a, p_b, len, p_r, p_i);
+}
+
+void
+th_int16_to_f32(const int16_t *p_src, ee_f32_t *p_dst, uint32_t len)
+{
+    arm_q15_to_float(p_src, p_dst, len);
+}
+
+void
+th_f32_to_int16(const ee_f32_t *p_src, int16_t *p_dst, uint32_t len)
+{
+    arm_float_to_q15(p_src, p_dst, len);
+}
+void
+th_add_f32(ee_f32_t *p_a, ee_f32_t *p_b, ee_f32_t *p_c, uint32_t len)
+{
+    arm_add_f32(p_a, p_b, p_c, len);
+}
+
+void
+th_subtract_f32(ee_f32_t *p_a, ee_f32_t *p_b, ee_f32_t *p_c, uint32_t len)
+{
+    arm_sub_f32(p_a, p_b, p_c, len);
 }
 
 void
@@ -32,9 +111,9 @@ th_dot_prod_f32(ee_f32_t *p_a, ee_f32_t *p_b, uint32_t len, ee_f32_t *p_result)
 }
 
 void
-th_multiply_f32(ee_f32_t *p_a, ee_f32_t *p_b, ee_f32_t *p_c, uint32_t n)
+th_multiply_f32(ee_f32_t *p_a, ee_f32_t *p_b, ee_f32_t *p_c, uint32_t len)
 {
-    arm_mult_f32(p_a, p_b, p_c, n);
+    arm_mult_f32(p_a, p_b, p_c, len);
 }
 
 void
@@ -276,10 +355,10 @@ arm_avepool_q7_HWC_nonsquare(
 }
 
 void
-th_nn_classify(const uint8_t *in_data, int8_t *out_data)
+th_nn_classify(const int8_t *in_data, int8_t *out_data)
 {
     // CONV1 : regular convolution
-    arm_convolve_HWC_q7_basic_nonsquare(in_data,
+    arm_convolve_HWC_q7_basic_nonsquare((q7_t *)in_data,
                                         CONV1_IN_X,
                                         CONV1_IN_Y,
                                         1,

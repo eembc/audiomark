@@ -4,8 +4,9 @@
 #include "th_types.h"
 #include <inttypes.h>
 
-typedef TH_FLOAT32_TYPE                   ee_f32_t;
-typedef TH_MFCC_FFT_INSTANCE_FLOAT32_TYPE ee_mfcc_fft_f32_t;
+typedef TH_FLOAT32_TYPE               ee_f32_t;
+typedef TH_RFFT_INSTANCE_FLOAT32_TYPE ee_rfft_f32_t;
+typedef TH_CFFT_INSTANCE_FLOAT32_TYPE ee_cfft_f32_t;
 
 typedef enum
 {

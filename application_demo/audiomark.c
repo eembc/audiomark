@@ -20,7 +20,7 @@
 #include <stdint.h>
 #include <string.h>
 
-int32_t arm_beamformer_f32(int32_t, void **, void *, void *);
+int32_t ee_abf_f32(int32_t, void **, void *, void *);
 int32_t xiph_libspeex_aec_f32(int32_t, void **, void *, void *);
 int32_t xiph_libspeex_anr_f32(int32_t, void **, void *, void *);
 int32_t ee_kws_f32(int32_t, void **, void *, void *);
@@ -172,7 +172,7 @@ audiomark_initialize(void)
     parameters[0] = 0; // take the first set of parameters
 
     /* Call the components for their memory requests. */
-    CALL_MEMREQ(arm_beamformer_f32, memreq_bmf_f32, parameters);
+    CALL_MEMREQ(ee_abf_f32, memreq_bmf_f32, parameters);
     CALL_MEMREQ(xiph_libspeex_aec_f32, memreq_aec_f32, parameters);
     CALL_MEMREQ(xiph_libspeex_anr_f32, memreq_anr_f32, parameters);
     CALL_MEMREQ(ee_kws_f32, memreq_kws_f32, parameters);
@@ -191,7 +191,7 @@ audiomark_initialize(void)
         };
     }
 
-    arm_beamformer_f32(NODE_RESET, (void **)&p_bmf_inst, 0, parameters);
+    ee_abf_f32(NODE_RESET, (void **)&p_bmf_inst, 0, parameters);
     xiph_libspeex_aec_f32(NODE_RESET, (void **)&p_aec_inst, 0, parameters);
     xiph_libspeex_anr_f32(NODE_RESET, (void **)&p_anr_inst, 0, parameters);
     ee_kws_f32(NODE_RESET, (void **)&p_kws_inst, 0, parameters);
@@ -229,14 +229,14 @@ audiomark_run(void)
             }
 
             // TODO: ptorelli: return status should be checked!
-            arm_beamformer_f32(NODE_RUN, (void **)&p_bmf_inst, xdais_bmf, 0);
+            ee_abf_f32(NODE_RUN, (void **)&p_bmf_inst, xdais_bmf, 0);
             xiph_libspeex_aec_f32(NODE_RUN, (void **)&p_aec_inst, xdais_aec, 0);
             xiph_libspeex_anr_f32(NODE_RUN, (void **)&p_anr_inst, xdais_anr, 0);
             ee_kws_f32(NODE_RUN, (void **)&p_kws_inst, xdais_kws, 0);
 
 #else
 #if TEST_BF
-            arm_beamformer_f32(NODE_RUN, (void *)&p_bmf_inst, xdais_bmf, 0);
+            ee_abf_f32(NODE_RUN, (void *)&p_bmf_inst, xdais_bmf, 0);
             memmove(aec_output, beamformer_output, N);
 #endif
 
