@@ -19,7 +19,6 @@ include_directories(../../components/xiph/speexdsp)
 include_directories(../../components/xiph/speexdsp/include)
 include_directories(../../components/xiph/speexdsp/include/speex)
 include_directories(../../components/xiph/speexdsp/libspeexdsp)
-include_directories(../../libraries/eembc)
 include_directories(../../components/eembc)
 
 # Note on configuration of LibSpeeX:
