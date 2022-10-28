@@ -357,16 +357,16 @@ ee_abf_f32(int32_t command, void **instance, void *data, void *parameters)
             int32_t  nb_input_samples;
             int32_t  input_samples_consumed;
             int32_t  output_samples_produced;
-            uint8_t *inBufs1stChannel = NULL;
-            uint8_t *inBufs2ndChannel = NULL;
-            uint8_t *outBufs          = NULL;
+            int16_t *inBufs1stChannel = NULL;
+            int16_t *inBufs2ndChannel = NULL;
+            int16_t *outBufs          = NULL;
 
             pt_pt            = (PTR_INT *)data;
-            inBufs1stChannel = (uint8_t *)(*pt_pt++);
+            inBufs1stChannel = (int16_t *)(*pt_pt++);
             buffer1_size     = (uint32_t)(*pt_pt++);
-            inBufs2ndChannel = (uint8_t *)(*pt_pt++);
+            inBufs2ndChannel = (int16_t *)(*pt_pt++);
             buffer2_size     = (uint32_t)(*pt_pt++);
-            outBufs          = (uint8_t *)(*pt_pt++);
+            outBufs          = (int16_t *)(*pt_pt++);
 
             nb_input_samples = buffer1_size / sizeof(int16_t);
             if (buffer2_size != buffer1_size)
