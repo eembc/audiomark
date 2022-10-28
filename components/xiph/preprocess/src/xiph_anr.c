@@ -117,12 +117,12 @@ int32_t xiph_libspeex_anr_f32 (int32_t command, void **instance, void *data, voi
             PTR_INT *pt_pt=0;
             uint32_t buffer_size;
             int32_t nb_input_samples;
-            uint8_t *in_place_buffer=0;
+            int16_t *in_place_buffer=0;
 
             /* parameter points to input { (*,n),(*,n),..} updated at the end */
 
             pt_pt = (PTR_INT *)data;
-            in_place_buffer = (uint8_t *)(*pt_pt++);
+            in_place_buffer = (int16_t *)(*pt_pt++);
             buffer_size =     (uint32_t )(*pt_pt++);
             nb_input_samples = buffer_size / sizeof(int16_t);
             speex_preprocess_run((SpeexPreprocessState *)*instance, 

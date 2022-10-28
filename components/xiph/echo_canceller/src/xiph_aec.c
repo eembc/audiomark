@@ -118,16 +118,16 @@ int32_t xiph_libspeex_aec_f32 (int32_t command, void **instance, void *data, voi
             PTR_INT *pt_pt=0;
             uint32_t buffer_size;
             int32_t nb_input_samples;
-            uint8_t *reference=0, *echo=0, *outBufs;
+            int16_t *reference=0, *echo=0, *outBufs;
 
             /* parameter points to input { (*,n),(*,n),..} updated at the end */
 
             pt_pt = (PTR_INT *)data;
-            reference = (uint8_t *)(*pt_pt++);
+            reference = (int16_t *)(*pt_pt++);
             buffer_size = (uint32_t )(*pt_pt++);
-            echo = (uint8_t *)(*pt_pt++);
+            echo = (int16_t *)(*pt_pt++);
             buffer_size = (uint32_t )(*pt_pt++);
-            outBufs = (uint8_t *)(*pt_pt++); 
+            outBufs = (int16_t *)(*pt_pt++); 
 
             nb_input_samples = buffer_size / sizeof(int16_t);
             speex_echo_cancellation((SpeexEchoState *)*instance, 
