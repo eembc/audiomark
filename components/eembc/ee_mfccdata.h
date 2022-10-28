@@ -1,5 +1,5 @@
-#ifndef _MFCC_DATA_H_
-#define _MFCC_DATA_H_
+#ifndef __EE_MFCCDATA_H
+#define __EE_MFCCDATA_H
 
 #include "ee_types.h"
 

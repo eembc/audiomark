@@ -41,14 +41,12 @@ set(EE_SOURCE
 	../../application_demo/main.c
 	../../application_demo/audiomark.c
 
-	../../components/arm/audio_beamformer/src/arm_beamformer_f32.c
-	../../components/arm/audio_beamformer/src/arm_beamformer_process_f32.c
-	../../components/arm/audio_beamformer/src/arm_beamformer_tables_f32.c
-
 	../../components/xiph/echo_canceller/src/xiph_aec.c
 
 	../../components/xiph/preprocess/src/xiph_anr.c
 
+	../../components/eembc/ee_abf.c
+	../../components/eembc/ee_abf_tables.c
 	../../components/eembc/ee_kws.c
 	../../components/eembc/ee_mfcc.c
 	../../components/eembc/ee_mfccdata.c
