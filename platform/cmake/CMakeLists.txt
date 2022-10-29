@@ -8,8 +8,11 @@ set(CMAKE_C_FLAGS "-pedantic -std=c99 -g -O0 -Wall")
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
 	# Perhaps we can remove these after cleaning up the SpeeX code.
 	# These are not ignored by MSVC
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
+	#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-newline-eof")
+	# Current CMSIS/NN has lots of these with CMSIS/DSP
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-typedef-redefinition")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-macro-redefined")
 endif()
 
 include_directories(../../application_demo)
