@@ -12,9 +12,6 @@
 #define FIXED_DIRECTION 0
 #define REAL            1
 #define COMPLEX         2
-#define MONO            1
-#define STEREO          2
-#define SAMP_SIZE       4 /* TODO size of float */
 #define LEN_BM_ADF      6
 
 typedef struct
@@ -37,7 +34,8 @@ typedef struct
 /* Fast coefficient structure */
 typedef struct
 {
-    float         old_left[NFFTD2 * COMPLEX], old_right[NFFTD2 * COMPLEX];
+    float         old_left[NFFTD2 * COMPLEX];
+    float         old_right[NFFTD2 * COMPLEX];
     float         ola_new[NFFTD2];
     ee_rfft_f32_t rS;
     ee_cfft_f32_t cS;
@@ -47,8 +45,10 @@ typedef struct
 typedef struct
 {
     float    mic[NFFT * COMPLEX + 2];
-    float    BM[NFFT * COMPLEX + 2], BF[NFFT * COMPLEX + 2];
-    float    X0[NFFT * COMPLEX + 2], Y0[NFFT * COMPLEX + 2];
+    float    BM[NFFT * COMPLEX + 2];
+    float    BF[NFFT * COMPLEX + 2];
+    float    X0[NFFT * COMPLEX + 2];
+    float    Y0[NFFT * COMPLEX + 2];
     float    CY0[NFFTD2 * COMPLEX + 2];
     float    XY[NFFTD2 * COMPLEX];
     float    PHATNORM[NFFTD2 * COMPLEX];

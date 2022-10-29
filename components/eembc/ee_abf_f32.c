@@ -1,7 +1,7 @@
 #include "ee_abf_f32.h"
 
-extern const float w_hanning_div2[];
-extern const float rotation[];
+extern const float w_hanning_div2[128];
+extern const float rotation[4096];
 
 ee_abf_f32_params_t bf_prms;
 ee_abf_f32_mem_t    bf_mem;
@@ -307,7 +307,7 @@ ee_abf_f32_run(beamformer_f32_instance *instance,
     *returned_state          = 0;
 }
 
-void
+static void
 th_beamformer_f32_reset(void)
 {
     int i;
