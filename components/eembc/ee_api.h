@@ -1,5 +1,5 @@
-#ifndef __EE_DSP_H
-#define __EE_DSP_H
+#ifndef _EE_API_H
+#define _EE_API_H
 
 #include "ee_types.h"
 #include "dsp/matrix_functions.h"
@@ -65,15 +65,15 @@ void th_cmplx_dot_prod_f32(const ee_f32_t *p_a,
 
 ee_status_t th_rfft_init_f32(ee_rfft_f32_t *p_instance, int fft_length);
 
-void th_rfft_f32(ee_rfft_f32_t *pInstance,
-                 ee_f32_t      *pIn,
-                 ee_f32_t      *pOut,
+void th_rfft_f32(ee_rfft_f32_t *p_instance,
+                 ee_f32_t      *p_in,
+                 ee_f32_t      *p_out,
                  uint8_t        ifftFlag);
 
 ee_status_t th_cfft_init_f32(ee_cfft_f32_t *p_instance, int fft_length);
 
-void th_cfft_f32(ee_cfft_f32_t *pInstance,
-                 ee_f32_t      *pBuf,
+void th_cfft_f32(ee_cfft_f32_t *p_instance,
+                 ee_f32_t      *p_buf,
                  uint8_t        ifftFlag,
                  uint8_t        bitReverseFlag);
 
