@@ -22,7 +22,7 @@ include_directories(../../lib/speexdsp/include/speex)
 include_directories(../../lib/speexdsp/libspeexdsp)
 include_directories(../../src)
 # Developer libraries
-include_directories(../../lib/DSP/Include)
+include_directories(../../lib/th_api/CMSIS/DSP/Include)
 include_directories(../../lib/NN/Include)
 
 # Note on configuration of LibSpeeX:
@@ -39,6 +39,11 @@ add_definitions(-DUSE_SMALLFT)
 
 # This macro is used extensively in LibSpeeX for function visibility.
 add_definitions(-DEXPORT=)
+
+# This is to make sure we include function decor for GCC/CLANG in CMSIS
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+	add_definitions(-D__GNUC_PYTHON__)
+endif()
 
 set(EE_SOURCE
 	../../src/ee_main.c
@@ -70,15 +75,15 @@ set(TH_SOURCE
 	# Separate the implementation code from the benchmark code
 	../../src/th_api.c
 	
-	../../lib/DSP/Source/BasicMathFunctions/BasicMathFunctions.c
-	../../lib/DSP/Source/CommonTables/CommonTables.c
-	../../lib/DSP/Source/ComplexMathFunctions/ComplexMathFunctions.c
-	../../lib/DSP/Source/FastMathFunctions/FastMathFunctions.c
-	../../lib/DSP/Source/MatrixFunctions/MatrixFunctions.c	
-	../../lib/DSP/Source/StatisticsFunctions/StatisticsFunctions.c
-	../../lib/DSP/Source/SupportFunctions/arm_float_to_q15.c
-	../../lib/DSP/Source/SupportFunctions/arm_q15_to_float.c
-	../../lib/DSP/Source/TransformFunctions/TransformFunctions.c
+	../../lib/th_api/CMSIS/DSP/Source/BasicMathFunctions/BasicMathFunctions.c
+	../../lib/th_api/CMSIS/DSP/Source/CommonTables/CommonTables.c
+	../../lib/th_api/CMSIS/DSP/Source/ComplexMathFunctions/ComplexMathFunctions.c
+	../../lib/th_api/CMSIS/DSP/Source/FastMathFunctions/FastMathFunctions.c
+	../../lib/th_api/CMSIS/DSP/Source/MatrixFunctions/MatrixFunctions.c	
+	../../lib/th_api/CMSIS/DSP/Source/StatisticsFunctions/StatisticsFunctions.c
+	../../lib/th_api/CMSIS/DSP/Source/SupportFunctions/arm_float_to_q15.c
+	../../lib/th_api/CMSIS/DSP/Source/SupportFunctions/arm_q15_to_float.c
+	../../lib/th_api/CMSIS/DSP/Source/TransformFunctions/TransformFunctions.c
 
 	../../lib/NN/Source/SoftmaxFunctions/arm_softmax_q7.c
 	../../lib/NN/Source/ConvolutionFunctions/arm_convolve_1x1_HWC_q7_fast_nonsquare.c
