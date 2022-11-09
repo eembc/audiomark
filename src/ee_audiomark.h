@@ -89,4 +89,9 @@ typedef struct
     }
 
 
-#endif /* #ifndef __link_PUBLIC_H__ */
+int32_t ee_abf_f32(int32_t, void **, void *, void *);
+int32_t ee_aec_f32(int32_t, void **, void *, void *);
+int32_t ee_anr_f32(int32_t, void **, void *, void *);
+int32_t ee_kws_f32(int32_t, void **, void *, void *);
+
+#endif

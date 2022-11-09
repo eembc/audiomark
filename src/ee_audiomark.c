@@ -16,27 +16,12 @@
  * limitations under the License.
  *---------------------------------------------------------------------------*/
 
-#include "public.h"
+#include "ee_audiomark.h"
 #include <stdint.h>
 #include <string.h>
 
-int32_t ee_abf_f32(int32_t, void **, void *, void *);
-int32_t xiph_libspeex_aec_f32(int32_t, void **, void *, void *);
-int32_t xiph_libspeex_anr_f32(int32_t, void **, void *, void *);
-int32_t ee_kws_f32(int32_t, void **, void *, void *);
-
-#define DATA_SIZE (211 * 128)
-const int16_t downlink_audio[DATA_SIZE] = {
-#include "../application_demo/debug_data/noise.txt"
-};
-const int16_t left_microphone_capture[DATA_SIZE] = {
-#include "../application_demo/debug_data/left0.txt"
-};
-const int16_t right_microphone_capture[DATA_SIZE] = {
-#include "../application_demo/debug_data/right0.txt"
-};
-
-static int16_t for_asr[DATA_SIZE];
+/* This include is special as it contains the raw data buffers. */
+#include "ee_data.h"
 
 /* These are index pointers used to slide through the input audio stream. */
 static uint32_t idx_microphone_L;
@@ -173,8 +158,8 @@ audiomark_initialize(void)
 
     /* Call the components for their memory requests. */
     CALL_MEMREQ(ee_abf_f32, memreq_bmf_f32, parameters);
-    CALL_MEMREQ(xiph_libspeex_aec_f32, memreq_aec_f32, parameters);
-    CALL_MEMREQ(xiph_libspeex_anr_f32, memreq_anr_f32, parameters);
+    CALL_MEMREQ(ee_aec_f32, memreq_aec_f32, parameters);
+    CALL_MEMREQ(ee_anr_f32, memreq_anr_f32, parameters);
     CALL_MEMREQ(ee_kws_f32, memreq_kws_f32, parameters);
 
     /* Using our heap `all_instances` assign the instances and requests */
@@ -192,8 +177,8 @@ audiomark_initialize(void)
     }
 
     ee_abf_f32(NODE_RESET, (void **)&p_bmf_inst, 0, parameters);
-    xiph_libspeex_aec_f32(NODE_RESET, (void **)&p_aec_inst, 0, parameters);
-    xiph_libspeex_anr_f32(NODE_RESET, (void **)&p_anr_inst, 0, parameters);
+    ee_aec_f32(NODE_RESET, (void **)&p_aec_inst, 0, parameters);
+    ee_anr_f32(NODE_RESET, (void **)&p_anr_inst, 0, parameters);
     ee_kws_f32(NODE_RESET, (void **)&p_kws_inst, 0, parameters);
 }
 
@@ -230,8 +215,8 @@ audiomark_run(void)
 
             // TODO: ptorelli: return status should be checked!
             ee_abf_f32(NODE_RUN, (void **)&p_bmf_inst, xdais_bmf, 0);
-            xiph_libspeex_aec_f32(NODE_RUN, (void **)&p_aec_inst, xdais_aec, 0);
-            xiph_libspeex_anr_f32(NODE_RUN, (void **)&p_anr_inst, xdais_anr, 0);
+            ee_aec_f32(NODE_RUN, (void **)&p_aec_inst, xdais_aec, 0);
+            ee_anr_f32(NODE_RUN, (void **)&p_anr_inst, xdais_anr, 0);
             ee_kws_f32(NODE_RUN, (void **)&p_kws_inst, xdais_kws, 0);
 
 #else
@@ -248,12 +233,12 @@ audiomark_run(void)
                 right_capture[i] = right_capture[i] + audio_input[i];
             }
             memmove(beamformer_output, left_capture, N);
-            xiph_libspeex_aec_f32(NODE_RUN, (void *)&p_aec_inst, xdais_aec, 0);
+            ee_aec_f32(NODE_RUN, (void *)&p_aec_inst, xdais_aec, 0);
 #endif
 
 #if TEST_ANR
             memmove(aec_output, audio_input, N);
-            xiph_libspeex_anr_f32(NODE_RUN, (void *)&p_anr_inst, xdais_anr, 0);
+            ee_anr_f32(NODE_RUN, (void *)&p_anr_inst, xdais_anr, 0);
 #endif
 #endif
             // save the cleaned audio for ASR

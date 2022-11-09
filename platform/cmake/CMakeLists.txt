@@ -16,16 +16,17 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
 endif()
 
 include_directories(../../application_demo)
-include_directories(../../libraries/DSP/Include)
-include_directories(../../libraries/NN/Include)
-include_directories(../../components/xiph/speexdsp)
-include_directories(../../components/xiph/speexdsp/include)
-include_directories(../../components/xiph/speexdsp/include/speex)
-include_directories(../../components/xiph/speexdsp/libspeexdsp)
-include_directories(../../components/eembc)
+include_directories(../../lib/speexdsp)
+include_directories(../../lib/speexdsp/include)
+include_directories(../../lib/speexdsp/include/speex)
+include_directories(../../lib/speexdsp/libspeexdsp)
+include_directories(../../src)
+# Developer libraries
+include_directories(../../lib/DSP/Include)
+include_directories(../../lib/NN/Include)
 
 # Note on configuration of LibSpeeX:
-# We can configure with the file `components/speexdsp/libspeexdsp/config.h`
+# We can configure with the file `lib/speexdsp/libspeexdsp/config.h`
 # by setting `-DHAVE_CONFIG_H`, but this might lead to a conflict with EEMBC
 # configuration files. For now, let's isolate all configuration to the build
 # tool and then decide what TODO how to handle a global `config.h` file. Here
@@ -40,58 +41,56 @@ add_definitions(-DUSE_SMALLFT)
 add_definitions(-DEXPORT=)
 
 set(EE_SOURCE
-	../../application_demo/main.c
-	../../application_demo/audiomark.c
+	../../src/ee_main.c
+	../../src/ee_audiomark.c
 
-	../../components/xiph/echo_canceller/src/xiph_aec.c
+	../../src/ee_aec_f32.c
+	../../src/ee_anr_f32.c
+	../../src/ee_abf_f32.c
+	../../src/ee_abf_f32_tables.c
+	../../src/ee_kws.c
+	../../src/ee_mfcc_f32.c
+	../../src/ee_mfcc_f32_tables.c
 
-	../../components/xiph/preprocess/src/xiph_anr.c
-
-	../../components/eembc/ee_abf_f32.c
-	../../components/eembc/ee_abf_f32_tables.c
-	../../components/eembc/ee_kws.c
-	../../components/eembc/ee_mfcc_f32.c
-	../../components/eembc/ee_mfcc_f32_tables.c
-
-	../../components/xiph/speexdsp/libspeexdsp/arm_libspeex_kernels.c
-	../../components/xiph/speexdsp/libspeexdsp/buffer.c
-	../../components/xiph/speexdsp/libspeexdsp/fftwrap.c
-	../../components/xiph/speexdsp/libspeexdsp/filterbank.c
-	../../components/xiph/speexdsp/libspeexdsp/jitter.c
-	../../components/xiph/speexdsp/libspeexdsp/kiss_fft.c
-	../../components/xiph/speexdsp/libspeexdsp/kiss_fftr.c
-	../../components/xiph/speexdsp/libspeexdsp/mdf.c
-	../../components/xiph/speexdsp/libspeexdsp/preprocess.c
-	../../components/xiph/speexdsp/libspeexdsp/resample.c
-	../../components/xiph/speexdsp/libspeexdsp/scal.c
-	../../components/xiph/speexdsp/libspeexdsp/smallft.c
+	../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
+	../../lib/speexdsp/libspeexdsp/buffer.c
+	../../lib/speexdsp/libspeexdsp/fftwrap.c
+	../../lib/speexdsp/libspeexdsp/filterbank.c
+	../../lib/speexdsp/libspeexdsp/jitter.c
+	../../lib/speexdsp/libspeexdsp/kiss_fft.c
+	../../lib/speexdsp/libspeexdsp/kiss_fftr.c
+	../../lib/speexdsp/libspeexdsp/mdf.c
+	../../lib/speexdsp/libspeexdsp/preprocess.c
+	../../lib/speexdsp/libspeexdsp/resample.c
+	../../lib/speexdsp/libspeexdsp/scal.c
+	../../lib/speexdsp/libspeexdsp/smallft.c
 )
 
 set(TH_SOURCE
 	# Separate the implementation code from the benchmark code
-	../../components/eembc/th_api.c
+	../../src/th_api.c
 	
-	../../libraries/DSP/Source/BasicMathFunctions/BasicMathFunctions.c
-	../../libraries/DSP/Source/CommonTables/CommonTables.c
-	../../libraries/DSP/Source/ComplexMathFunctions/ComplexMathFunctions.c
-	../../libraries/DSP/Source/FastMathFunctions/FastMathFunctions.c
-	../../libraries/DSP/Source/MatrixFunctions/MatrixFunctions.c	
-	../../libraries/DSP/Source/StatisticsFunctions/StatisticsFunctions.c
-	../../libraries/DSP/Source/SupportFunctions/arm_float_to_q15.c
-	../../libraries/DSP/Source/SupportFunctions/arm_q15_to_float.c
-	../../libraries/DSP/Source/TransformFunctions/TransformFunctions.c
+	../../lib/DSP/Source/BasicMathFunctions/BasicMathFunctions.c
+	../../lib/DSP/Source/CommonTables/CommonTables.c
+	../../lib/DSP/Source/ComplexMathFunctions/ComplexMathFunctions.c
+	../../lib/DSP/Source/FastMathFunctions/FastMathFunctions.c
+	../../lib/DSP/Source/MatrixFunctions/MatrixFunctions.c	
+	../../lib/DSP/Source/StatisticsFunctions/StatisticsFunctions.c
+	../../lib/DSP/Source/SupportFunctions/arm_float_to_q15.c
+	../../lib/DSP/Source/SupportFunctions/arm_q15_to_float.c
+	../../lib/DSP/Source/TransformFunctions/TransformFunctions.c
 
-	../../libraries/NN/Source/SoftmaxFunctions/arm_softmax_q7.c
-	../../libraries/NN/Source/ConvolutionFunctions/arm_convolve_1x1_HWC_q7_fast_nonsquare.c
-	../../libraries/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_basic_nonsquare.c
-	../../libraries/NN/Source/ConvolutionFunctions/arm_depthwise_separable_conv_HWC_q7_nonsquare.c
-	../../libraries/NN/Source/FullyConnectedFunctions/arm_fully_connected_q7.c
-	../../libraries/NN/Source/ActivationFunctions/arm_relu_q7.c
+	../../lib/NN/Source/SoftmaxFunctions/arm_softmax_q7.c
+	../../lib/NN/Source/ConvolutionFunctions/arm_convolve_1x1_HWC_q7_fast_nonsquare.c
+	../../lib/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_basic_nonsquare.c
+	../../lib/NN/Source/ConvolutionFunctions/arm_depthwise_separable_conv_HWC_q7_nonsquare.c
+	../../lib/NN/Source/FullyConnectedFunctions/arm_fully_connected_q7.c
+	../../lib/NN/Source/ActivationFunctions/arm_relu_q7.c
 )
 
 set(TEST_ABF_F32_SOURCE
-	../../components/eembc/ee_abf_f32.c
-	../../components/eembc/ee_abf_f32_tables.c
+	../../src/ee_abf_f32.c
+	../../src/ee_abf_f32_tables.c
 	${TH_SOURCE}
 	../../tests/data/abf_f32_channel1_test_data.c
 	../../tests/data/abf_f32_channel2_test_data.c
@@ -101,8 +100,8 @@ set(TEST_ABF_F32_SOURCE
 add_executable(test_abf_f32 ${TEST_ABF_F32_SOURCE})
 
 set(TEST_MFCC_F32_SOURCE
-	../../components/eembc/ee_mfcc_f32.c
-	../../components/eembc/ee_mfcc_f32_tables.c
+	../../src/ee_mfcc_f32.c
+	../../src/ee_mfcc_f32_tables.c
 	${TH_SOURCE}
 	../../tests/data/mfcc_f32_test_data.c
 	../../tests/test_mfcc_f32.c
@@ -116,9 +115,9 @@ set(TEST_NN_SOURCE
 add_executable(test_nn ${TEST_NN_SOURCE})
 
 set(TEST_KWS_SOURCE
-	../../components/eembc/ee_kws.c
-	../../components/eembc/ee_mfcc_f32.c
-	../../components/eembc/ee_mfcc_f32_tables.c
+	../../src/ee_kws.c
+	../../src/ee_mfcc_f32.c
+	../../src/ee_mfcc_f32_tables.c
 	${TH_SOURCE}
 	../../tests/test_kws.c
 )

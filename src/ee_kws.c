@@ -28,7 +28,7 @@
  */
 
 #include "ee_mfcc_f32.h"
-#include "public.h"
+#include "ee_audiomark.h"
 #include <stdio.h>
 
 /**
