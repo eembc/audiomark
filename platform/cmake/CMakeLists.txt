@@ -15,7 +15,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-macro-redefined")
 endif()
 
-include_directories(../../application_demo)
 include_directories(../../lib/speexdsp)
 include_directories(../../lib/speexdsp/include)
 include_directories(../../lib/speexdsp/include/speex)
@@ -41,9 +40,9 @@ add_definitions(-DUSE_SMALLFT)
 add_definitions(-DEXPORT=)
 
 # This is to make sure we include function decor for GCC/CLANG in CMSIS
-if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-	add_definitions(-D__GNUC_PYTHON__)
-endif()
+# This might screw up arm-*-gcc toolchains though? If you see issues in
+# arm_math_types.h it is probably related to this.
+add_definitions(-D__GNUC_PYTHON__)
 
 set(EE_SOURCE
 	../../src/ee_main.c
@@ -178,6 +177,8 @@ if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
 else()
 	target_link_libraries(audiomark m)
 	target_link_libraries(test_abf_f32 m)
+	target_link_libraries(test_aec_f32 m)
+	target_link_libraries(test_anr_f32 m)
 	target_link_libraries(test_mfcc_f32 m)
 	target_link_libraries(test_nn m)
 	target_link_libraries(test_kws m)
