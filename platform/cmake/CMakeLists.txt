@@ -103,21 +103,42 @@ set(TEST_AEC_F32_SOURCE
 	../../lib/speexdsp/libspeexdsp/scal.c
 	../../lib/speexdsp/libspeexdsp/smallft.c
 	${TH_SOURCE}
-	../../tests/data/aec_f32_input_source_data.c
-	../../tests/data/aec_f32_input_echo_data.c
-	../../tests/data/aec_f32_expected_data.c
+	../../tests/data/aec_f32_input_source.c
+	../../tests/data/aec_f32_input_echo.c
+	../../tests/data/aec_f32_expected.c
 	../../tests/test_aec_f32.c
 )
 add_executable(test_aec_f32 ${TEST_AEC_F32_SOURCE})
+
+set(TEST_ANR_F32_SOURCE
+	../../src/ee_anr_f32.c
+	../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
+	../../lib/speexdsp/libspeexdsp/buffer.c
+	../../lib/speexdsp/libspeexdsp/fftwrap.c
+	../../lib/speexdsp/libspeexdsp/filterbank.c
+	../../lib/speexdsp/libspeexdsp/jitter.c
+	../../lib/speexdsp/libspeexdsp/kiss_fft.c
+	../../lib/speexdsp/libspeexdsp/kiss_fftr.c
+	../../lib/speexdsp/libspeexdsp/mdf.c
+	../../lib/speexdsp/libspeexdsp/preprocess.c
+	../../lib/speexdsp/libspeexdsp/resample.c
+	../../lib/speexdsp/libspeexdsp/scal.c
+	../../lib/speexdsp/libspeexdsp/smallft.c
+	${TH_SOURCE}
+	../../tests/data/anr_f32_input.c
+	../../tests/data/anr_f32_expected.c
+	../../tests/test_anr_f32.c
+)
+add_executable(test_anr_f32 ${TEST_ANR_F32_SOURCE})
 
 
 set(TEST_ABF_F32_SOURCE
 	../../src/ee_abf_f32.c
 	../../src/ee_abf_f32_tables.c
 	${TH_SOURCE}
-	../../tests/data/abf_f32_channel1_test_data.c
-	../../tests/data/abf_f32_channel2_test_data.c
-	../../tests/data/abf_f32_expected_test_data.c
+	../../tests/data/abf_f32_input_ch1.c
+	../../tests/data/abf_f32_input_ch2.c
+	../../tests/data/abf_f32_expected.c
 	../../tests/test_abf_f32.c
 )
 add_executable(test_abf_f32 ${TEST_ABF_F32_SOURCE})
@@ -126,7 +147,7 @@ set(TEST_MFCC_F32_SOURCE
 	../../src/ee_mfcc_f32.c
 	../../src/ee_mfcc_f32_tables.c
 	${TH_SOURCE}
-	../../tests/data/mfcc_f32_test_data.c
+	../../tests/data/mfcc_f32_all.c
 	../../tests/test_mfcc_f32.c
 )
 add_executable(test_mfcc_f32 ${TEST_MFCC_F32_SOURCE})
@@ -161,8 +182,9 @@ add_custom_target(check
 	COMMENT "Running unit tests..."
 	COMMAND ./test_abf_f32
 	COMMAND ./test_aec_f32
+	COMMAND ./test_anr_f32
 	COMMAND ./test_kws
 	COMMAND ./test_mfcc_f32
 	COMMAND ./test_nn
-	DEPENDS test_mfcc_f32 test_nn test_kws test_abf_f32 test_aec_f32
+	DEPENDS test_mfcc_f32 test_nn test_kws test_abf_f32 test_aec_f32 test_anr_f32
 )

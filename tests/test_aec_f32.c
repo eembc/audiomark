@@ -19,20 +19,20 @@ main(int argc, char *argv[])
 {
     int      err           = 0;
     uint32_t parameters[1] = { 0 };
-    uint32_t p_aec_inst[2];
+    uint32_t instance[2];
 
     SETUP_XDAIS(xdais[0], p_input_sub, 512);
     SETUP_XDAIS(xdais[1], p_echo_sub, 512);
     SETUP_XDAIS(xdais[2], p_output_sub, 512);
 
-    ee_aec_f32(NODE_RESET, (void **)&p_aec_inst, xdais, &parameters);
+    ee_aec_f32(NODE_RESET, (void **)&instance, xdais, &parameters);
 
     for (int i = 0; i < TEST_NBUFFERS; ++i)
     {
         memcpy(p_input_sub, &p_input[i], 512);
         memcpy(p_echo_sub, &p_echo[i], 512);
 
-        ee_aec_f32(NODE_RUN, (void **)&p_aec_inst, xdais, 0);
+        ee_aec_f32(NODE_RUN, (void **)&instance, xdais, 0);
 
         for (int j = 0; j < NSAMPLES; ++j)
         {
