@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "ee_types.h"
 #include "kws_data.h"
-#include "public.h"
+#include "ee_audiomark.h"
 
 int32_t ee_kws_f32(int32_t command,
                    void  **pp_instance,
