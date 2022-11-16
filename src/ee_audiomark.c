@@ -59,7 +59,7 @@ static void *p_aec_inst;
 static void *p_anr_inst;
 static void *p_kws_inst;
 
-// TODO: ptorelli: None of the memreq's use memory; only four instances
+// TODO: Replace with an allocation function
 #define MAX_ALLOC_WORDS 28500
 static uint32_t all_instances[MAX_ALLOC_WORDS], idx_malloc;
 
