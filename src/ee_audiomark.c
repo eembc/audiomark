@@ -53,17 +53,15 @@ static xdais_buffer_t xdais_aec[3];
 static xdais_buffer_t xdais_anr[2];
 static xdais_buffer_t xdais_kws[4];
 
-// instances of the components
-static uint32_t *p_bmf_inst;
-static uint32_t *p_aec_inst;
-static uint32_t *p_anr_inst;
-static uint32_t *p_kws_inst;
+// instances of the components; these point to "all_instances"
+static void *p_bmf_inst;
+static void *p_aec_inst;
+static void *p_anr_inst;
+static void *p_kws_inst;
 
 // TODO: ptorelli: None of the memreq's use memory; only four instances
-#define MAX_ALLOC_WORDS 20 /* 28500 */
+#define MAX_ALLOC_WORDS 28500
 static uint32_t all_instances[MAX_ALLOC_WORDS], idx_malloc;
-
-uint32_t parameters[1]; // pre-computed parameter index
 
 void
 reset_audio(void)
@@ -133,10 +131,12 @@ copy_audio(int16_t *pt, int16_t debug)
 void
 audiomark_initialize(void)
 {
-    uint32_t memreq_bmf_f32[1]; // memreq will grow later
-    uint32_t memreq_aec_f32[1];
-    uint32_t memreq_anr_f32[1];
-    uint32_t memreq_kws_f32[1];
+    uint32_t memreq_bmf_f32;
+    uint32_t memreq_aec_f32;
+    uint32_t memreq_anr_f32;
+    uint32_t memreq_kws_f32;
+
+    uint32_t param_idx = 0;
 
     SETUP_XDAIS(xdais_bmf[0], left_capture, N);
     SETUP_XDAIS(xdais_bmf[1], right_capture, N);
@@ -154,19 +154,17 @@ audiomark_initialize(void)
     SETUP_XDAIS(xdais_kws[2], mfcc_fifo, 490);          // ptorelli: fixme
     SETUP_XDAIS(xdais_kws[3], classes, 12);             // ptorelli: fixme
 
-    parameters[0] = 0; // take the first set of parameters
-
     /* Call the components for their memory requests. */
-    CALL_MEMREQ(ee_abf_f32, memreq_bmf_f32, parameters);
-    CALL_MEMREQ(ee_aec_f32, memreq_aec_f32, parameters);
-    CALL_MEMREQ(ee_anr_f32, memreq_anr_f32, parameters);
-    CALL_MEMREQ(ee_kws_f32, memreq_kws_f32, parameters);
+    CALL_MEMREQ(ee_abf_f32, memreq_bmf_f32, NULL);
+    CALL_MEMREQ(ee_aec_f32, memreq_aec_f32, NULL);
+    CALL_MEMREQ(ee_anr_f32, memreq_anr_f32, NULL);
+    CALL_MEMREQ(ee_kws_f32, memreq_kws_f32, NULL);
 
     /* Using our heap `all_instances` assign the instances and requests */
-    LOCAL_ALLOC(p_bmf_inst, memreq_bmf_f32[0]);
-    LOCAL_ALLOC(p_aec_inst, memreq_aec_f32[0]);
-    LOCAL_ALLOC(p_anr_inst, memreq_anr_f32[0]);
-    LOCAL_ALLOC(p_kws_inst, memreq_kws_f32[0]);
+    LOCAL_ALLOC(p_bmf_inst, memreq_bmf_f32);
+    LOCAL_ALLOC(p_aec_inst, memreq_aec_f32);
+    LOCAL_ALLOC(p_anr_inst, memreq_anr_f32);
+    LOCAL_ALLOC(p_kws_inst, memreq_kws_f32);
 
     if (idx_malloc >= MAX_ALLOC_WORDS)
     {
@@ -176,10 +174,10 @@ audiomark_initialize(void)
         };
     }
 
-    ee_abf_f32(NODE_RESET, (void **)&p_bmf_inst, 0, parameters);
-    ee_aec_f32(NODE_RESET, (void **)&p_aec_inst, 0, parameters);
-    ee_anr_f32(NODE_RESET, (void **)&p_anr_inst, 0, parameters);
-    ee_kws_f32(NODE_RESET, (void **)&p_kws_inst, 0, parameters);
+    ee_abf_f32(NODE_RESET, (void **)&p_bmf_inst, 0, NULL);
+    ee_aec_f32(NODE_RESET, (void **)&p_aec_inst, 0, &param_idx);
+    ee_anr_f32(NODE_RESET, (void **)&p_anr_inst, 0, &param_idx);
+    ee_kws_f32(NODE_RESET, (void **)&p_kws_inst, 0, NULL);
 }
 
 #define TEST_BF  0 // beamformer test
@@ -214,10 +212,10 @@ audiomark_run(void)
             }
 
             // TODO: ptorelli: return status should be checked!
-            ee_abf_f32(NODE_RUN, (void **)&p_bmf_inst, xdais_bmf, 0);
-            ee_aec_f32(NODE_RUN, (void **)&p_aec_inst, xdais_aec, 0);
-            ee_anr_f32(NODE_RUN, (void **)&p_anr_inst, xdais_anr, 0);
-            ee_kws_f32(NODE_RUN, (void **)&p_kws_inst, xdais_kws, 0);
+            ee_abf_f32(NODE_RUN, (void **)&p_bmf_inst, xdais_bmf, NULL);
+            ee_aec_f32(NODE_RUN, (void **)&p_aec_inst, xdais_aec, NULL);
+            ee_anr_f32(NODE_RUN, (void **)&p_anr_inst, xdais_anr, NULL);
+            ee_kws_f32(NODE_RUN, (void **)&p_kws_inst, xdais_kws, NULL);
 
 #else
 #if TEST_BF

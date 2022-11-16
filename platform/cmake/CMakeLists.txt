@@ -51,7 +51,6 @@ set(EE_SOURCE
 	../../src/ee_aec_f32.c
 	../../src/ee_anr_f32.c
 	../../src/ee_abf_f32.c
-	../../src/ee_abf_f32_tables.c
 	../../src/ee_kws.c
 	../../src/ee_mfcc_f32.c
 	../../src/ee_mfcc_f32_tables.c
@@ -138,7 +137,6 @@ add_executable(test_anr_f32 ${TEST_ANR_F32_SOURCE})
 
 set(TEST_ABF_F32_SOURCE
 	../../src/ee_abf_f32.c
-	../../src/ee_abf_f32_tables.c
 	${TH_SOURCE}
 	../../tests/data/abf_f32_input_ch1.c
 	../../tests/data/abf_f32_input_ch2.c
