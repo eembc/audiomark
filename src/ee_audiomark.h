@@ -67,7 +67,6 @@ typedef struct
     PTR_INT size;
 } xdais_buffer_t;
 
-
 #define SETUP_XDAIS(SRC, DATA, SIZE) \
     {                                \
         SRC.p_data = (PTR_INT)DATA;  \
@@ -76,18 +75,16 @@ typedef struct
 
 #define CALL_MEMREQ(FUNC, REQ, PARAMS)                 \
     {                                                  \
-        uint32_t *p_req = REQ;                         \
+        uint32_t *p_req = &REQ;                        \
         FUNC(NODE_MEMREQ, (void **)&p_req, 0, PARAMS); \
     }
 
-// TODO: ptorelli: this assumes all pointers are uint32_t bytes. FIXME.
-// TODO: ptorelli: why is req / 4?
+// N.B. "REQ" currently comes from all_instances which is 32-bit values
 #define LOCAL_ALLOC(PINST, REQ)               \
     {                                         \
         PINST = &(all_instances[idx_malloc]); \
         idx_malloc += 1 + REQ / 4;            \
     }
-
 
 int32_t ee_abf_f32(int32_t, void **, void *, void *);
 int32_t ee_aec_f32(int32_t, void **, void *, void *);
