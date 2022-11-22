@@ -43,75 +43,81 @@
 #else
 #define XPH_AEC_INSTANCE_SIZE 68100
 #endif
-extern char *spxGlobalHeapPtr, *spxGlobalHeapEnd;
+// We manipulate these for each speex alloc based off our memory heaps
+extern char *spxGlobalHeapPtr;
+extern char *spxGlobalHeapEnd;
 extern long  cumulatedMalloc;
 #endif
 
-const uint32_t param_aec_f32[1][3] = {
+static const uint32_t param_aec_f32[1][3] = {
     {
-        256,   // NN
-        1024,  // TAIL
-        16000, // FS
+        256,   // FRAME SIZE
+        1024,  // FILTER LENGTH
+        16000, // SAMPLE RATE
     },
 };
 
 int32_t
-ee_aec_f32(int32_t command, void **instance, void *data, void *parameters)
+ee_aec_f32(int32_t command, void **pp_inst, void *p_data, void *p_params)
 {
-    int32_t swc_returned_status = 0, Fs = 16000;
-
     switch (command)
     {
         case NODE_MEMREQ: {
 #ifdef OS_SUPPORT_CUSTOM
-            *(uint32_t *)(*instance) = XPH_AEC_INSTANCE_SIZE;
+            *(uint32_t *)(*pp_inst) = XPH_AEC_INSTANCE_SIZE;
 #else
-            *(uint32_t *)(*instance) = 0;
+            *(uint32_t *)(*pp_inst) = 0;
 #endif
             break;
         }
         case NODE_RESET: {
-            uint32_t        nn, tail, fs, configuration_index;
-            SpeexEchoState *ptr_intance;
-
+            uint32_t        config_idx    = 0;
+            uint32_t        frame_size    = 0;
+            uint32_t        filter_length = 0;
+            uint32_t        sample_rate   = 0;
+            SpeexEchoState *p_state       = NULL;
 #ifdef OS_SUPPORT_CUSTOM
-            /* memory alignment on 32bits */
-            spxGlobalHeapPtr = (char *)(((PTR_INT)(*instance) + 3) & ~3);
+            // speex aligns memory during speex_alloc
+            spxGlobalHeapPtr = (char *)(*pp_inst);
             spxGlobalHeapEnd = spxGlobalHeapPtr + XPH_AEC_INSTANCE_SIZE;
 #endif
-            configuration_index = *(uint32_t *)parameters;
-            nn                  = param_aec_f32[configuration_index][0];
-            tail                = param_aec_f32[configuration_index][1];
-            fs                  = param_aec_f32[configuration_index][2];
+            config_idx    = *((uint32_t *)p_params);
+            frame_size    = param_aec_f32[config_idx][0];
+            filter_length = param_aec_f32[config_idx][1];
+            sample_rate   = param_aec_f32[config_idx][2];
 
-            ptr_intance = speex_echo_state_init(nn, tail);
-            speex_echo_ctl(ptr_intance, SPEEX_ECHO_SET_SAMPLING_RATE, &Fs);
-            *(void **)instance = ptr_intance;
+            p_state = speex_echo_state_init(frame_size, filter_length);
+            speex_echo_ctl(p_state, SPEEX_ECHO_SET_SAMPLING_RATE, &sample_rate);
+            // N.B. Reassign warning: the output pp_inst is now speex object
+            *((void **)pp_inst) = p_state;
             break;
         }
         case NODE_RUN: {
-            PTR_INT *pt_pt = 0;
-            uint32_t buffer_size;
-            int32_t  nb_input_samples;
-            int16_t *reference = 0, *echo = 0, *outBufs;
+            PTR_INT        *ptr              = NULL;
+            int16_t        *reference        = NULL;
+            int16_t        *echo             = NULL;
+            int16_t        *outBufs          = NULL;
+            uint32_t        buffer_size      = 0;
+            int32_t         nb_input_samples = 0;
+            SpeexEchoState *p_state          = *pp_inst;
 
-            /* parameter points to input { (*,n),(*,n),..} updated at the end */
-
-            pt_pt       = (PTR_INT *)data;
-            reference   = (int16_t *)(*pt_pt++);
-            buffer_size = (uint32_t)(*pt_pt++);
-            echo        = (int16_t *)(*pt_pt++);
-            buffer_size = (uint32_t)(*pt_pt++);
-            outBufs     = (int16_t *)(*pt_pt++);
+            ptr         = (PTR_INT *)p_data;
+            reference   = (int16_t *)(*ptr++);
+            buffer_size = (uint32_t)(*ptr++);
+            echo        = (int16_t *)(*ptr++);
+            buffer_size = (uint32_t)(*ptr++);
+            outBufs     = (int16_t *)(*ptr++);
 
             nb_input_samples = buffer_size / sizeof(int16_t);
 
-            speex_echo_cancellation((SpeexEchoState *)*instance,
-                                    (int16_t *)reference,
-                                    (int16_t *)echo,
-                                    (int16_t *)outBufs);
+            if (nb_input_samples != 256)
+            {
+                return 1;
+            }
+
+            speex_echo_cancellation(p_state, reference, echo, outBufs);
             break;
         }
     }
-    return swc_returned_status;
+    return 0;
 }

@@ -39,6 +39,11 @@ add_definitions(-DUSE_SMALLFT)
 # This macro is used extensively in LibSpeeX for function visibility.
 add_definitions(-DEXPORT=)
 
+# EEMBC code integrator provides heap
+add_definitions(-DOVERRIDE_SPEEX_ALLOC)
+add_definitions(-DOS_SUPPORT_CUSTOM)
+
+
 # This is to make sure we include function decor for GCC/CLANG in CMSIS
 # This might screw up arm-*-gcc toolchains though? If you see issues in
 # arm_math_types.h it is probably related to this.

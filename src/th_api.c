@@ -27,10 +27,38 @@
  * limitations under the License.
  */
 
+#include "ee_audiomark.h"
 #include "ee_api.h"
 #include "ee_nn_weights.h"
 #include "arm_nnfunctions.h"
 #include "dsp/none.h"
+
+void *
+th_malloc(size_t size, int req)
+{
+    switch (req)
+    {
+        // The system integrator can assign working memory wherever they like
+        case COMPONENT_BMF:
+        case COMPONENT_AEC:
+        case COMPONENT_ANR:
+        case COMPONENT_KWS:
+        default:
+            return malloc(size);
+    }
+}
+
+void *
+th_memcpy(void *restrict dst, const void *restrict src, size_t n)
+{
+    return memcpy(dst, src, n);
+}
+
+void *
+th_memset(void *b, int c, size_t len)
+{
+    return memset(b, c, len);
+}
 
 ee_status_t
 th_cfft_init_f32(ee_cfft_f32_t *p_instance, int fft_length)
@@ -179,18 +207,6 @@ th_softmax_i8(const int8_t *vec_in, const uint16_t dim_vec, int8_t *p_out)
     arm_softmax_q7(vec_in, dim_vec, p_out);
 }
 
-void *
-th_memcpy(void *restrict dst, const void *restrict src, size_t n)
-{
-    return memcpy(dst, src, n);
-}
-
-void *
-th_memset(void *b, int c, size_t len)
-{
-    return memset(b, c, len);
-}
-
 static const q7_t conv1_wt[CONV1_OUT_CH * CONV1_KX * CONV1_KY] = CONV1_WT;
 static const q7_t conv1_bias[CONV1_OUT_CH]                     = CONV1_BIAS;
 static const q7_t conv2_ds_wt[CONV1_OUT_CH * CONV2_DS_KX * CONV2_DS_KY]
@@ -215,10 +231,12 @@ static const q7_t conv5_pw_wt[CONV5_OUT_CH * CONV4_OUT_CH] = CONV5_PW_WT;
 static const q7_t conv5_pw_bias[CONV5_OUT_CH]              = CONV5_PW_BIAS;
 static const q7_t final_fc_wt[CONV5_OUT_CH * OUT_DIM]      = FINAL_FC_WT;
 static const q7_t final_fc_bias[OUT_DIM]                   = FINAL_FC_BIAS;
-static q7_t       scratch_pad[SCRATCH_BUFFER_SIZE];
-static q7_t      *col_buffer;
-static q7_t      *buffer1;
-static q7_t      *buffer2;
+
+// The developer owns where this memory goes, it is not part of the NODE_MEMREQ
+static q7_t  scratch_pad[SCRATCH_BUFFER_SIZE];
+static q7_t *col_buffer;
+static q7_t *buffer1;
+static q7_t *buffer2;
 
 void
 th_nn_init(void)
@@ -228,7 +246,7 @@ th_nn_init(void)
     col_buffer = buffer2 + (CONV2_OUT_CH * CONV2_OUT_X * CONV2_OUT_Y);
 }
 
-void
+static void
 arm_avepool_q7_HWC_nonsquare(
     const q7_t    *Im_in,        // input image
     const uint16_t dim_im_in_x,  // input image dimension

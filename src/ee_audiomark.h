@@ -27,14 +27,31 @@
 * Target Processor: any
 * -------------------------------------------------------------------- */
 
-#ifndef __PUBLIC_H__
-#define __PUBLIC_H__
+#ifndef __EE_AUDIOMARK_H
+#define __EE_AUDIOMARK_H
 
 #include <stdint.h>
-#include <string.h>
+#include <stdlib.h>
+#include "ee_kws.h"
+#include "ee_mfcc_f32.h"
+#include "ee_nn_weights.h"
 
-typedef void    *swc_instance;
-typedef uint8_t *uintPtr_t;
+enum _component_req
+{
+    COMPONENT_BMF = 1,
+    COMPONENT_AEC = 2,
+    COMPONENT_ANR = 3,
+    COMPONENT_KWS = 4,
+};
+
+#define AUDIO_CAPTURE_SAMPLING    16000
+#define AUDIO_CAPTURE_FRAME_LEN_S 0.016
+#define MONO                      1
+#define SAMPLE_SIZE               2 // int16
+/* #define AUDIO_NB_SAMPLES \
+    (const int)(AUDIO_CAPTURE_SAMPLING * AUDIO_CAPTURE_FRAME_LEN_S) */
+#define AUDIO_NB_SAMPLES 256
+#define AUDIO_NB_BYTES   (AUDIO_NB_SAMPLES * SAMPLE_SIZE)
 
 enum _command
 {
@@ -71,12 +88,6 @@ typedef struct
     {                                \
         SRC.p_data = (PTR_INT)DATA;  \
         SRC.size   = SIZE;           \
-    }
-
-#define CALL_MEMREQ(FUNC, REQ, PARAMS)                 \
-    {                                                  \
-        uint32_t *p_req = &REQ;                        \
-        FUNC(NODE_MEMREQ, (void **)&p_req, 0, PARAMS); \
     }
 
 // N.B. "REQ" currently comes from all_instances which is 32-bit values
