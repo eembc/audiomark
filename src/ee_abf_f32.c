@@ -30,7 +30,7 @@
 #include "ee_abf_f32.h"
 
 static const float w_hanning_div2[128] = { ABF_W_HANNING_DIV2 };
-static const float rotation[4096] = { ABF_ROTATION };
+static const float rotation[4096]      = { ABF_ROTATION };
 
 static void
 beamformer_f32_init(abf_f32_instance_t *p_inst)
@@ -375,8 +375,17 @@ ee_abf_f32(int32_t command, void **pp_inst, void *p_data, void *p_params)
     switch (command)
     {
         case NODE_MEMREQ: {
-            /* Allocate all memory from the same heap type */
-            uint32_t size = sizeof(abf_f32_fastdata_static_t)
+            /**
+             * N.B. https://arm-software.github.io/CMSIS-DSP/latest/ :
+             *
+             * When using a vectorized version, provide a little bit of padding
+             * after the end of a buffer (3 words) because the vectorized code
+             * may read a little bit after the end of a buffer. You don't have
+             * to modify your buffers but just ensure that the end of buffer +
+             * padding is not outside of a memory region.
+             */
+            uint32_t size = (3 * 4) // See note above
+                            + sizeof(abf_f32_fastdata_static_t)
                             + sizeof(abf_f32_fastdata_working_t)
                             + sizeof(float *) + sizeof(float *);
             *(uint32_t *)(*pp_inst) = size;

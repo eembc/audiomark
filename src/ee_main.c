@@ -16,12 +16,23 @@
  * limitations under the License.
  *---------------------------------------------------------------------------*/
 
-void audiomark_initialize(void);
-void audiomark_run(void);
+#include <stdio.h>
+
+int audiomark_initialize(void);
+int audiomark_run(void);
 
 int
 main(void)
 {
-    audiomark_initialize(); // Initialize hard-coded graph
-    audiomark_run();
+    if (audiomark_initialize())
+    {
+        printf("Failed to initialize\n");
+        return -1;
+    }
+    if (audiomark_run())
+    {
+        printf("Run failed\n");
+        return -1;
+    }
+    return 0;
 }

@@ -16,6 +16,7 @@
 #include <math.h>
 #include "ee_mfcc_f32_tables.h"
 #include "ee_api.h"
+#include "ee_nn_weights.h"
 
 /* 40ms frame of 16 kHz audio is 640 16-bit samples. */
 #define FRAME_LEN 640
@@ -26,7 +27,18 @@
 #define PADDED_FRAME_LEN 1024
 #define FFT_LEN          PADDED_FRAME_LEN
 
-ee_status_t ee_mfcc_f32_init(void);
-void        ee_mfcc_f32_compute(const int16_t *audio_data, int8_t *mfcc_out);
+// NUM_FRAMES is in ee_nn_weights.h
+#define MFCC_FIFO_BYTES (NUM_MFCC_FEATURES * NUM_FRAMES)
+
+typedef struct mfcc_instance_t
+{
+    ee_f32_t      mfcc_input_frame[FFT_LEN];
+    ee_f32_t      mfcc_out[NUM_MFCC_FEATURES];
+    ee_f32_t      tmp[FFT_LEN + 2];
+    ee_rfft_f32_t rfft_instance;
+} mfcc_instance_t;
+
+ee_status_t ee_mfcc_f32_init(mfcc_instance_t *);
+void        ee_mfcc_f32_compute(mfcc_instance_t *, const int16_t *, int8_t *);
 
 #endif /* __EE_MFCC_H */

@@ -31,7 +31,6 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#include "os_support.h"
 #endif
 
 #include "speex_preprocess.h"
@@ -43,69 +42,73 @@
 #else
 #define XPH_ANR_INSTANCE_SIZE 45250
 #endif
-extern char *spxGlobalHeapPtr, *spxGlobalHeapEnd;
+// We manipulate these for each speex alloc based off our memory heaps
+extern char *spxGlobalHeapPtr;
+extern char *spxGlobalHeapEnd;
 extern long  cumulatedMalloc;
 #endif
 
-const uint32_t param_anr_f32[1][2] = {
+static const uint32_t param_anr_f32[1][2] = {
     {
-        256,   // NN
-        16000, // FS
+        256,   // FRAME SIZE
+        16000, // SAMPLE RATE
     },
 };
 
 int32_t
-ee_anr_f32(int32_t command, void **instance, void *data, void *parameters)
+ee_anr_f32(int32_t command, void **pp_inst, void *p_data, void *p_params)
 {
-    int32_t swc_returned_status = 0;
-
     switch (command)
     {
         case NODE_MEMREQ: {
 #ifdef OS_SUPPORT_CUSTOM
-            *(uint32_t *)(*instance) = XPH_ANR_INSTANCE_SIZE;
+            *(uint32_t *)(*pp_inst) = XPH_ANR_INSTANCE_SIZE;
 #else
-            *(uint32_t *)(*instance) = 0;
+            *(uint32_t *)(*pp_inst) = 0;
 #endif
             break;
         }
         case NODE_RESET: {
-            uint32_t              nn, fs, configuration_index;
-            SpeexPreprocessState *ptr_intance;
+            uint32_t              config_idx  = 0;
+            uint32_t              frame_size  = 0;
+            uint32_t              sample_rate = 0;
+            SpeexPreprocessState *p_state     = NULL;
 
 #ifdef OS_SUPPORT_CUSTOM
-            /* memory alignment on 32bits */
-            spxGlobalHeapPtr = (char *)(((PTR_INT)(*instance) + 3) & ~3);
+            // speex aligns memory during speex_alloc
+            spxGlobalHeapPtr = (char *)(*pp_inst);
             spxGlobalHeapEnd = spxGlobalHeapPtr + XPH_ANR_INSTANCE_SIZE;
 #endif
+            config_idx  = *((uint32_t *)p_params);
+            frame_size  = param_anr_f32[config_idx][0];
+            sample_rate = param_anr_f32[config_idx][1];
 
-            configuration_index = *(uint32_t *)parameters;
-            nn                  = param_anr_f32[configuration_index][0];
-            fs                  = param_anr_f32[configuration_index][1];
-
-            ptr_intance = speex_preprocess_state_init(nn, fs);
-            speex_preprocess_ctl(
-                ptr_intance, SPEEX_PREPROCESS_SET_ECHO_STATE, 0);
-            *(void **)instance = ptr_intance;
-
+            p_state = speex_preprocess_state_init(frame_size, sample_rate);
+            speex_preprocess_ctl(p_state, SPEEX_PREPROCESS_SET_ECHO_STATE, 0);
+            *((void **)pp_inst) = p_state;
             break;
         }
         case NODE_RUN: {
-            PTR_INT *pt_pt = 0;
-            uint32_t buffer_size;
-            int32_t  nb_input_samples;
-            int16_t *in_place_buffer = 0;
+            PTR_INT              *ptr               = NULL;
+            uint32_t              buffer_size       = 0;
+            int32_t               nb_input_samples  = 0;
+            int16_t              *p_in_place_buffer = NULL;
+            SpeexPreprocessState *p_state           = *pp_inst;
 
-            /* parameter points to input { (*,n),(*,n),..} updated at the end */
+            ptr               = (PTR_INT *)p_data;
+            p_in_place_buffer = (int16_t *)(*ptr++);
+            buffer_size       = (uint32_t)(*ptr++);
 
-            pt_pt            = (PTR_INT *)data;
-            in_place_buffer  = (int16_t *)(*pt_pt++);
-            buffer_size      = (uint32_t)(*pt_pt++);
             nb_input_samples = buffer_size / sizeof(int16_t);
-            speex_preprocess_run((SpeexPreprocessState *)*instance,
-                                 (int16_t *)in_place_buffer);
+
+            if (nb_input_samples != 256)
+            {
+                return 1;
+            }
+
+            speex_preprocess_run(p_state, p_in_place_buffer);
             break;
         }
     }
-    return swc_returned_status;
+    return 0;
 }

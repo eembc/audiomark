@@ -18,12 +18,12 @@ static xdais_buffer_t xdais[3];
 int
 main(int argc, char *argv[])
 {
-    int err = 0;
-    uint32_t memreq;
+    int       err = 0;
+    uint32_t  memreq;
     uint32_t *p_req = &memreq;
-    void *memory;
-    void *inst;
-    
+    void     *memory;
+    void     *inst;
+
     ee_abf_f32(NODE_MEMREQ, (void **)&p_req, NULL, NULL);
 
     printf("ABF F32 MEMREQ = %d bytes\n", memreq);
@@ -33,7 +33,7 @@ main(int argc, char *argv[])
         printf("malloc() fail\n");
         return -1;
     }
-    inst = (void*)memory;
+    inst = (void *)memory;
 
     SETUP_XDAIS(xdais[0], p_left, 512);
     SETUP_XDAIS(xdais[1], p_right, 512);

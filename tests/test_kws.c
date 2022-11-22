@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include "ee_types.h"
 #include "kws_data.h"
@@ -12,7 +13,7 @@ static int16_t        aec_output[256];     // 5
 static int16_t        audio_fifo[13 * 64]; // 6 ptorelli FIXME TODO
 static int8_t         mfcc_fifo[490];      // 7 ptorelli FIXME TODO
 static int8_t         classes[12];         // 8 ptorelli FIXME TODO
-static xdais_buffer_t xdais_kws[4];
+static xdais_buffer_t xdais[4];
 
 int
 main(int argc, char *argv[])
@@ -22,18 +23,32 @@ main(int argc, char *argv[])
     int           new_inference     = 0;
     const int8_t *p_check           = NULL;
     int           idx_check         = 0;
+    uint32_t      memreq            = 0;
+    uint32_t     *p_req             = &memreq;
+    void         *memory            = NULL;
+    void         *inst              = NULL;
 
-    SETUP_XDAIS(xdais_kws[0], aec_output, 512);
-    SETUP_XDAIS(xdais_kws[1], audio_fifo, 13 * 64 * 2); // ptorelli: fixme
-    SETUP_XDAIS(xdais_kws[2], mfcc_fifo, 490);          // ptorelli: fixme
-    SETUP_XDAIS(xdais_kws[3], classes, 12);             // ptorelli: fixme
+    ee_kws_f32(NODE_MEMREQ, (void **)&p_req, NULL, NULL);
 
-    ee_kws_f32(NODE_RESET, NULL, xdais_kws, 0);
+    printf("KWS F32 MEMREQ = %d bytes\n", memreq);
+    memory = malloc(memreq);
+    if (!memory)
+    {
+        printf("malloc() fail\n");
+        return -1;
+    }
+    inst = (void *)memory;
+    SETUP_XDAIS(xdais[0], aec_output, 512);
+    SETUP_XDAIS(xdais[1], audio_fifo, 13 * 64 * 2); // ptorelli: fixme
+    SETUP_XDAIS(xdais[2], mfcc_fifo, 490);          // ptorelli: fixme
+    SETUP_XDAIS(xdais[3], classes, 12);             // ptorelli: fixme
+
+    ee_kws_f32(NODE_RESET, (void **)&inst, NULL, NULL);
 
     for (int i = 0; i < TEST_NBUFFERS; ++i)
     {
         memcpy(aec_output, p_input[i], 512);
-        ee_kws_f32(NODE_RUN, NULL, xdais_kws, 0);
+        ee_kws_f32(NODE_RUN, (void **)&inst, xdais, NULL);
         if (new_inference)
         {
             printf("new inference %d\n", idx_check + 1);
