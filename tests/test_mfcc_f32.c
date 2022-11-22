@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include "ee_mfcc_f32.h"
 
@@ -6,15 +7,16 @@ extern const int8_t  p_expected[NUM_MFCC_FEATURES];
 
 int8_t p_output[NUM_MFCC_FEATURES];
 
-mfcc_instance_t mfcc_instance;
+mfcc_instance_t *mfcc_instance;
 
 int
 main(int argc, char *argv[])
 {
     int err = 0;
 
-    ee_mfcc_f32_init(&mfcc_instance);
-    ee_mfcc_f32_compute(&mfcc_instance, p_input, p_output);
+    mfcc_instance = malloc(sizeof(mfcc_instance_t));
+    ee_mfcc_f32_init(mfcc_instance);
+    ee_mfcc_f32_compute(mfcc_instance, p_input, p_output);
 
     for (int i = 0; i < NUM_MFCC_FEATURES; ++i)
     {
