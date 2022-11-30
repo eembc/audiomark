@@ -193,6 +193,15 @@ audiomark_initialize(void)
     return 0;
 }
 
+void
+audiomark_release(void)
+{
+    th_free(p_bmf_inst, COMPONENT_BMF);
+    th_free(p_aec_inst, COMPONENT_AEC);
+    th_free(p_anr_inst, COMPONENT_ANR);
+    th_free(p_kws_inst, COMPONENT_KWS);
+}
+
 #define CHECK(X)         \
     if (X == 1)          \
     {                    \

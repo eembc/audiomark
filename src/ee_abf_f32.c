@@ -229,7 +229,7 @@ beamformer_f32_run(abf_f32_instance_t *p_inst,
          */
         pf32_1 = p_inst->w->PHATNORM;
         pf32_2 = p_inst->w->XY;
-        for (i = 0; i < NFFT; i++)
+        for (i = 0; i < NFFTD2; i++)
         {
             ftmp = *pf32_1++;
             if (ftmp == 0)
@@ -263,7 +263,7 @@ beamformer_f32_run(abf_f32_instance_t *p_inst,
         }
         pf32_out = p_inst->w->allDerot;
         th_absmax_f32(
-            pf32_out, NFFTD2, &(p_inst->w->corr), &(p_inst->w->icorr));
+            pf32_out, LAGSTEP, &(p_inst->w->corr), &(p_inst->w->icorr));
 
         /* SYNTHESIS
            wrot2 = wrot(fixed_lag,:);
@@ -387,7 +387,8 @@ ee_abf_f32(int32_t command, void **pp_inst, void *p_data, void *p_params)
             uint32_t size = (3 * 4) // See note above
                             + sizeof(abf_f32_fastdata_static_t)
                             + sizeof(abf_f32_fastdata_working_t)
-                            + sizeof(float *) + sizeof(float *);
+                            + sizeof(float *) + sizeof(float *)
+                            + 4; /* TODO : justify this */
             *(uint32_t *)(*pp_inst) = size;
             break;
         }

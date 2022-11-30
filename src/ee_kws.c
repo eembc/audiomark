@@ -84,7 +84,7 @@ ee_kws_run(kws_instance_t *p_inst,
     if (p_inst->chunk_idx >= CHUNK_WATERMARK)
     {
         /* Shift off the oldest features to make room for the new ones. */
-        th_memcpy(p_inst->p_mfcc_fifo,
+        th_memmove(p_inst->p_mfcc_fifo,
                   p_inst->p_mfcc_fifo + FEATURES_PER_FRAME,
                   (NUM_MFCC_FRAMES - 1) * FEATURES_PER_FRAME);
 
@@ -101,7 +101,7 @@ ee_kws_run(kws_instance_t *p_inst,
 
         /* Shift off the aduio buffer chunks used by the MFCC. */
         p_inst->chunk_idx -= CHUNKS_PER_MFCC_SLIDE;
-        th_memcpy(p_inst->p_audio_fifo,
+        th_memmove(p_inst->p_audio_fifo,
                   p_inst->p_audio_fifo + SAMPLES_PER_OUTPUT_MFCC,
                   p_inst->chunk_idx * SAMPLES_PER_CHUNK * BYTES_PER_SAMPLE);
     }
@@ -133,12 +133,14 @@ ee_kws_f32(int32_t command, void **pp_inst, void *p_data, void *p_params)
              * padding is not outside of a memory region.
              */
             uint32_t size = (3 * 4) // See note above
-                            + sizeof(mfcc_instance_t);
+                            + sizeof(mfcc_instance_t)
+                            + 8; /* TODO : justift this */
             *(uint32_t *)(*pp_inst) = size;
             break;
         }
         case NODE_RESET: {
             ee_kws_init((kws_instance_t *)(*pp_inst));
+            ((kws_instance_t *)(*pp_inst))->chunk_idx = 0;
             break;
         }
         case NODE_RUN: {

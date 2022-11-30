@@ -20,6 +20,7 @@
 
 int audiomark_initialize(void);
 int audiomark_run(void);
+void audiomark_release(void);
 
 int
 main(void)
@@ -34,5 +35,8 @@ main(void)
         printf("Run failed\n");
         return -1;
     }
+
+    audiomark_release();
+
     return 0;
 }
