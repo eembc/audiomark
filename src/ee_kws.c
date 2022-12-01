@@ -64,6 +64,7 @@ ee_kws_init(kws_instance_t *p_inst)
 {
     ee_mfcc_f32_init(&(p_inst->mfcc_inst));
     th_nn_init();
+    p_inst->chunk_idx = 0;
 }
 
 void
@@ -85,8 +86,8 @@ ee_kws_run(kws_instance_t *p_inst,
     {
         /* Shift off the oldest features to make room for the new ones. */
         th_memmove(p_inst->p_mfcc_fifo,
-                  p_inst->p_mfcc_fifo + FEATURES_PER_FRAME,
-                  (NUM_MFCC_FRAMES - 1) * FEATURES_PER_FRAME);
+                   p_inst->p_mfcc_fifo + FEATURES_PER_FRAME,
+                   (NUM_MFCC_FRAMES - 1) * FEATURES_PER_FRAME);
 
         /* Compute a new frames worth of MFCC features */
         ee_mfcc_f32_compute(
@@ -102,8 +103,8 @@ ee_kws_run(kws_instance_t *p_inst,
         /* Shift off the aduio buffer chunks used by the MFCC. */
         p_inst->chunk_idx -= CHUNKS_PER_MFCC_SLIDE;
         th_memmove(p_inst->p_audio_fifo,
-                  p_inst->p_audio_fifo + SAMPLES_PER_OUTPUT_MFCC,
-                  p_inst->chunk_idx * SAMPLES_PER_CHUNK * BYTES_PER_SAMPLE);
+                   p_inst->p_audio_fifo + SAMPLES_PER_OUTPUT_MFCC,
+                   p_inst->chunk_idx * SAMPLES_PER_CHUNK * BYTES_PER_SAMPLE);
     }
 }
 

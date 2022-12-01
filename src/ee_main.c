@@ -18,8 +18,8 @@
 
 #include <stdio.h>
 
-int audiomark_initialize(void);
-int audiomark_run(void);
+int  audiomark_initialize(void);
+int  audiomark_run(void);
 void audiomark_release(void);
 
 int
