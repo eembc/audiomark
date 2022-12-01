@@ -1,0 +1,33 @@
+layer:  
+  # name: speex
+  description: Lib speex
+
+   
+  groups:
+    - group: Libspeex
+      files:
+        - file: ../../lib/speexdsp/libspeexdsp/buffer.c
+        - file: ../../lib/speexdsp/libspeexdsp/fftwrap.c
+        - file: ../../lib/speexdsp/libspeexdsp/filterbank.c
+        - file: ../../lib/speexdsp/libspeexdsp/jitter.c
+        - file: ../../lib/speexdsp/libspeexdsp/kiss_fft.c
+        - file: ../../lib/speexdsp/libspeexdsp/kiss_fftr.c
+        - file: ../../lib/speexdsp/libspeexdsp/mdf.c
+        - file: ../../lib/speexdsp/libspeexdsp/preprocess.c
+        - file: ../../lib/speexdsp/libspeexdsp/resample.c
+        - file: ../../lib/speexdsp/libspeexdsp/scal.c
+        - file: ../../lib/speexdsp/libspeexdsp/smallft.c
+        - file: ../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
+      
+      misc:
+        - C:
+          - -DFLOATING_POINT 
+          - -DUSE_SMALLFT
+          - -DEXPORT= 
+          - -DOS_SUPPORT_CUSTOM
+          #- -DOVERRIDE_SPEEX_ALLOC
+          - -DMVE_INTRINSICS
+  
+  add-paths:
+    - ../../lib/speexdsp/include
+    - ../../lib/speexdsp/

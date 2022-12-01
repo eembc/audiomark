@@ -1,0 +1,28 @@
+layer:  
+  # name: AudioMark Core
+  description: AudioMark Core
+
+   
+  groups:
+    - group: AudioMarkCore
+      files:
+        - file: ../../src/ee_abf_f32.c
+        - file: ../../src/ee_anr_f32.c
+        - file: ../../src/ee_kws.c
+        - file: ../../src/ee_mfcc_f32.c
+        - file: ../../src/th_api.c
+        - file: ../../src/ee_aec_f32.c
+        - file: ../../src/ee_mfcc_f32_tables.c
+
+        #- file: ../../src/ee_audiomark.c
+        #- file: ../../src/ee_main.c 
+
+      misc:
+        - C:
+          - -DFLOATING_POINT 
+  
+  add-paths:
+    - ../../src/
+    - ../../lib/speexdsp/include/speex/
+    - ../../lib/speexdsp/include
+    - ../../lib/speexdsp/
