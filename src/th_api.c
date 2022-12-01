@@ -49,7 +49,7 @@ th_malloc(size_t size, int req)
 }
 
 void
-th_free(void * mem, int req)
+th_free(void *mem, int req)
 {
     switch (req)
     {
@@ -59,7 +59,7 @@ th_free(void * mem, int req)
         case COMPONENT_ANR:
         case COMPONENT_KWS:
         default:
-            return free(mem);
+            free(mem);
     }
 }
 
@@ -555,4 +555,3 @@ th_nn_classify(const int8_t *in_data, int8_t *out_data)
                            out_data,
                            (q15_t *)col_buffer);
 }
-
