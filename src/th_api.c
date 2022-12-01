@@ -48,10 +48,31 @@ th_malloc(size_t size, int req)
     }
 }
 
+void
+th_free(void * mem, int req)
+{
+    switch (req)
+    {
+        // The system integrator can assign working memory wherever they like
+        case COMPONENT_BMF:
+        case COMPONENT_AEC:
+        case COMPONENT_ANR:
+        case COMPONENT_KWS:
+        default:
+            return free(mem);
+    }
+}
+
 void *
 th_memcpy(void *restrict dst, const void *restrict src, size_t n)
 {
     return memcpy(dst, src, n);
+}
+
+void *
+th_memmove(void *restrict dst, const void *restrict src, size_t n)
+{
+    return memmove(dst, src, n);
 }
 
 void *
@@ -534,3 +555,4 @@ th_nn_classify(const int8_t *in_data, int8_t *out_data)
                            out_data,
                            (q15_t *)col_buffer);
 }
+

@@ -57,7 +57,7 @@ ee_mfcc_f32(mfcc_instance_t *p_inst)
 
     /* Apply MEL filters */
     /* N.B. This overwrites p_src and reliquinshes p_inst->tmp */
-    th_cmplx_mag_f32(p_inst->tmp, p_src, FFT_LEN);
+    th_cmplx_mag_f32(p_inst->tmp, p_src, FFT_LEN / 2);
     for (int i = 0; i < EE_NUM_MFCC_FILTER_CONFIG; i++)
     {
         /* p_inst->tmp[i] is now the MEL energy for that bin. */
