@@ -10,7 +10,7 @@
  * effective EEMBC Benchmark License Agreement, you must discontinue use.
  */
 
-#include "ee_mfcc_f32_tables.h"
+#include "ee_mfcc_f32.h"
 
 const ee_f32_t ee_mfcc_dct_coefs_f32[EE_NUM_MFCC_DCT_COEFS] = {
     0.223607f,  0.223607f,  0.223607f,  0.223607f,  0.223607f,  0.223607f,

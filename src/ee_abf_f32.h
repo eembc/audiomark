@@ -33,7 +33,6 @@
 #include "ee_types.h"
 #include "ee_api.h"
 #include "ee_audiomark.h"
-#include "ee_abf_f32_tables.h"
 
 #define NFFT    128
 #define NFFTD2  (NFFT / 2)

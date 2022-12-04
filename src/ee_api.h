@@ -27,7 +27,7 @@ void *th_memmove(void *restrict dst, const void *restrict src, size_t n);
 
 void th_softmax_i8(const int8_t *vec_in, const uint16_t dim_vec, int8_t *p_out);
 void th_nn_init(void);
-void th_nn_classify(const int8_t *p_input, int8_t *p_output);
+ee_status_t th_nn_classify(const int8_t *p_input, int8_t *p_output);
 
 /* This borrows _heavily_ from Arm CMSIS/DSP see their copyright. */
 

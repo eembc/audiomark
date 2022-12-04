@@ -29,8 +29,8 @@
 
 #include "ee_abf_f32.h"
 
-static const float w_hanning_div2[128] = { ABF_W_HANNING_DIV2 };
-static const float rotation[4096]      = { ABF_ROTATION };
+extern const float w_hanning_div2[128];
+extern const float rotation[4096];
 
 static void
 beamformer_f32_init(abf_f32_instance_t *p_inst)
