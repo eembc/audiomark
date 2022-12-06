@@ -22,7 +22,6 @@ layer:
       misc:
         - C:
           - -DFLOATING_POINT 
-          - -DUSE_SMALLFT
           - -DEXPORT= 
           - -DOS_SUPPORT_CUSTOM
           #- -DOVERRIDE_SPEEX_ALLOC

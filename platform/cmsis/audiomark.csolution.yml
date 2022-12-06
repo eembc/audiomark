@@ -32,16 +32,23 @@ solution:
     - type: MPS3-Corstone-300
       device: ARM::SSE-300-MPS3
 
+      misc:
+        - C:
+           - -DUSE_CMSIS_DSP 
+        - Link:
+          - --scatter=./fvp_sse300_mps3_ns_sct/fvp_sse300_mps3_ns.sct
+
     - type: VHT-Corstone-300
       device: ARM::SSE-300-MPS3
       misc:
         - C:
           - -D__FVP_PY
+          - -DUSE_CMSIS_DSP
         - CPP:
           - -D__FVP_PY
         - Link:
-          -  --predefine="-D__FVP_PY" --entry=Reset_Handler
-
+          - --predefine="-D__FVP_PY" --entry=Reset_Handler
+          - --scatter=./fvp_sse300_mps3_ns_sct/fvp_sse300_mps3_ns.sct
     - type: FVP
       device: ARM::SSE-300-MPS3
       processor:
@@ -49,14 +56,8 @@ solution:
 
       misc:
         - C:
-           - -DUSE_SYSTICK
            - -DUSE_CMSIS_DSP 
 
-        - CPP:
-           - -DUSE_SYSTICK
-           - -DUSE_CMSIS_DSP 
-
-        # how to select Non Secure ??
         - Link:
           - --scatter=./fvp_sse300_mps3_ns_sct/fvp_sse300_mps3_ns.sct
 
@@ -71,7 +72,5 @@ solution:
     - project: ./testanr.cproject.yml
     - project: ./testaec.cproject.yml
     - project: ./testabf.cproject.yml    
-      #for-type:
-      # - +FVP
-
+    - project: ./testkws.cproject.yml    
 

@@ -14,8 +14,6 @@ layer:
         - file: ../../src/ee_aec_f32.c
         - file: ../../src/ee_mfcc_f32_tables.c
 
-        #- file: ../../src/ee_audiomark.c
-        #- file: ../../src/ee_main.c 
 
       misc:
         - C:

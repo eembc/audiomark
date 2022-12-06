@@ -6,24 +6,19 @@ project:
         - file: ../../tests/data/abf_f32_input_ch1.c
         - file: ../../tests/data/abf_f32_input_ch2.c
         - file: ../../tests/test_abf_f32.c
-        # To be removed as depecrated and use CMSIS NN pack after switching to standard APIs
-        - file: ../../lib/NN/Source/SoftmaxFunctions/arm_softmax_q7.c
-        - file: ../../lib/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_basic_nonsquare.c
-        - file: ../../lib/NN/Source/ActivationFunctions/arm_relu_q7.c
-        - file: ../../lib/NN/Source/ConvolutionFunctions/arm_convolve_1x1_HWC_q7_fast_nonsquare.c
-        - file: ../../lib/NN/Source/FullyConnectedFunctions/arm_fully_connected_q7.c
-        - file: ../../lib/NN/Source/ConvolutionFunctions/arm_depthwise_separable_conv_HWC_q7_nonsquare.c
+        - file: ../../src/ee_nn_tables.c
+        - file: ../../src/ee_abf_f32_tables.c
 
   add-path:
     - .
     - ../../lib/speexdsp/include
     - ../../lib/speexdsp/libspeexdsp
-    - ../../lib/NN/Include/
+    - ../../lib/th_api/CMSIS/NN/Include
 
   components:
     - component: ARM::CMSIS:CORE
+    - component: ARM::CMSIS:NN@4.0.0    
     - component: ARM::CMSIS:DSP&Source@1.14.1
-    #- component: ARM::CMSIS:NN@4.0.0
       misc:
       - C:
         - -DARM_DSP_CONFIG_TABLES
@@ -31,7 +26,6 @@ project:
         - -DARM_FFT_ALLOW_TABLES
         - -DARM_ALL_FAST_TABLES
         - -DARM_MATH_LOOPUNROLL
-        - -DDISABLEFLOAT16
         - -DARM_TABLE_BITREVIDX_FXT_128
         - -DARM_TABLE_BITREVIDX_FXT_256
         - -DARM_TABLE_BITREVIDX_FXT_512        
@@ -41,10 +35,7 @@ project:
         - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_128
         - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_256
         - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_512
-        - -DARM_ALL_FAST_TABLES
         
-    - component: ARM::CMSIS:DSP:Compute Graph Static Flow
-
   layers:
     - layer: boot.clayer.yml
     - layer: speex.clayer.yml
