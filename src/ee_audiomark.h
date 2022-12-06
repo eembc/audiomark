@@ -34,7 +34,6 @@
 #include <stdlib.h>
 #include "ee_kws.h"
 #include "ee_mfcc_f32.h"
-#include "ee_nn_weights.h"
 
 enum _component_req
 {

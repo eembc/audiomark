@@ -49,6 +49,43 @@ in the root directory observes this. This file can be used within VSCode or
 MSVC, however it isn't clear if this behaves the same as `clang-format`
 version 14 (which aligns pointer stars differently).
 
+## Memory Model
+
+There are three types of memory required for the benchmark: pre-defined
+inter-component buffers, constant tables, and component-specific scractch
+memory requests.
+
+### Inter-component buffers
+
+Each component connects to the other components or inputs via one or more
+buffers. These statically allocated buffers' storage is defined in `th_api.c`
+to allow the system integrator to better control placement.
+
+### Table constants
+
+All files with the name `*_tables.c` define arrays that are referenced via
+extern from their respective components. These array variables have been
+stored in their own source files to facilitate linker placement optimization.
+
+The adaptive beamformer, MFCC feature extractor, and neural net all have
+several large tables of constants.
+
+### Dynamic allocation for scratch memory
+
+Each component needs a certain amount of scratch memory. The components are
+written in such a way that they are first queried to indicate how much
+memory they require, and then that is allocated by the framework and provided
+via buffers during reset and run. This has been abstracted down to the 
+`th_malloc` function. The parameters to this function are the number of
+required bytes and the component that is requesting it. The system integrator
+can use the default STDLIB `malloc` function, or allocate their own memory
+buffers to target different types of memory. **The memory is never freed so
+there is no need to install a sophisticated memory manager.** Simply assigning
+subsequent address pointers is sufficient (provided there is enough memory).
+
+Both the LibSpeexDSP and EEMBC-provided components utilize this dynamic
+allocation pattern.
+
 ## Function and file naming
 
 Traditionally, all functions and files start with either `ee_` or `th_`, where

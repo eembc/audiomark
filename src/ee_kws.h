@@ -31,4 +31,6 @@ typedef struct kws_instance_t
 /* TOTAL_CHUNKS = (CHUNK_WATERMARK + CHUNKS_PER_INPUT_BUFFER - 1) */
 #define AUDIO_FIFO_SAMPLES (TOTAL_CHUNKS * SAMPLES_PER_CHUNK)
 
+int32_t ee_kws_f32(int32_t, void **, void *, void *);
+
 #endif // __EE_KWS_H
