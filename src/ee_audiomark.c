@@ -25,21 +25,22 @@ static uint32_t idx_microphone_L;
 static uint32_t idx_microphone_R;
 static uint32_t idx_downlink;
 static uint32_t idx_for_asr;
+static uint32_t progress_count;
 
 // These are used by Speex's internal speex_alloc function for custom heaps.
 char *spxGlobalHeapPtr;
 char *spxGlobalHeapEnd;
 long  cumulatedMalloc;
 
-// System integrator can locate these via the linker map
-static int16_t audio_input[AUDIO_NB_SAMPLES];       // 1
-static int16_t left_capture[AUDIO_NB_SAMPLES];      // 2
-static int16_t right_capture[AUDIO_NB_SAMPLES];     // 3
-static int16_t beamformer_output[AUDIO_NB_SAMPLES]; // 4
-static int16_t aec_output[AUDIO_NB_SAMPLES];        // 5
-static int16_t audio_fifo[AUDIO_FIFO_SAMPLES];      // 6
-static int8_t  mfcc_fifo[MFCC_FIFO_BYTES];          // 7
-static int8_t  classes[OUT_DIM];                    // 8
+// System integrator can locate these via the linker map (th_api.c)
+extern int16_t audio_input[SAMPLES_PER_AUDIO_FRAME];       // 1
+extern int16_t left_capture[SAMPLES_PER_AUDIO_FRAME];      // 2
+extern int16_t right_capture[SAMPLES_PER_AUDIO_FRAME];     // 3
+extern int16_t beamformer_output[SAMPLES_PER_AUDIO_FRAME]; // 4
+extern int16_t aec_output[SAMPLES_PER_AUDIO_FRAME];        // 5
+extern int16_t audio_fifo[AUDIO_FIFO_SAMPLES];             // 6
+extern int8_t  mfcc_fifo[MFCC_FIFO_BYTES];                 // 7
+extern int8_t  classes[OUT_DIM];                           // 8
 
 /* The above buffers are programmed into these XDAIS structures on init. */
 static xdais_buffer_t xdais_bmf[3];
@@ -62,15 +63,15 @@ reset_audio(void)
     idx_microphone_R    = 0;
     idx_for_asr         = 0;
     read_all_audio_data = 0;
+    progress_count      = 0;
 }
 
 int
 copy_audio(int16_t *pt, int16_t debug)
 {
-    static uint32_t progress_count = 0;
-    uint32_t       *idx            = NULL;
-    const int16_t  *src            = NULL;
-    int16_t        *dst            = NULL;
+    uint32_t      *idx = NULL;
+    const int16_t *src = NULL;
+    int16_t       *dst = NULL;
 
     if (debug > 0)
     {
@@ -83,7 +84,7 @@ copy_audio(int16_t *pt, int16_t debug)
         src = &(downlink_audio[*idx]);
         dst = audio_input;
         // Only need to increment this once since they all move together
-        progress_count += AUDIO_NB_BYTES;
+        progress_count += BYTES_PER_AUDIO_FRAME / 2;
     }
     else if (pt == left_capture)
     {
@@ -108,7 +109,7 @@ copy_audio(int16_t *pt, int16_t debug)
         return 1;
     }
 
-    if ((progress_count + (AUDIO_NB_BYTES / 2)) >= DATA_SIZE)
+    if ((progress_count + (BYTES_PER_AUDIO_FRAME / 2)) >= NINPUT_SAMPLES)
     {
         read_all_audio_data = 1;
         return 1;
@@ -116,10 +117,10 @@ copy_audio(int16_t *pt, int16_t debug)
 
     if (src != 0)
     {
-        memcpy(dst, src, AUDIO_NB_SAMPLES * SAMPLE_SIZE * MONO);
+        th_memcpy(dst, src, BYTES_PER_AUDIO_FRAME);
     }
 
-    *idx += (AUDIO_NB_BYTES / 2);
+    *idx += (BYTES_PER_AUDIO_FRAME / 2);
 
     return 0;
 }
@@ -137,19 +138,19 @@ audiomark_initialize(void)
 
     uint32_t param_idx = 0;
 
-    SETUP_XDAIS(xdais_bmf[0], left_capture, AUDIO_NB_BYTES);
-    SETUP_XDAIS(xdais_bmf[1], right_capture, AUDIO_NB_BYTES);
-    SETUP_XDAIS(xdais_bmf[2], beamformer_output, AUDIO_NB_BYTES);
+    SETUP_XDAIS(xdais_bmf[0], left_capture, BYTES_PER_AUDIO_FRAME);
+    SETUP_XDAIS(xdais_bmf[1], right_capture, BYTES_PER_AUDIO_FRAME);
+    SETUP_XDAIS(xdais_bmf[2], beamformer_output, BYTES_PER_AUDIO_FRAME);
 
-    SETUP_XDAIS(xdais_aec[0], beamformer_output, AUDIO_NB_BYTES);
-    SETUP_XDAIS(xdais_aec[1], audio_input, AUDIO_NB_BYTES);
-    SETUP_XDAIS(xdais_aec[2], aec_output, AUDIO_NB_BYTES);
+    SETUP_XDAIS(xdais_aec[0], beamformer_output, BYTES_PER_AUDIO_FRAME);
+    SETUP_XDAIS(xdais_aec[1], audio_input, BYTES_PER_AUDIO_FRAME);
+    SETUP_XDAIS(xdais_aec[2], aec_output, BYTES_PER_AUDIO_FRAME);
 
-    SETUP_XDAIS(xdais_anr[0], aec_output, AUDIO_NB_BYTES);
+    SETUP_XDAIS(xdais_anr[0], aec_output, BYTES_PER_AUDIO_FRAME);
     // N.B.: Output overwrites input.
-    SETUP_XDAIS(xdais_anr[1], aec_output, AUDIO_NB_BYTES);
+    SETUP_XDAIS(xdais_anr[1], aec_output, BYTES_PER_AUDIO_FRAME);
 
-    SETUP_XDAIS(xdais_kws[0], aec_output, AUDIO_NB_BYTES);
+    SETUP_XDAIS(xdais_kws[0], aec_output, BYTES_PER_AUDIO_FRAME);
     SETUP_XDAIS(xdais_kws[1], audio_fifo, AUDIO_FIFO_SAMPLES * 2);
     SETUP_XDAIS(xdais_kws[2], mfcc_fifo, MFCC_FIFO_BYTES);
     SETUP_XDAIS(xdais_kws[3], classes, OUT_DIM);
@@ -211,7 +212,7 @@ audiomark_release(void)
 int
 audiomark_run(void)
 {
-    for (int j = 0; j < 3; ++j)
+    for (int j = 0; j < 1; ++j)
     {
         reset_audio();
         while (!read_all_audio_data)
@@ -221,7 +222,7 @@ audiomark_run(void)
             copy_audio(right_capture, 0);
 
             // linear feedback of the loudspeaker to the MICs
-            for (int i = 0; i < AUDIO_NB_BYTES / 2; i++)
+            for (int i = 0; i < BYTES_PER_AUDIO_FRAME / 2; i++)
             {
                 left_capture[i]  = left_capture[i] + audio_input[i];
                 right_capture[i] = right_capture[i] + audio_input[i];

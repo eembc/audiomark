@@ -34,7 +34,6 @@
 #include <stdlib.h>
 #include "ee_kws.h"
 #include "ee_mfcc_f32.h"
-#include "ee_nn_weights.h"
 
 enum _component_req
 {
@@ -44,14 +43,14 @@ enum _component_req
     COMPONENT_KWS = 4,
 };
 
-#define AUDIO_CAPTURE_SAMPLING    16000
-#define AUDIO_CAPTURE_FRAME_LEN_S 0.016
-#define MONO                      1
-#define SAMPLE_SIZE               2 // int16
-/* #define AUDIO_NB_SAMPLES \
-    (const int)(AUDIO_CAPTURE_SAMPLING * AUDIO_CAPTURE_FRAME_LEN_S) */
-#define AUDIO_NB_SAMPLES 256
-#define AUDIO_NB_BYTES   (AUDIO_NB_SAMPLES * SAMPLE_SIZE)
+#define SAMPLING_FREQ_HZ 16000
+#define FRAME_LEN_SEC    0.016
+#define MONO             1
+#define BYTES_PER_SAMPLE 2 // int16
+/* #define SAMPLES_PER_AUDIO_FRAME \
+    (const int)(SAMPLING_FREQ_HZ * FRAME_LEN_SEC) */
+#define SAMPLES_PER_AUDIO_FRAME 256
+#define BYTES_PER_AUDIO_FRAME   (SAMPLES_PER_AUDIO_FRAME * BYTES_PER_SAMPLE)
 
 enum _command
 {

@@ -22,7 +22,7 @@ include_directories(../../lib/speexdsp/libspeexdsp)
 include_directories(../../src)
 # Developer libraries
 include_directories(../../lib/th_api/CMSIS/DSP/Include)
-include_directories(../../lib/NN/Include)
+include_directories(../../lib/th_api/CMSIS/NN/Include)
 
 # Note on configuration of LibSpeeX:
 # We can configure with the file `lib/speexdsp/libspeexdsp/config.h`
@@ -43,6 +43,7 @@ add_definitions(-DEXPORT=)
 # EEMBC code integrator provides heap
 add_definitions(-DOVERRIDE_SPEEX_ALLOC)
 add_definitions(-DOS_SUPPORT_CUSTOM)
+add_definitions(-D__RESTRICT=)
 
 
 # This is to make sure we include function decor for GCC/CLANG in CMSIS
@@ -51,12 +52,14 @@ add_definitions(-DOS_SUPPORT_CUSTOM)
 add_definitions(-D__GNUC_PYTHON__)
 
 set(EE_SOURCE
-	../../src/ee_main.c
+	# Note: main.c is just for self-hosted testing
+	../../src/main.c
 	../../src/ee_audiomark.c
 
 	../../src/ee_aec_f32.c
 	../../src/ee_anr_f32.c
 	../../src/ee_abf_f32.c
+	../../src/ee_abf_f32_tables.c
 	../../src/ee_kws.c
 	../../src/ee_mfcc_f32.c
 	../../src/ee_mfcc_f32_tables.c
@@ -78,6 +81,9 @@ set(EE_SOURCE
 set(TH_SOURCE
 	# Separate the implementation code from the benchmark code
 	../../src/th_api.c
+	# This is essentially an include needed in th_api.c
+	../../src/ee_nn_tables.c
+	../../src/ee_abf_f32_tables.c
 	
 	../../lib/th_api/CMSIS/DSP/Source/BasicMathFunctions/BasicMathFunctions.c
 	../../lib/th_api/CMSIS/DSP/Source/CommonTables/CommonTables.c
@@ -90,12 +96,23 @@ set(TH_SOURCE
 	../../lib/th_api/CMSIS/DSP/Source/SupportFunctions/arm_copy_f32.c	
 	../../lib/th_api/CMSIS/DSP/Source/TransformFunctions/TransformFunctions.c
 
-	../../lib/NN/Source/SoftmaxFunctions/arm_softmax_q7.c
-	../../lib/NN/Source/ConvolutionFunctions/arm_convolve_1x1_HWC_q7_fast_nonsquare.c
-	../../lib/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_basic_nonsquare.c
-	../../lib/NN/Source/ConvolutionFunctions/arm_depthwise_separable_conv_HWC_q7_nonsquare.c
-	../../lib/NN/Source/FullyConnectedFunctions/arm_fully_connected_q7.c
-	../../lib/NN/Source/ActivationFunctions/arm_relu_q7.c
+	../../lib/th_api/CMSIS/NN/Source/PoolingFunctions/arm_avgpool_s8.c
+	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_wrapper_s8.c
+	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_1_x_n_s8.c
+	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_1x1_s8.c
+	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_1x1_s8_fast.c
+	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_s8.c
+	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_depthwise_conv_wrapper_s8.c
+	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_depthwise_conv_3x3_s8.c
+	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_depthwise_conv_s8.c
+	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_depthwise_conv_s8_opt.c
+	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_nn_mat_mult_kernel_s8_s16.c
+	../../lib/th_api/CMSIS/NN/Source/FullyConnectedFunctions/arm_fully_connected_s8.c
+	../../lib/th_api/CMSIS/NN/Source/SoftmaxFunctions/arm_softmax_s8.c
+	../../lib/th_api/CMSIS/NN/Source/SoftmaxFunctions/arm_nn_softmax_common_s8.c
+	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_mat_mult_nt_t_s8.c
+	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_vec_mat_mult_t_s8.c
+	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_q7_to_q15_with_offset.c
 )
 
 set(TEST_AEC_F32_SOURCE
@@ -161,18 +178,14 @@ set(TEST_MFCC_F32_SOURCE
 )
 add_executable(test_mfcc_f32 ${TEST_MFCC_F32_SOURCE})
 
-set(TEST_NN_SOURCE
-	${TH_SOURCE}
-	../../tests/test_nn.c
-)
-add_executable(test_nn ${TEST_NN_SOURCE})
-
 set(TEST_KWS_SOURCE
 	../../src/ee_kws.c
 	../../src/ee_mfcc_f32.c
 	../../src/ee_mfcc_f32_tables.c
 	${TH_SOURCE}
 	../../tests/test_kws.c
+	../../tests/data/kws_input.c
+	../../tests/data/kws_expected.c
 )
 add_executable(test_kws ${TEST_KWS_SOURCE})
 
@@ -185,17 +198,15 @@ else()
 	target_link_libraries(test_aec_f32 m)
 	target_link_libraries(test_anr_f32 m)
 	target_link_libraries(test_mfcc_f32 m)
-	target_link_libraries(test_nn m)
 	target_link_libraries(test_kws m)
 endif()
 
-add_custom_target(check
+add_custom_target(test
 	COMMENT "Running unit tests..."
 	COMMAND ./test_abf_f32
 	COMMAND ./test_aec_f32
 	COMMAND ./test_anr_f32
 	COMMAND ./test_kws
 	COMMAND ./test_mfcc_f32
-	COMMAND ./test_nn
-	DEPENDS test_mfcc_f32 test_nn test_kws test_abf_f32 test_aec_f32 test_anr_f32
+	DEPENDS test_mfcc_f32 test_kws test_abf_f32 test_aec_f32 test_anr_f32
 )

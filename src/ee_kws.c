@@ -59,22 +59,28 @@
  * 6. 12 classifier outputs
  */
 
-void
+static ee_status_t
 ee_kws_init(kws_instance_t *p_inst)
 {
     ee_mfcc_f32_init(&(p_inst->mfcc_inst));
     th_nn_init();
     p_inst->chunk_idx = 0;
+    return EE_STATUS_OK;
 }
 
-void
+static ee_status_t
 ee_kws_run(kws_instance_t *p_inst,
            const int16_t  *p_buffer,
            int8_t         *p_prediction,
            int            *p_new_inference)
 {
+    ee_status_t status = EE_STATUS_OK;
+
     /* KWS might not call an inference this time if the FIFO isn't ready. */
-    *p_new_inference = 0;
+    if (p_new_inference != NULL)
+    {
+        *p_new_inference = 0;
+    }
 
     /* Store the incoming 16ms frame as 4 chunk */
     th_memcpy(&p_inst->p_audio_fifo[p_inst->chunk_idx * SAMPLES_PER_CHUNK],
@@ -96,9 +102,13 @@ ee_kws_run(kws_instance_t *p_inst,
             &p_inst->p_mfcc_fifo[(NUM_MFCC_FRAMES - 1) * FEATURES_PER_FRAME]);
 
         /* Run the inference */
-        th_nn_classify(p_inst->p_mfcc_fifo, p_prediction);
-        th_softmax_i8(p_prediction, OUT_DIM, p_prediction);
-        *p_new_inference = 1;
+        status = th_nn_classify(p_inst->p_mfcc_fifo, p_prediction);
+
+        /* Testing likes to know if there was an inference */
+        if (p_new_inference != NULL)
+        {
+            *p_new_inference = 1;
+        }
 
         /* Shift off the aduio buffer chunks used by the MFCC. */
         p_inst->chunk_idx -= CHUNKS_PER_MFCC_SLIDE;
@@ -106,6 +116,7 @@ ee_kws_run(kws_instance_t *p_inst,
                    p_inst->p_audio_fifo + SAMPLES_PER_OUTPUT_MFCC,
                    p_inst->chunk_idx * SAMPLES_PER_CHUNK * BYTES_PER_SAMPLE);
     }
+    return status;
 }
 
 #define CHECK_SIZE(X, Y) \
@@ -117,6 +128,8 @@ ee_kws_run(kws_instance_t *p_inst,
 int32_t
 ee_kws_f32(int32_t command, void **pp_inst, void *p_data, void *p_params)
 {
+    ee_status_t status = EE_STATUS_OK;
+
     switch (command)
     {
         case NODE_MEMREQ: {
@@ -140,8 +153,11 @@ ee_kws_f32(int32_t command, void **pp_inst, void *p_data, void *p_params)
             break;
         }
         case NODE_RESET: {
-            ee_kws_init((kws_instance_t *)(*pp_inst));
-            ((kws_instance_t *)(*pp_inst))->chunk_idx = 0;
+            status = ee_kws_init((kws_instance_t *)(*pp_inst));
+            if (status == EE_STATUS_OK)
+            {
+                ((kws_instance_t *)(*pp_inst))->chunk_idx = 0;
+            }
             break;
         }
         case NODE_RUN: {
@@ -152,7 +168,7 @@ ee_kws_f32(int32_t command, void **pp_inst, void *p_data, void *p_params)
             uint32_t        audio_fifo_size  = 0;
             uint32_t        mfcc_fifo_size   = 0;
             uint32_t        predictions_size = 0;
-            int             new_inference    = 0;
+            int            *new_inference    = (int *)p_params;
             kws_instance_t *p_inst           = *pp_inst;
 
             p_ptr                = (PTR_INT *)p_data;
@@ -170,9 +186,9 @@ ee_kws_f32(int32_t command, void **pp_inst, void *p_data, void *p_params)
             CHECK_SIZE(mfcc_fifo_size, NUM_MFCC_FRAMES * FEATURES_PER_FRAME);
             CHECK_SIZE(predictions_size, OUT_DIM);
 
-            ee_kws_run(p_inst, p_inbuf, p_predictions, &new_inference);
+            status = ee_kws_run(p_inst, p_inbuf, p_predictions, new_inference);
             break;
         }
     }
-    return 0;
+    return status == EE_STATUS_OK ? 0 : 1;
 }
