@@ -196,7 +196,6 @@ else()
 	target_link_libraries(test_aec_f32 m)
 	target_link_libraries(test_anr_f32 m)
 	target_link_libraries(test_mfcc_f32 m)
-	target_link_libraries(test_nn m)
 	target_link_libraries(test_kws m)
 endif()
 
