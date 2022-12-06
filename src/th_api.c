@@ -36,14 +36,14 @@
 #include "arm_nnfunctions.h"
 
 // These are the inter-component buffers
-int16_t audio_input[AUDIO_NB_SAMPLES];       // 1
-int16_t left_capture[AUDIO_NB_SAMPLES];      // 2
-int16_t right_capture[AUDIO_NB_SAMPLES];     // 3
-int16_t beamformer_output[AUDIO_NB_SAMPLES]; // 4
-int16_t aec_output[AUDIO_NB_SAMPLES];        // 5
-int16_t audio_fifo[AUDIO_FIFO_SAMPLES];      // 6
-int8_t  mfcc_fifo[MFCC_FIFO_BYTES];          // 7
-int8_t  classes[OUT_DIM];                    // 8
+int16_t audio_input[SAMPLES_PER_AUDIO_FRAME];       // 1
+int16_t left_capture[SAMPLES_PER_AUDIO_FRAME];      // 2
+int16_t right_capture[SAMPLES_PER_AUDIO_FRAME];     // 3
+int16_t beamformer_output[SAMPLES_PER_AUDIO_FRAME]; // 4
+int16_t aec_output[SAMPLES_PER_AUDIO_FRAME];        // 5
+int16_t audio_fifo[AUDIO_FIFO_SAMPLES];             // 6
+int8_t  mfcc_fifo[MFCC_FIFO_BYTES];                 // 7
+int8_t  classes[OUT_DIM];                           // 8
 
 void *
 th_malloc(size_t size, int req)
