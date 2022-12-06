@@ -22,6 +22,7 @@ include_directories(../../lib/speexdsp/libspeexdsp)
 include_directories(../../src)
 # Developer libraries
 include_directories(../../lib/th_api/CMSIS/DSP/Include)
+include_directories(../../lib/th_api/CMSIS/DSP/PrivateInclude)
 include_directories(../../lib/th_api/CMSIS/NN/Include)
 
 # Note on configuration of LibSpeeX:
@@ -105,12 +106,17 @@ set(TH_SOURCE
 	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_depthwise_conv_s8.c
 	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_depthwise_conv_s8_opt.c
 	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_nn_mat_mult_kernel_s8_s16.c
+	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_nn_mat_mult_s8.c
 	../../lib/th_api/CMSIS/NN/Source/FullyConnectedFunctions/arm_fully_connected_s8.c
 	../../lib/th_api/CMSIS/NN/Source/SoftmaxFunctions/arm_softmax_s8.c
 	../../lib/th_api/CMSIS/NN/Source/SoftmaxFunctions/arm_nn_softmax_common_s8.c
 	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_mat_mult_nt_t_s8.c
 	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_vec_mat_mult_t_s8.c
 	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_q7_to_q15_with_offset.c
+	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_mat_mul_core_1x_s8.c
+	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_mat_mul_core_4x_s8.c
+	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_depthwise_conv_nt_t_s8.c
+	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_depthwise_conv_nt_t_padded_s8.c
 )
 
 set(TEST_AEC_F32_SOURCE
