@@ -36,14 +36,14 @@
 #include "arm_nnfunctions.h"
 
 // These are the inter-component buffers
-int16_t audio_input[AUDIO_NB_SAMPLES];       // 1
-int16_t left_capture[AUDIO_NB_SAMPLES];      // 2
-int16_t right_capture[AUDIO_NB_SAMPLES];     // 3
-int16_t beamformer_output[AUDIO_NB_SAMPLES]; // 4
-int16_t aec_output[AUDIO_NB_SAMPLES];        // 5
-int16_t audio_fifo[AUDIO_FIFO_SAMPLES];      // 6
-int8_t  mfcc_fifo[MFCC_FIFO_BYTES];          // 7
-int8_t  classes[OUT_DIM];                    // 8
+int16_t audio_input[SAMPLES_PER_AUDIO_FRAME];       // 1
+int16_t left_capture[SAMPLES_PER_AUDIO_FRAME];      // 2
+int16_t right_capture[SAMPLES_PER_AUDIO_FRAME];     // 3
+int16_t beamformer_output[SAMPLES_PER_AUDIO_FRAME]; // 4
+int16_t aec_output[SAMPLES_PER_AUDIO_FRAME];        // 5
+int16_t audio_fifo[AUDIO_FIFO_SAMPLES];             // 6
+int8_t  mfcc_fifo[MFCC_FIFO_BYTES];                 // 7
+int8_t  classes[OUT_DIM];                           // 8
 
 void *
 th_malloc(size_t size, int req)
@@ -273,11 +273,6 @@ extern const int32_t ds_cnn_s_layer_9_conv2d_output_mult[64];
 extern const int32_t ds_cnn_s_layer_9_conv2d_output_shift[64];
 extern const int8_t  ds_cnn_s_layer_9_conv2d_weights[4096];
 
-void
-th_nn_init(void)
-{
-}
-
 typedef int8_t input_tensor_t[490];
 typedef int8_t output_tensor_t[12];
 #define MAX_DIM_SIZE_BYTE_0 (CONV_0_OUTPUT_W * CONV_0_OUTPUT_H * CONV_0_OUT_CH)
@@ -370,18 +365,25 @@ ds_cnn_s_s8_get_buffer_size(void)
     return max_buffer;
 }
 
-ee_status_t
-th_nn_classify(const input_tensor_t in_data, output_tensor_t out_data)
-{
-    /* Test for a complete int8 DS_CNN_S keyword spotting network from
-     * https://github.com/ARM-software/ML-zoo & Tag: 22.02 */
-    cmsis_nn_context ctx;
-    // unused const arm_cmsis_nn_status expected = ARM_CMSIS_NN_SUCCESS;
+/* Test for a complete int8 DS_CNN_S keyword spotting network from
+ * https://github.com/ARM-software/ML-zoo & Tag: 22.02 */
+cmsis_nn_context ctx;
 
+void
+th_nn_init(void)
+{
+    // unused const arm_cmsis_nn_status expected = ARM_CMSIS_NN_SUCCESS;
     ctx.size = ds_cnn_s_s8_get_buffer_size();
 
     /* N.B. The developer owns this file so they can allocate how they like. */
-    ctx.buf  = malloc(ctx.size);
+    ctx.buf = malloc(ctx.size);
+
+    // we don't free in audiomark
+}
+
+ee_status_t
+th_nn_classify(const input_tensor_t in_data, output_tensor_t out_data)
+{
 
     int8_t *in_out_buf_0
         = (int8_t *)&in_out_buf_main[IN_OUT_BUFER_0_BYTE_OFFSET >> 2];
@@ -702,7 +704,6 @@ th_nn_classify(const input_tensor_t in_data, output_tensor_t out_data)
                                      ds_cnn_s_layer_12_fc_bias,
                                      &in_out_dim_1,
                                      in_out_buf_0);
-#if 1
     /***************************** Softmax *************** */
 
     arm_softmax_s8(in_out_buf_0,
@@ -712,8 +713,6 @@ th_nn_classify(const input_tensor_t in_data, output_tensor_t out_data)
                    SOFTMAX_12_SHIFT,
                    SOFTMAX_12_DIFF_MIN,
                    out_data);
-#endif
-    free(ctx.buf);
 
     return status == ARM_CMSIS_NN_SUCCESS ? EE_STATUS_OK : EE_STATUS_ERROR;
 }

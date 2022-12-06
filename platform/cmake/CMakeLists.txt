@@ -176,18 +176,14 @@ set(TEST_MFCC_F32_SOURCE
 )
 add_executable(test_mfcc_f32 ${TEST_MFCC_F32_SOURCE})
 
-set(TEST_NN_SOURCE
-	${TH_SOURCE}
-	../../tests/test_nn.c
-)
-add_executable(test_nn ${TEST_NN_SOURCE})
-
 set(TEST_KWS_SOURCE
 	../../src/ee_kws.c
 	../../src/ee_mfcc_f32.c
 	../../src/ee_mfcc_f32_tables.c
 	${TH_SOURCE}
 	../../tests/test_kws.c
+	../../tests/data/kws_input.c
+	../../tests/data/kws_expected.c
 )
 add_executable(test_kws ${TEST_KWS_SOURCE})
 
@@ -200,7 +196,6 @@ else()
 	target_link_libraries(test_aec_f32 m)
 	target_link_libraries(test_anr_f32 m)
 	target_link_libraries(test_mfcc_f32 m)
-	target_link_libraries(test_nn m)
 	target_link_libraries(test_kws m)
 endif()
 
@@ -211,6 +206,5 @@ add_custom_target(test
 	COMMAND ./test_anr_f32
 	COMMAND ./test_kws
 	COMMAND ./test_mfcc_f32
-	COMMAND ./test_nn
-	DEPENDS test_mfcc_f32 test_nn test_kws test_abf_f32 test_aec_f32 test_anr_f32
+	DEPENDS test_mfcc_f32 test_kws test_abf_f32 test_aec_f32 test_anr_f32
 )
