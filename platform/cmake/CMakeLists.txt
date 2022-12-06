@@ -203,7 +203,7 @@ else()
 	target_link_libraries(test_kws m)
 endif()
 
-add_custom_target(check
+add_custom_target(test
 	COMMENT "Running unit tests..."
 	COMMAND ./test_abf_f32
 	COMMAND ./test_aec_f32
