@@ -51,7 +51,8 @@ add_definitions(-D__RESTRICT=)
 add_definitions(-D__GNUC_PYTHON__)
 
 set(EE_SOURCE
-	../../src/ee_main.c
+	# Note: main.c is just for self-hosted testing
+	../../src/main.c
 	../../src/ee_audiomark.c
 
 	../../src/ee_aec_f32.c
