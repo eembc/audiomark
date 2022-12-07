@@ -1,14 +1,15 @@
-layer:  
+layer:
   # name: speex
   description: Lib speex
 
-   
+
   groups:
     - group: Libspeex
       files:
         - file: ../../lib/speexdsp/libspeexdsp/buffer.c
         - file: ../../lib/speexdsp/libspeexdsp/fftwrap.c
         - file: ../../lib/speexdsp/libspeexdsp/filterbank.c
+        #- file: ../../lib/speexdsp/libspeexdsp/filterbank_helium.c
         - file: ../../lib/speexdsp/libspeexdsp/jitter.c
         - file: ../../lib/speexdsp/libspeexdsp/kiss_fft.c
         - file: ../../lib/speexdsp/libspeexdsp/kiss_fftr.c
@@ -18,15 +19,26 @@ layer:
         - file: ../../lib/speexdsp/libspeexdsp/scal.c
         - file: ../../lib/speexdsp/libspeexdsp/smallft.c
         - file: ../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
-      
+
       misc:
         - C:
-          - -DFLOATING_POINT 
-          - -DEXPORT= 
+          - -DFLOATING_POINT
+          - -DEXPORT=
           - -DOS_SUPPORT_CUSTOM
-          #- -DOVERRIDE_SPEEX_ALLOC
           - -DMVE_INTRINSICS
-  
+          # speex boosted routines
+          - -DOVERRIDE_FB_COMPUTE_BANK32
+          - -DOVERRIDE_FB_COMPUTE_PSD16
+          - -DOVERRIDE_ANR_UPDATE_NOISE_ESTIMATE
+          - -DOVERRIDE_ANR_APOSTERIORI_SNR
+          - -DOVERRIDE_ANR_POWER_SPECTRUM
+          - -DOVERRIDE_ANR_COMPUTE_GAIN_FLOOR
+          - -DOVERRIDE_ANR_UPDATE_ZETA
+          - -DOVERRIDE_ANR_UPDATE_GAINS_CRITICAL_BANDS
+          - -DOVERRIDE_ANR_UPDATE_GAINS_LINEAR
+          - -DOVERRIDE_ANR_APPLY_SPEC_GAIN
+
+
   add-paths:
     - ../../lib/speexdsp/include
     - ../../lib/speexdsp/

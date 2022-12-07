@@ -17,8 +17,20 @@
  *---------------------------------------------------------------------------*/
 
 #include "ee_audiomark.h"
-/* This include is special as it contains the raw data buffers. */
-#include "ee_data.h"
+
+extern const int16_t downlink_audio[NINPUT_SAMPLES];
+extern const int16_t left_microphone_capture[NINPUT_SAMPLES];
+extern const int16_t right_microphone_capture[NINPUT_SAMPLES];
+extern int16_t for_asr[NINPUT_SAMPLES];
+// System integrator can locate these via the linker map (th_api.c)
+extern int16_t audio_input[SAMPLES_PER_AUDIO_FRAME];       // 1
+extern int16_t left_capture[SAMPLES_PER_AUDIO_FRAME];      // 2
+extern int16_t right_capture[SAMPLES_PER_AUDIO_FRAME];     // 3
+extern int16_t beamformer_output[SAMPLES_PER_AUDIO_FRAME]; // 4
+extern int16_t aec_output[SAMPLES_PER_AUDIO_FRAME];        // 5
+extern int16_t audio_fifo[AUDIO_FIFO_SAMPLES];             // 6
+extern int8_t  mfcc_fifo[MFCC_FIFO_BYTES];                 // 7
+extern int8_t  classes[OUT_DIM];                           // 8
 
 /* These are index pointers used to slide through the input audio stream. */
 static uint32_t idx_microphone_L;
@@ -31,16 +43,6 @@ static uint32_t progress_count;
 char *spxGlobalHeapPtr;
 char *spxGlobalHeapEnd;
 long  cumulatedMalloc;
-
-// System integrator can locate these via the linker map (th_api.c)
-extern int16_t audio_input[SAMPLES_PER_AUDIO_FRAME];       // 1
-extern int16_t left_capture[SAMPLES_PER_AUDIO_FRAME];      // 2
-extern int16_t right_capture[SAMPLES_PER_AUDIO_FRAME];     // 3
-extern int16_t beamformer_output[SAMPLES_PER_AUDIO_FRAME]; // 4
-extern int16_t aec_output[SAMPLES_PER_AUDIO_FRAME];        // 5
-extern int16_t audio_fifo[AUDIO_FIFO_SAMPLES];             // 6
-extern int8_t  mfcc_fifo[MFCC_FIFO_BYTES];                 // 7
-extern int8_t  classes[OUT_DIM];                           // 8
 
 /* The above buffers are programmed into these XDAIS structures on init. */
 static xdais_buffer_t xdais_bmf[3];

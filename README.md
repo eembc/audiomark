@@ -51,9 +51,15 @@ version 14 (which aligns pointer stars differently).
 
 ## Memory Model
 
-There are three types of memory required for the benchmark: pre-defined
-inter-component buffers, constant tables, and component-specific scractch
-memory requests.
+There are four types of memory required for the benchmark: input audio buffers,
+pre-defined inter-component buffers, constant tables, and component-specific
+scractch memory requests.
+
+### Input audio buffers
+
+Three channels of input audio are provided: left, right, and noise. There are
+roughly 1.69 seconds of audio in these buffers. A fourth buffer, `for_asr` is
+used for propagate the AEC output.
 
 ### Inter-component buffers
 

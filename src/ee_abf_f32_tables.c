@@ -27,10 +27,12 @@
  * limitations under the License.
  */
 
+#include "ee_types.h"
+
 /*
  *   w_hanning_div2 = 0.5 * hann(256);
  */
-const float w_hanning_div2[128]
+const ee_f32_t w_hanning_div2[128]
     = { 0.00000f, 0.00031f, 0.00122f, 0.00275f, 0.00488f, 0.00761f, 0.01093f,
         0.01484f, 0.01933f, 0.02438f, 0.02998f, 0.03612f, 0.04278f, 0.04995f,
         0.05761f, 0.06574f, 0.07432f, 0.08333f, 0.09275f, 0.10255f, 0.11272f,
@@ -65,11 +67,13 @@ const float w_hanning_div2[128]
     for ilag=LagRange
         wrot(idxLag, :) = exp(2*pi*1i*(0:NFFT-1)*ilag/NFFT)';
         fwd_print_coef_float(wrot(idxLag, 1:NFFT));
-        fprintf(1, '\n');
+        fprint
+        #include "ee_types.h"
+        f(1, '\n');
         idxLag = idxLag +1;
     end
 */
-const float rotation[4096] = {
+const ee_f32_t rotation[4096] = {
     1.00000f,  0.00000f,  0.99581f,  0.09146f,  0.98327f,  0.18216f,  0.96249f,
     0.27133f,  0.93364f,  0.35823f,  0.89696f,  0.44212f,  0.85276f,  0.52230f,
     0.80141f,  0.59811f,  0.74335f,  0.66890f,  0.67905f,  0.73409f,  0.60906f,
