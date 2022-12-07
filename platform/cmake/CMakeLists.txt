@@ -10,7 +10,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
 	# These are not ignored by MSVC
 	#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-newline-eof")
-	# Current CMSIS/NN has lots of these with CMSIS/DSP
+	# Current CMSIS-NN has lots of these with CMSIS-DSP
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-typedef-redefinition")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-macro-redefined")
 endif()
@@ -21,9 +21,8 @@ include_directories(../../lib/speexdsp/include/speex)
 include_directories(../../lib/speexdsp/libspeexdsp)
 include_directories(../../src)
 # Developer libraries
-include_directories(../../lib/th_api/CMSIS/DSP/Include)
-include_directories(../../lib/th_api/CMSIS/DSP/PrivateInclude)
-include_directories(../../lib/th_api/CMSIS/NN/Include)
+include_directories(../../lib/th_api/CMSIS-DSP/Include)
+include_directories(../../lib/th_api/CMSIS-NN/Include)
 
 # Note on configuration of LibSpeeX:
 # We can configure with the file `lib/speexdsp/libspeexdsp/config.h`
@@ -85,38 +84,33 @@ set(TH_SOURCE
 	../../src/ee_nn_tables.c
 	../../src/ee_abf_f32_tables.c
 	
-	../../lib/th_api/CMSIS/DSP/Source/BasicMathFunctions/BasicMathFunctions.c
-	../../lib/th_api/CMSIS/DSP/Source/CommonTables/CommonTables.c
-	../../lib/th_api/CMSIS/DSP/Source/ComplexMathFunctions/ComplexMathFunctions.c
-	../../lib/th_api/CMSIS/DSP/Source/FastMathFunctions/FastMathFunctions.c
-	../../lib/th_api/CMSIS/DSP/Source/MatrixFunctions/MatrixFunctions.c	
-	../../lib/th_api/CMSIS/DSP/Source/StatisticsFunctions/StatisticsFunctions.c
-	../../lib/th_api/CMSIS/DSP/Source/SupportFunctions/arm_float_to_q15.c
-	../../lib/th_api/CMSIS/DSP/Source/SupportFunctions/arm_q15_to_float.c
-	../../lib/th_api/CMSIS/DSP/Source/TransformFunctions/TransformFunctions.c
+	../../lib/th_api/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c
+	../../lib/th_api/CMSIS-DSP/Source/CommonTables/CommonTables.c
+	../../lib/th_api/CMSIS-DSP/Source/ComplexMathFunctions/ComplexMathFunctions.c
+	../../lib/th_api/CMSIS-DSP/Source/FastMathFunctions/FastMathFunctions.c
+	../../lib/th_api/CMSIS-DSP/Source/MatrixFunctions/MatrixFunctions.c	
+	../../lib/th_api/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c
+	../../lib/th_api/CMSIS-DSP/Source/SupportFunctions/arm_float_to_q15.c
+	../../lib/th_api/CMSIS-DSP/Source/SupportFunctions/arm_q15_to_float.c
+	../../lib/th_api/CMSIS-DSP/Source/TransformFunctions/TransformFunctions.c
 
-	../../lib/th_api/CMSIS/NN/Source/PoolingFunctions/arm_avgpool_s8.c
-	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_wrapper_s8.c
-	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_1_x_n_s8.c
-	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_1x1_s8.c
-	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_1x1_s8_fast.c
-	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_s8.c
-	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_depthwise_conv_wrapper_s8.c
-	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_depthwise_conv_3x3_s8.c
-	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_depthwise_conv_s8.c
-	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_depthwise_conv_s8_opt.c
-	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_nn_mat_mult_kernel_s8_s16.c
-	../../lib/th_api/CMSIS/NN/Source/ConvolutionFunctions/arm_nn_mat_mult_s8.c
-	../../lib/th_api/CMSIS/NN/Source/FullyConnectedFunctions/arm_fully_connected_s8.c
-	../../lib/th_api/CMSIS/NN/Source/SoftmaxFunctions/arm_softmax_s8.c
-	../../lib/th_api/CMSIS/NN/Source/SoftmaxFunctions/arm_nn_softmax_common_s8.c
-	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_mat_mult_nt_t_s8.c
-	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_vec_mat_mult_t_s8.c
-	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_q7_to_q15_with_offset.c
-	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_mat_mul_core_1x_s8.c
-	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_mat_mul_core_4x_s8.c
-	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_depthwise_conv_nt_t_s8.c
-	../../lib/th_api/CMSIS/NN/Source/NNSupportFunctions/arm_nn_depthwise_conv_nt_t_padded_s8.c
+	../../lib/th_api/CMSIS-NN/Source/PoolingFunctions/arm_avgpool_s8.c
+	../../lib/th_api/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_wrapper_s8.c
+	../../lib/th_api/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_1_x_n_s8.c
+	../../lib/th_api/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_1x1_s8.c
+	../../lib/th_api/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_1x1_s8_fast.c
+	../../lib/th_api/CMSIS-NN/Source/ConvolutionFunctions/arm_convolve_s8.c
+	../../lib/th_api/CMSIS-NN/Source/ConvolutionFunctions/arm_depthwise_conv_wrapper_s8.c
+	../../lib/th_api/CMSIS-NN/Source/ConvolutionFunctions/arm_depthwise_conv_3x3_s8.c
+	../../lib/th_api/CMSIS-NN/Source/ConvolutionFunctions/arm_depthwise_conv_s8.c
+	../../lib/th_api/CMSIS-NN/Source/ConvolutionFunctions/arm_depthwise_conv_s8_opt.c
+	../../lib/th_api/CMSIS-NN/Source/ConvolutionFunctions/arm_nn_mat_mult_kernel_s8_s16.c
+	../../lib/th_api/CMSIS-NN/Source/FullyConnectedFunctions/arm_fully_connected_s8.c
+	../../lib/th_api/CMSIS-NN/Source/SoftmaxFunctions/arm_softmax_s8.c
+	../../lib/th_api/CMSIS-NN/Source/SoftmaxFunctions/arm_nn_softmax_common_s8.c
+	../../lib/th_api/CMSIS-NN/Source/NNSupportFunctions/arm_nn_mat_mult_nt_t_s8.c
+	../../lib/th_api/CMSIS-NN/Source/NNSupportFunctions/arm_nn_vec_mat_mult_t_s8.c
+	../../lib/th_api/CMSIS-NN/Source/NNSupportFunctions/arm_q7_to_q15_with_offset.c
 )
 
 set(TEST_AEC_F32_SOURCE
