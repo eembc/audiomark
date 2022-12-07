@@ -109,7 +109,7 @@ ee_mfcc_f32_compute(mfcc_instance_t *p_inst,
 
     for (int i = 0; i < NUM_MFCC_FEATURES; i++)
     {
-        float sum = p_inst->mfcc_out[i];
+        ee_f32_t sum = p_inst->mfcc_out[i];
         /* Input is Qx.mfcc_dec_bits (from quantization step) */
         sum *= (0x1 << MFCC_DEC_BITS);
         sum = round(sum);
