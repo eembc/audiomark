@@ -35,6 +35,18 @@
 
 #include "arm_nnfunctions.h"
 
+// These are the input audio files and some scratchpad
+const int16_t downlink_audio[NINPUT_SAMPLES] = {
+#include "ee_data/noise.txt"
+};
+const int16_t left_microphone_capture[NINPUT_SAMPLES] = {
+#include "ee_data/left0.txt"
+};
+const int16_t right_microphone_capture[NINPUT_SAMPLES] = {
+#include "ee_data/right0.txt"
+};
+int16_t for_asr[NINPUT_SAMPLES];
+
 // These are the inter-component buffers
 int16_t audio_input[SAMPLES_PER_AUDIO_FRAME];       // 1
 int16_t left_capture[SAMPLES_PER_AUDIO_FRAME];      // 2
