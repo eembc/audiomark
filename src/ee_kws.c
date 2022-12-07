@@ -29,6 +29,10 @@
 
 #include "ee_kws.h"
 
+#ifdef DEBUG_PRINTF_CLASSES
+#include <stdio.h>
+#endif
+
 /**
  * The KWS uses an MFCC to extract features per each audio frame, and then sends
  * a group of MFCC features to the neural net for classification. The KWS also
@@ -103,7 +107,23 @@ ee_kws_run(kws_instance_t *p_inst,
 
         /* Run the inference */
         status = th_nn_classify(p_inst->p_mfcc_fifo, p_prediction);
-
+#ifdef DEBUG_PRINTF_CLASSES
+        printf("OUTPUT: ");
+        char output_class[12][8] = {"Silence", "Unknown","yes","no","up","down","left","right","on","off","stop","go"};
+        for (int i=0; i<12; ++i) {
+            printf("% 4d ", p_prediction[i]);
+        }
+        int max_ind=0;
+        int max_val=-128000;
+        for(int i=0;i<12;i++) {
+            if(max_val<p_prediction[i]) {
+            max_val = p_prediction[i];
+            max_ind = i;
+            }    
+        }
+        printf(" --> %8s (%3d%%)",output_class[max_ind],((int)(p_prediction[max_ind] + 128)*100/256));
+        printf("\n");
+#endif
         /* Testing likes to know if there was an inference */
         if (p_new_inference != NULL)
         {
