@@ -98,7 +98,7 @@ adaptive_beamformer_f32(ee_f32_t                  *bf_cmplx_in_pt,
             && bf_mem->GSC_det_avg > bf_params->DS_DET_TH)
         { // update adptBF coefficients
             ee_f32_t tmp = bf_params->alpha_BM_NLMS
-                        / (bf_mem->Norm_out_BM[i] + bf_params->ep_GSC);
+                           / (bf_mem->Norm_out_BM[i] + bf_params->ep_GSC);
             for (int j = 0; j < LEN_BM_ADF * 2; j += 2)
             {
                 bf_mem->coefs_BM_ADF[i][j]
@@ -151,14 +151,14 @@ beamformer_f32_run(abf_f32_instance_t *p_inst,
                    int32_t            *output_samples_produced,
                    int32_t            *returned_state)
 {
-    int32_t input_index;
-    int32_t ilag;
-    int32_t i;
-    ee_f32_t  *pf32_1;
-    ee_f32_t  *pf32_2;
-    ee_f32_t  *pf32_3;
-    ee_f32_t  *pf32_out;
-    ee_f32_t   ftmp;
+    int32_t   input_index;
+    int32_t   ilag;
+    int32_t   i;
+    ee_f32_t *pf32_1;
+    ee_f32_t *pf32_2;
+    ee_f32_t *pf32_3;
+    ee_f32_t *pf32_out;
+    ee_f32_t  ftmp;
 
     abf_f32_fastdata_mem_t    *bf_mem    = &(p_inst->st->bf_mem);
     abf_f32_fastdata_params_t *bf_params = &(p_inst->st->bf_params);

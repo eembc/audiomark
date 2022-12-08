@@ -36,11 +36,12 @@ extern const ee_f32_t ee_mfcc_filter_coefs_f32[EE_NUM_MFCC_FILTER_COEFS];
 /* 40ms frame of 16 kHz audio is 640 16-bit samples. */
 #define FRAME_LEN 640
 /* Pre-defined */
-/* MFCC output needs scaled and offseted based on the trained model, following two values come from the trained
- * model: https://github.com/ARM-software/ML-zoo/tree/master/models/keyword_spotting/ds_cnn_small/tflite_int8
+/* MFCC output needs scaled and offseted based on the trained model, following
+ * two values come from the trained model:
+ * https://github.com/ARM-software/ML-zoo/tree/master/models/keyword_spotting/ds_cnn_small/tflite_int8
  */
-#define MFCC_SCALE  (1.0f / 1.084193468093872)
-#define MFCC_OFFSET ((float)100)
+#define MFCC_SCALE        (1.0f / 1.084193468093872)
+#define MFCC_OFFSET       ((float)100)
 #define NUM_MFCC_FEATURES 10
 // frame_len_padded = pow(2,ceil((log(FRAME_LEN)/log(2)))); == 1024
 #define PADDED_FRAME_LEN 1024

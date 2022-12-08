@@ -21,7 +21,7 @@
 extern const int16_t downlink_audio[NINPUT_SAMPLES];
 extern const int16_t left_microphone_capture[NINPUT_SAMPLES];
 extern const int16_t right_microphone_capture[NINPUT_SAMPLES];
-extern int16_t for_asr[NINPUT_SAMPLES];
+extern int16_t       for_asr[NINPUT_SAMPLES];
 // System integrator can locate these via the linker map (th_api.c)
 extern int16_t audio_input[SAMPLES_PER_AUDIO_FRAME];       // 1
 extern int16_t left_capture[SAMPLES_PER_AUDIO_FRAME];      // 2
@@ -86,7 +86,7 @@ copy_audio(int16_t *pt, int16_t debug)
         src = &(downlink_audio[*idx]);
         dst = audio_input;
         // Only need to increment this once since they all move together
-        progress_count += BYTES_PER_AUDIO_FRAME / 2;
+        progress_count += SAMPLES_PER_AUDIO_FRAME;
     }
     else if (pt == left_capture)
     {
@@ -111,7 +111,7 @@ copy_audio(int16_t *pt, int16_t debug)
         return 1;
     }
 
-    if ((progress_count + (BYTES_PER_AUDIO_FRAME / 2)) >= NINPUT_SAMPLES)
+    if ((progress_count + SAMPLES_PER_AUDIO_FRAME) >= NINPUT_SAMPLES)
     {
         read_all_audio_data = 1;
         return 1;
@@ -122,7 +122,7 @@ copy_audio(int16_t *pt, int16_t debug)
         th_memcpy(dst, src, BYTES_PER_AUDIO_FRAME);
     }
 
-    *idx += (BYTES_PER_AUDIO_FRAME / 2);
+    *idx += SAMPLES_PER_AUDIO_FRAME;
 
     return 0;
 }

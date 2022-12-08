@@ -3,8 +3,8 @@
 #include "ee_types.h"
 #include "ee_audiomark.h"
 
-#define NBUFFERS 105
-#define NINFERS  83
+#define NBUFFERS 93
+#define NINFERS  73
 #define NSAMPLES 256
 #define NCLASSES 12
 

@@ -107,11 +107,10 @@ ee_mfcc_f32_compute(mfcc_instance_t *p_inst,
 
     ee_mfcc_f32(p_inst);
 
-    //float factor = 1.0f / MFCC_SCALE;
     for (int i = 0; i < NUM_MFCC_FEATURES; i++)
     {
         ee_f32_t sum = p_inst->mfcc_out[i];
-        /* Prepare input to tflite-micro inference */
+
         sum = sum * MFCC_SCALE + MFCC_OFFSET;
 
         if (sum >= 127)
