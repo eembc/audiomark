@@ -4,7 +4,7 @@ project(audiomark
 	LANGUAGES C
 	VERSION 0.0.0)
 
-set(CMAKE_C_FLAGS "-pedantic -std=c99 -g -O0 -Wall")
+set(CMAKE_C_FLAGS "-pedantic -std=c99 -g -O2 -Wall")
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
 	# Perhaps we can remove these after cleaning up the SpeeX code.
 	# These are not ignored by MSVC

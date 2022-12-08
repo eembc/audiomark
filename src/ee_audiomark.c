@@ -203,6 +203,7 @@ audiomark_release(void)
     th_free(p_aec_inst, COMPONENT_AEC);
     th_free(p_anr_inst, COMPONENT_ANR);
     th_free(p_kws_inst, COMPONENT_KWS);
+    // TODO: De-init NN allocs?
 }
 
 #define CHECK(X)         \
@@ -214,30 +215,27 @@ audiomark_release(void)
 int
 audiomark_run(void)
 {
-    for (int j = 0; j < 1; ++j)
+    reset_audio();
+    while (!read_all_audio_data)
     {
-        reset_audio();
-        while (!read_all_audio_data)
+        copy_audio(audio_input, 0);
+        copy_audio(left_capture, 0);
+        copy_audio(right_capture, 0);
+
+        // linear feedback of the loudspeaker to the MICs
+        for (int i = 0; i < BYTES_PER_AUDIO_FRAME / 2; i++)
         {
-            copy_audio(audio_input, 0);
-            copy_audio(left_capture, 0);
-            copy_audio(right_capture, 0);
-
-            // linear feedback of the loudspeaker to the MICs
-            for (int i = 0; i < BYTES_PER_AUDIO_FRAME / 2; i++)
-            {
-                left_capture[i]  = left_capture[i] + audio_input[i];
-                right_capture[i] = right_capture[i] + audio_input[i];
-            }
-
-            CHECK(ee_abf_f32(NODE_RUN, (void **)&p_bmf_inst, xdais_bmf, NULL));
-            CHECK(ee_aec_f32(NODE_RUN, (void **)&p_aec_inst, xdais_aec, NULL));
-            CHECK(ee_anr_f32(NODE_RUN, (void **)&p_anr_inst, xdais_anr, NULL));
-            CHECK(ee_kws_f32(NODE_RUN, (void **)&p_kws_inst, xdais_kws, NULL));
-
-            // save the cleaned audio for ASR
-            copy_audio(aec_output, 0);
+            left_capture[i]  = left_capture[i] + audio_input[i];
+            right_capture[i] = right_capture[i] + audio_input[i];
         }
+
+        CHECK(ee_abf_f32(NODE_RUN, (void **)&p_bmf_inst, xdais_bmf, NULL));
+        CHECK(ee_aec_f32(NODE_RUN, (void **)&p_aec_inst, xdais_aec, NULL));
+        CHECK(ee_anr_f32(NODE_RUN, (void **)&p_anr_inst, xdais_anr, NULL));
+        CHECK(ee_kws_f32(NODE_RUN, (void **)&p_kws_inst, xdais_kws, NULL));
+
+        // save the cleaned audio for ASR
+        copy_audio(aec_output, 0);
     }
     return 0;
 exit_error:
