@@ -110,9 +110,9 @@ ee_mfcc_f32_compute(mfcc_instance_t *p_inst,
     for (int i = 0; i < NUM_MFCC_FEATURES; i++)
     {
         ee_f32_t sum = p_inst->mfcc_out[i];
-        /* Input is Qx.mfcc_dec_bits (from quantization step) */
-        sum *= (0x1 << MFCC_DEC_BITS);
-        sum = round(sum);
+
+        sum = sum * MFCC_SCALE + MFCC_OFFSET;
+
         if (sum >= 127)
         {
             p_mfcc_out[i] = 127;
@@ -123,7 +123,7 @@ ee_mfcc_f32_compute(mfcc_instance_t *p_inst,
         }
         else
         {
-            p_mfcc_out[i] = sum;
+            p_mfcc_out[i] = (int8_t)sum;
         }
     }
 }
