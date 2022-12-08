@@ -65,7 +65,7 @@ set(EE_SOURCE
 	../../src/ee_mfcc_f32.c
 	../../src/ee_mfcc_f32_tables.c
 
-	../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
+	#../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 	../../lib/speexdsp/libspeexdsp/buffer.c
 	../../lib/speexdsp/libspeexdsp/fftwrap.c
 	../../lib/speexdsp/libspeexdsp/filterbank.c
@@ -94,6 +94,7 @@ set(TH_SOURCE
 	../../lib/th_api/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c
 	../../lib/th_api/CMSIS-DSP/Source/SupportFunctions/arm_float_to_q15.c
 	../../lib/th_api/CMSIS-DSP/Source/SupportFunctions/arm_q15_to_float.c
+	../../lib/th_api/CMSIS-DSP/Source/SupportFunctions/arm_copy_f32.c
 	../../lib/th_api/CMSIS-DSP/Source/TransformFunctions/TransformFunctions.c
 
 	../../lib/th_api/CMSIS-NN/Source/PoolingFunctions/arm_avgpool_s8.c
@@ -122,7 +123,7 @@ set(TH_SOURCE
 
 set(TEST_AEC_F32_SOURCE
 	../../src/ee_aec_f32.c
-	../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
+	#../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 	../../lib/speexdsp/libspeexdsp/buffer.c
 	../../lib/speexdsp/libspeexdsp/fftwrap.c
 	../../lib/speexdsp/libspeexdsp/filterbank.c

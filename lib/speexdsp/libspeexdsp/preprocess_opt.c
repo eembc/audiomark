@@ -53,17 +53,51 @@
  * limitations under the License.
  */
 
-#define NOINL __attribute__ ((noinline))
 
 
 #ifdef GENERIC_ARCH
 
+/*
+ * Reference code for optimized routines
+ */
+
+#ifdef OVERRIDE_ANR_VEC_MUL
+/* vector mult for windowing */
+static void vect_mult(
+  const spx_word16_t * pSrcA,
+  const spx_word16_t * pSrcB,
+        spx_word16_t * pDst,
+        uint32_t blockSize)
+{
+    int i;
+
+    for (i=0;i<blockSize;i++)
+      pDst[i] = MULT16_16_Q15(pSrcA[i], pSrcB[i]);
+}
+#endif
+
+
+#ifdef OVERRIDE_ANR_OLA
+/* vector overlap and add */
+static void vect_ola(
+  const spx_word16_t * pSrcA,
+  const spx_word16_t * pSrcB,
+        spx_int16_t  * pDst,
+        uint32_t blockSize)
+{
+    int i;
+
+   for (i=0;i<blockSize;i++)
+      pDst[i] = WORD2INT(ADD32(EXTEND32(pSrcA[i]), EXTEND32(pSrcB[i])));
+}
+#endif
+
+
 
 
 #ifdef OVERRIDE_ANR_COMPUTE_GAIN_FLOOR
-void compute_gain_floor(int noise_suppress, int effective_echo_suppress,
-                        spx_word32_t * noise, spx_word32_t * echo,
-                        spx_word16_t * gain_floor, int len)
+static void compute_gain_floor(int noise_suppress, int effective_echo_suppress,
+                        spx_word32_t * noise, spx_word32_t * echo, spx_word16_t * gain_floor, int len)
 {
     int             i;
     float           echo_floor;
@@ -76,8 +110,7 @@ void compute_gain_floor(int noise_suppress, int effective_echo_suppress,
     for (i = 0; i < len; i++)
         gain_floor[i] =
             FRAC_SCALING * sqrt(noise_floor * PSHR32(noise[i], NOISE_SHIFT) +
-                                echo_floor * echo[i]) / sqrt(1 + PSHR32(noise[i],
-                                                                        NOISE_SHIFT) + echo[i]);
+                                echo_floor * echo[i]) / sqrt(1 + PSHR32(noise[i], NOISE_SHIFT) + echo[i]);
 }
 
 #endif
@@ -104,7 +137,7 @@ static void power_spectrum(spx_word16_t * ft, spx_word32_t * ps, int N
 
 
 #ifdef OVERRIDE_ANR_UPDATE_NOISE_ESTIMATE
-NOINL void update_noise_estimate(SpeexPreprocessState * st, spx_word16_t beta, spx_word16_t beta_1)
+static void update_noise_estimate(SpeexPreprocessState * st, spx_word16_t beta, spx_word16_t beta_1)
 {
     int             N = st->ps_size;
     int             i;
@@ -113,16 +146,14 @@ NOINL void update_noise_estimate(SpeexPreprocessState * st, spx_word16_t beta, s
         if (!st->update_prob[i] || st->ps[i] < PSHR32(st->noise[i], NOISE_SHIFT))
             st->noise[i] =
                 MAX32(EXTEND32(0),
-                      MULT16_32_Q15(beta_1, st->noise[i]) + MULT16_32_Q15(beta,
-                                                                          SHL32(st->ps[i],
-                                                                                NOISE_SHIFT)));
+                      MULT16_32_Q15(beta_1, st->noise[i]) + MULT16_32_Q15(beta, SHL32(st->ps[i], NOISE_SHIFT)));
     }
 }
 
 #endif
 
 #ifdef OVERRIDE_ANR_APOSTERIORI_SNR
-void aposteriori_snr(SpeexPreprocessState * st)
+static void aposteriori_snr(SpeexPreprocessState * st)
 {
     int             N = st->ps_size;
     int             M = st->nbands;
@@ -144,9 +175,7 @@ void aposteriori_snr(SpeexPreprocessState * st)
         /* Computing update gamma = .1 + .9*(old/(old+noise))^2 */
         gamma =
             QCONST16(.1f, 15) + MULT16_16_Q15(QCONST16(.89f, 15),
-                                              SQR16_Q15(DIV32_16_Q15
-                                                        (st->old_ps[i],
-                                                         ADD32(st->old_ps[i], tot_noise))));
+                                              SQR16_Q15(DIV32_16_Q15(st->old_ps[i], ADD32(st->old_ps[i], tot_noise))));
 
         /* A priori SNR update = gamma*max(0,post) + (1-gamma)*old/noise */
         st->prior[i] =
@@ -169,23 +198,19 @@ static void preprocess_update_zeta(SpeexPreprocessState * st)
 
 
     st->zeta[0] =
-        PSHR32(ADD32
-               (MULT16_16(QCONST16(.7f, 15), st->zeta[0]),
-                MULT16_16(QCONST16(.3f, 15), st->prior[0])), 15);
+        PSHR32(ADD32(MULT16_16(QCONST16(.7f, 15), st->zeta[0]), MULT16_16(QCONST16(.3f, 15), st->prior[0])), 15);
     for (i = 1; i < N - 1; i++)
         st->zeta[i] =
             PSHR32(ADD32
                    (ADD32
                     (ADD32
                      (MULT16_16(QCONST16(.7f, 15), st->zeta[i]),
-                      MULT16_16(QCONST16(.15f, 15), st->prior[i])), MULT16_16(QCONST16(.075f, 15),
-                                                                              st->prior[i - 1])),
+                      MULT16_16(QCONST16(.15f, 15), st->prior[i])),
+                     MULT16_16(QCONST16(.075f, 15), st->prior[i - 1])),
                     MULT16_16(QCONST16(.075f, 15), st->prior[i + 1])), 15);
     for (i = N - 1; i < N + M; i++)
         st->zeta[i] =
-            PSHR32(ADD32
-                   (MULT16_16(QCONST16(.7f, 15), st->zeta[i]),
-                    MULT16_16(QCONST16(.3f, 15), st->prior[i])), 15);
+            PSHR32(ADD32(MULT16_16(QCONST16(.7f, 15), st->zeta[i]), MULT16_16(QCONST16(.3f, 15), st->prior[i])), 15);
 }
 
 #endif
@@ -222,7 +247,7 @@ static inline spx_word16_t qcurve(spx_word16_t x)
 #endif
 
 #ifdef OVERRIDE_ANR_UPDATE_GAINS_CRITICAL_BANDS
-void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
+static void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
 {
     int             i;
     int             N = st->ps_size;
@@ -244,12 +269,10 @@ void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
         spx_word16_t    tmp;
 #endif
 
-        prior_ratio =
-            PDIV32_16(SHL32(EXTEND32(st->prior[i]), 15), ADD16(st->prior[i], SHL32(1, SNR_SHIFT)));
+        prior_ratio = PDIV32_16(SHL32(EXTEND32(st->prior[i]), 15), ADD16(st->prior[i], SHL32(1, SNR_SHIFT)));
         theta =
             MULT16_32_P15(prior_ratio,
-                          QCONST32(1.f, EXPIN_SHIFT) + SHL32(EXTEND32(st->post[i]),
-                                                             EXPIN_SHIFT - SNR_SHIFT));
+                          QCONST32(1.f, EXPIN_SHIFT) + SHL32(EXTEND32(st->post[i]), EXPIN_SHIFT - SNR_SHIFT));
 
         MM = hypergeom_gain(theta);
         /* Gain with bound */
@@ -258,8 +281,7 @@ void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
         st->old_ps[i] =
             MULT16_32_P15(QCONST16(.2f, 15),
                           st->old_ps[i]) + MULT16_32_P15(MULT16_16_P15(QCONST16(.8f, 15),
-                                                                       SQR16_Q15(st->gain[i])),
-                                                         ps[i]);
+                                                                       SQR16_Q15(st->gain[i])), ps[i]);
 
         P1 = QCONST16(.199f, 15) + MULT16_16_Q15(QCONST16(.8f, 15), qcurve(st->zeta[i]));
         q = Q15_ONE - MULT16_16_Q15(Pframe, P1);
@@ -267,7 +289,7 @@ void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
         theta = MIN32(theta, EXTEND32(32767));
 /*Q8*/ tmp =
             MULT16_16_Q15((SHL32(1, SNR_SHIFT) + st->prior[i]),
-                                  EXTRACT16(MIN32(Q15ONE, SHR32(spx_exp(-EXTRACT16(theta)), 1))));
+                          EXTRACT16(MIN32(Q15ONE, SHR32(spx_exp(-EXTRACT16(theta)), 1))));
         tmp = MIN16(QCONST16(3., SNR_SHIFT), tmp);      /* Prevent overflows in the next line */
 /*Q8*/ tmp =
             EXTRACT16(PSHR32(MULT16_16(PDIV32_16(SHL32(EXTEND32(q), 8), (Q15_ONE - q)), tmp), 8));
@@ -281,7 +303,7 @@ void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
 #endif
 
 #ifdef OVERRIDE_ANR_UPDATE_GAINS_LINEAR
-void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
+static void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
 {
     int             i;
     int             N = st->ps_size;
@@ -297,12 +319,10 @@ void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
         spx_word16_t    g;
 
         /* Wiener filter gain */
-        prior_ratio =
-            PDIV32_16(SHL32(EXTEND32(st->prior[i]), 15), ADD16(st->prior[i], SHL32(1, SNR_SHIFT)));
+        prior_ratio = PDIV32_16(SHL32(EXTEND32(st->prior[i]), 15), ADD16(st->prior[i], SHL32(1, SNR_SHIFT)));
         theta =
             MULT16_32_P15(prior_ratio,
-                          QCONST32(1.f, EXPIN_SHIFT) + SHL32(EXTEND32(st->post[i]),
-                                                             EXPIN_SHIFT - SNR_SHIFT));
+                          QCONST32(1.f, EXPIN_SHIFT) + SHL32(EXTEND32(st->post[i]), EXPIN_SHIFT - SNR_SHIFT));
 
         /* Optimal estimator for loudness domain */
         MM = hypergeom_gain(theta);
@@ -320,8 +340,7 @@ void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
         st->old_ps[i] =
             MULT16_32_P15(QCONST16(.2f, 15),
                           st->old_ps[i]) + MULT16_32_P15(MULT16_16_P15(QCONST16(.8f, 15),
-                                                                       SQR16_Q15(st->gain[i])),
-                                                         ps[i]);
+                                                                       SQR16_Q15(st->gain[i])), ps[i]);
 
         /* Apply gain floor */
         if (st->gain[i] < st->gain_floor[i])
@@ -334,13 +353,10 @@ void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
         /* gain2 = [p*sqrt(gain)+(1-p)*sqrt(gain _floor) ]^2 */
         tmp =
             MULT16_16_P15(p,
-                          spx_sqrt(SHL32(EXTEND32(st->gain[i]), 15))) + MULT16_16_P15(SUB16(Q15_ONE,
-                                                                                            p),
+                          spx_sqrt(SHL32(EXTEND32(st->gain[i]), 15))) + MULT16_16_P15(SUB16(Q15_ONE, p),
                                                                                       spx_sqrt(SHL32
                                                                                                (EXTEND32
-                                                                                                (st->
-                                                                                                 gain_floor
-                                                                                                 [i]),
+                                                                                                (st->gain_floor[i]),
                                                                                                 15)));
         st->gain2[i] = SQR16_Q15(tmp);
 
@@ -352,7 +368,7 @@ void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
 #endif
 
 #ifdef OVERRIDE_ANR_APPLY_SPEC_GAIN
-void apply_spectral_gain(SpeexPreprocessState * st)
+static void apply_spectral_gain(SpeexPreprocessState * st)
 {
     int             i;
     int             N = st->ps_size;
@@ -481,10 +497,37 @@ __STATIC_FORCEINLINE f16x8_t vsqrtf_f16(f16x8_t vecIn)
 }
 
 
+#ifdef OVERRIDE_ANR_VEC_MUL
+static void vect_mult(
+  const spx_word16_t * pSrcA,
+  const spx_word16_t * pSrcB,
+        spx_word16_t * pDst,
+        uint32_t blockSize)
+{
+    arm_mult_f32(pSrcA, pSrcB, pDst, blockSize);
+}
+
+#endif
+
+#ifdef OVERRIDE_ANR_OLA
+/* vector overlap and add */
+static void vect_ola(
+  const spx_word16_t * pSrcA,
+  const spx_word16_t * pSrcB,
+        spx_int16_t * pDst,
+        uint32_t blockSize)
+{
+    int i;
+
+   for (i=0;i<blockSize;i++)
+      pDst[i] = WORD2INT(ADD32(EXTEND32(pSrcA[i]), EXTEND32(pSrcB[i])));
+}
+#endif
+
+
 #ifdef OVERRIDE_ANR_COMPUTE_GAIN_FLOOR
-void compute_gain_floor(int noise_suppress, int effective_echo_suppress,
-                        spx_word32_t * noise, spx_word32_t * echo,
-                        spx_word16_t * gain_floor, int len)
+static void compute_gain_floor(int noise_suppress, int effective_echo_suppress,
+                        spx_word32_t * noise, spx_word32_t * echo, spx_word16_t * gain_floor, int len)
 {
     int             i;
     float32_t       echo_floor;
@@ -585,7 +628,7 @@ static void power_spectrum(spx_word16_t * ft, spx_word32_t * ps, int N
 
 
 #ifdef OVERRIDE_ANR_UPDATE_NOISE_ESTIMATE
-NOINL void update_noise_estimate(SpeexPreprocessState * st, spx_word16_t beta, spx_word16_t beta_1)
+static void update_noise_estimate(SpeexPreprocessState * st, spx_word16_t beta, spx_word16_t beta_1)
 {
     int             N = st->ps_size;
     int             i;
@@ -594,16 +637,14 @@ NOINL void update_noise_estimate(SpeexPreprocessState * st, spx_word16_t beta, s
         if (!st->update_prob[i] || st->ps[i] < PSHR32(st->noise[i], NOISE_SHIFT))
             st->noise[i] =
                 MAX32(EXTEND32(0),
-                      MULT16_32_Q15(beta_1, st->noise[i]) + MULT16_32_Q15(beta,
-                                                                          SHL32(st->ps[i],
-                                                                                NOISE_SHIFT)));
+                      MULT16_32_Q15(beta_1, st->noise[i]) + MULT16_32_Q15(beta, SHL32(st->ps[i], NOISE_SHIFT)));
     }
 }
 
 #endif
 
 #ifdef OVERRIDE_ANR_APOSTERIORI_SNR
-void aposteriori_snr(SpeexPreprocessState * st)
+static void aposteriori_snr(SpeexPreprocessState * st)
 {
     int             N = st->ps_size;
     int             M = st->nbands;
@@ -625,9 +666,7 @@ void aposteriori_snr(SpeexPreprocessState * st)
         /* Computing update gamma = .1 + .9*(old/(old+noise))^2 */
         gamma =
             QCONST16(.1f, 15) + MULT16_16_Q15(QCONST16(.89f, 15),
-                                              SQR16_Q15(DIV32_16_Q15
-                                                        (st->old_ps[i],
-                                                         ADD32(st->old_ps[i], tot_noise))));
+                                              SQR16_Q15(DIV32_16_Q15(st->old_ps[i], ADD32(st->old_ps[i], tot_noise))));
 
         /* A priori SNR update = gamma*max(0,post) + (1-gamma)*old/noise */
         st->prior[i] =
@@ -650,9 +689,7 @@ static void preprocess_update_zeta(SpeexPreprocessState * st)
 
 
     st->zeta[0] =
-        PSHR32(ADD32
-               (MULT16_16(QCONST16(.7f, 15), st->zeta[0]),
-                MULT16_16(QCONST16(.3f, 15), st->prior[0])), 15);
+        PSHR32(ADD32(MULT16_16(QCONST16(.7f, 15), st->zeta[0]), MULT16_16(QCONST16(.3f, 15), st->prior[0])), 15);
     for (i = 1; i < N - 1; i++)
         st->zeta[i] =
             PSHR32(ADD32
@@ -664,9 +701,7 @@ static void preprocess_update_zeta(SpeexPreprocessState * st)
                     MULT16_16(QCONST16(.075f, 15), st->prior[i + 1])), 15);
     for (i = N - 1; i < N + M; i++)
         st->zeta[i] =
-            PSHR32(ADD32
-                   (MULT16_16(QCONST16(.7f, 15), st->zeta[i]),
-                    MULT16_16(QCONST16(.3f, 15), st->prior[i])), 15);
+            PSHR32(ADD32(MULT16_16(QCONST16(.7f, 15), st->zeta[i]), MULT16_16(QCONST16(.3f, 15), st->prior[i])), 15);
 }
 
 #endif
@@ -703,7 +738,7 @@ static inline spx_word16_t qcurve(spx_word16_t x)
 #endif
 
 #ifdef OVERRIDE_ANR_UPDATE_GAINS_CRITICAL_BANDS
-void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
+static void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
 {
     int             i;
     int             N = st->ps_size;
@@ -725,12 +760,10 @@ void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
         spx_word16_t    tmp;
 #endif
 
-        prior_ratio =
-            PDIV32_16(SHL32(EXTEND32(st->prior[i]), 15), ADD16(st->prior[i], SHL32(1, SNR_SHIFT)));
+        prior_ratio = PDIV32_16(SHL32(EXTEND32(st->prior[i]), 15), ADD16(st->prior[i], SHL32(1, SNR_SHIFT)));
         theta =
             MULT16_32_P15(prior_ratio,
-                          QCONST32(1.f, EXPIN_SHIFT) + SHL32(EXTEND32(st->post[i]),
-                                                             EXPIN_SHIFT - SNR_SHIFT));
+                          QCONST32(1.f, EXPIN_SHIFT) + SHL32(EXTEND32(st->post[i]), EXPIN_SHIFT - SNR_SHIFT));
 
         MM = hypergeom_gain(theta);
         /* Gain with bound */
@@ -739,8 +772,7 @@ void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
         st->old_ps[i] =
             MULT16_32_P15(QCONST16(.2f, 15),
                           st->old_ps[i]) + MULT16_32_P15(MULT16_16_P15(QCONST16(.8f, 15),
-                                                                       SQR16_Q15(st->gain[i])),
-                                                         ps[i]);
+                                                                       SQR16_Q15(st->gain[i])), ps[i]);
 
         P1 = QCONST16(.199f, 15) + MULT16_16_Q15(QCONST16(.8f, 15), qcurve(st->zeta[i]));
         q = Q15_ONE - MULT16_16_Q15(Pframe, P1);
@@ -748,7 +780,7 @@ void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
         theta = MIN32(theta, EXTEND32(32767));
 /*Q8*/ tmp =
             MULT16_16_Q15((SHL32(1, SNR_SHIFT) + st->prior[i]),
-                                  EXTRACT16(MIN32(Q15ONE, SHR32(spx_exp(-EXTRACT16(theta)), 1))));
+                          EXTRACT16(MIN32(Q15ONE, SHR32(spx_exp(-EXTRACT16(theta)), 1))));
         tmp = MIN16(QCONST16(3., SNR_SHIFT), tmp);      /* Prevent overflows in the next line */
 /*Q8*/ tmp =
             EXTRACT16(PSHR32(MULT16_16(PDIV32_16(SHL32(EXTEND32(q), 8), (Q15_ONE - q)), tmp), 8));
@@ -763,7 +795,7 @@ void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t Pframe)
 
 
 #ifdef OVERRIDE_ANR_UPDATE_GAINS_LINEAR
-void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
+static void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
 {
     int             i;
     int             N = st->ps_size;
@@ -779,12 +811,10 @@ void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
         spx_word16_t    g;
 
         /* Wiener filter gain */
-        prior_ratio =
-            PDIV32_16(SHL32(EXTEND32(st->prior[i]), 15), ADD16(st->prior[i], SHL32(1, SNR_SHIFT)));
+        prior_ratio = PDIV32_16(SHL32(EXTEND32(st->prior[i]), 15), ADD16(st->prior[i], SHL32(1, SNR_SHIFT)));
         theta =
             MULT16_32_P15(prior_ratio,
-                          QCONST32(1.f, EXPIN_SHIFT) + SHL32(EXTEND32(st->post[i]),
-                                                             EXPIN_SHIFT - SNR_SHIFT));
+                          QCONST32(1.f, EXPIN_SHIFT) + SHL32(EXTEND32(st->post[i]), EXPIN_SHIFT - SNR_SHIFT));
 
         /* Optimal estimator for loudness domain */
         MM = hypergeom_gain(theta);
@@ -801,9 +831,9 @@ void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
         /* Save old power spectrum */
         st->old_ps[i] =
             MULT16_32_P15(QCONST16(.2f, 15),
-                          st->old_ps[i]) + MULT16_32_P15(MULT16_16_P15(QCONST16(.8f, 15),
-                                                                       SQR16_Q15(st->gain[i])),
-                                                         ps[i]);
+                          st->old_ps[i]) +
+            MULT16_32_P15(MULT16_16_P15(QCONST16(.8f, 15),
+                             SQR16_Q15(st->gain[i])), ps[i]);
 
         /* Apply gain floor */
         if (st->gain[i] < st->gain_floor[i])
@@ -816,14 +846,10 @@ void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
         /* gain2 = [p*sqrt(gain)+(1-p)*sqrt(gain _floor) ]^2 */
         tmp =
             MULT16_16_P15(p,
-                          spx_sqrt(SHL32(EXTEND32(st->gain[i]), 15))) + MULT16_16_P15(SUB16(Q15_ONE,
-                                                                                            p),
-                                                                                      spx_sqrt(SHL32
-                                                                                               (EXTEND32
-                                                                                                (st->
-                                                                                                 gain_floor
-                                                                                                 [i]),
-                                                                                                15)));
+                          spx_sqrt(SHL32(EXTEND32(st->gain[i]), 15))) +
+                              MULT16_16_P15(
+                                  SUB16(Q15_ONE, p),
+                                  spx_sqrt(SHL32(EXTEND32(st->gain_floor[i]), 15)));
         st->gain2[i] = SQR16_Q15(tmp);
 
         /* Use this if you want a log-domain MMSE estimator instead */
@@ -835,7 +861,7 @@ void update_gains_linear(SpeexPreprocessState * st, spx_word16_t Pframe)
 
 
 #ifdef OVERRIDE_ANR_APPLY_SPEC_GAIN
-void apply_spectral_gain(SpeexPreprocessState * st)
+static void apply_spectral_gain(SpeexPreprocessState * st)
 {
     int             i;
     int             N = st->ps_size;

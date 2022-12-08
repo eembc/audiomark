@@ -32,10 +32,13 @@
 */
 
 
-
 #ifdef GENERIC_ARCH
 
-#ifndef OVERRIDE_FB_COMPUTE_BANK32
+/*
+ * Reference code for optimized routines
+ */
+
+#ifdef OVERRIDE_FB_COMPUTE_BANK32
 void filterbank_compute_bank32(FilterBank * bank, spx_word32_t * ps, spx_word32_t * mel)
 {
     int             i;

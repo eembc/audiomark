@@ -9,7 +9,6 @@ layer:
         - file: ../../lib/speexdsp/libspeexdsp/buffer.c
         - file: ../../lib/speexdsp/libspeexdsp/fftwrap.c
         - file: ../../lib/speexdsp/libspeexdsp/filterbank.c
-        #- file: ../../lib/speexdsp/libspeexdsp/filterbank_helium.c
         - file: ../../lib/speexdsp/libspeexdsp/jitter.c
         - file: ../../lib/speexdsp/libspeexdsp/kiss_fft.c
         - file: ../../lib/speexdsp/libspeexdsp/kiss_fftr.c
@@ -18,7 +17,6 @@ layer:
         - file: ../../lib/speexdsp/libspeexdsp/resample.c
         - file: ../../lib/speexdsp/libspeexdsp/scal.c
         - file: ../../lib/speexdsp/libspeexdsp/smallft.c
-        - file: ../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 
       misc:
         - C:
@@ -27,8 +25,11 @@ layer:
           - -DOS_SUPPORT_CUSTOM
           - -DMVE_INTRINSICS
           # speex boosted routines
+          # FilterBank
           - -DOVERRIDE_FB_COMPUTE_BANK32
           - -DOVERRIDE_FB_COMPUTE_PSD16
+          # ANR
+          - -DOVERRIDE_ANR_WINDOWING
           - -DOVERRIDE_ANR_UPDATE_NOISE_ESTIMATE
           - -DOVERRIDE_ANR_APOSTERIORI_SNR
           - -DOVERRIDE_ANR_POWER_SPECTRUM
@@ -37,7 +38,25 @@ layer:
           - -DOVERRIDE_ANR_UPDATE_GAINS_CRITICAL_BANDS
           - -DOVERRIDE_ANR_UPDATE_GAINS_LINEAR
           - -DOVERRIDE_ANR_APPLY_SPEC_GAIN
-
+          # MDF
+          - -DOVERRIDE_MDF_DC_NOTCH
+          - -DOVERRIDE_MDF_INNER_PROD
+          - -DOVERRIDE_MDF_POWER_SPECTRUM
+          - -DOVERRIDE_MDF_POWER_SPECTRUM_ACCUM
+          - -DOVERRIDE_MDF_SPECTRAL_MUL_ACCUM
+          - -DOVERRIDE_MDF_WEIGHT_SPECT_MUL_CONJ
+          - -DOVERRIDE_MDF_ADJUST_PROP
+          - -DOVERRIDE_MDF_PREEMPH_FLT
+          - -DOVERRIDE_MDF_STRIDED_PREEMPH_FLT
+          - -DOVERRIDE_MDF_VEC_SUB
+          - -DOVERRIDE_MDF_VEC_SUB16
+          - -DOVERRIDE_MDF_VEC_ADD
+          - -DOVERRIDE_MDF_SMOOTHED_ADD
+          - -DOVERRIDE_MDF_DEEMPH
+          - -DOVERRIDE_MDF_SMOOTH_FE_NRG
+          - -DOVERRIDE_MDF_FILTERED_SPEC_AD_XCORR
+          - -DOVERRIDE_MDF_NORM_LEARN_RATE_CALC
+          - -DOVERRIDE_MDF_CONVERG_LEARN_RATE_CALC
 
   add-paths:
     - ../../lib/speexdsp/include

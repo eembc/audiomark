@@ -641,14 +641,13 @@ static void preprocess_analysis(SpeexPreprocessState *st, spx_int16_t *x)
    for (i=0;i<N3;i++)
       st->inbuf[i]=x[N4+i];
 
-/* TODO : add generic optimized windowing function */
-#if defined(USE_CMSIS_DSP)
+
    /* Windowing */
-   arm_mult_f32(st->frame, st->window, st->frame, 2 * N);
-#else
-   /* Windowing */
+#ifndef OVERRIDE_ANR_VEC_MUL
    for (i=0;i<2*N;i++)
       st->frame[i] = MULT16_16_Q15(st->frame[i], st->window[i]);
+#else
+   vect_mult(st->frame, st->window, st->frame, 2 * N);
 #endif
 
 #ifdef FIXED_POINT
@@ -1028,17 +1027,20 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
 #endif
 
    /* Synthesis window (for WOLA) */
-#if defined(USE_CMSIS_DSP)
-   /* Windowing */
-   arm_mult_f32(st->frame, st->window, st->frame, 2 * N);
-#else
+#ifndef OVERRIDE_ANR_VEC_MUL
    for (i=0;i<2*N;i++)
       st->frame[i] = MULT16_16_Q15(st->frame[i], st->window[i]);
+#else
+   vect_mult(st->frame, st->window, st->frame, 2 * N);
 #endif
 
+#ifndef OVERRIDE_ANR_OLA
    /* Perform overlap and add */
    for (i=0;i<N3;i++)
       x[i] = WORD2INT(ADD32(EXTEND32(st->outbuf[i]), EXTEND32(st->frame[i])));
+#else
+   vect_ola(st->outbuf, st->frame, x, N3);
+#endif
    for (i=0;i<N4;i++)
       x[N3+i] = st->frame[N3+i];
 
