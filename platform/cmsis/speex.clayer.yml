@@ -23,13 +23,12 @@ layer:
           - -DFLOATING_POINT
           - -DEXPORT=
           - -DOS_SUPPORT_CUSTOM
-          - -DMVE_INTRINSICS
           # speex boosted routines
           # FilterBank
           - -DOVERRIDE_FB_COMPUTE_BANK32
           - -DOVERRIDE_FB_COMPUTE_PSD16
           # ANR
-          - -DOVERRIDE_ANR_WINDOWING
+          - -DOVERRIDE_ANR_VEC_MUL
           - -DOVERRIDE_ANR_UPDATE_NOISE_ESTIMATE
           - -DOVERRIDE_ANR_APOSTERIORI_SNR
           - -DOVERRIDE_ANR_POWER_SPECTRUM
@@ -38,6 +37,8 @@ layer:
           - -DOVERRIDE_ANR_UPDATE_GAINS_CRITICAL_BANDS
           - -DOVERRIDE_ANR_UPDATE_GAINS_LINEAR
           - -DOVERRIDE_ANR_APPLY_SPEC_GAIN
+          - -DOVERRIDE_ANR_OLA
+          - -DOVERRIDE_ANR_UPDATE_NOISE_PROB
           # MDF
           - -DOVERRIDE_MDF_DC_NOTCH
           - -DOVERRIDE_MDF_INNER_PROD
@@ -57,6 +58,8 @@ layer:
           - -DOVERRIDE_MDF_FILTERED_SPEC_AD_XCORR
           - -DOVERRIDE_MDF_NORM_LEARN_RATE_CALC
           - -DOVERRIDE_MDF_CONVERG_LEARN_RATE_CALC
+          - -DOVERRIDE_MDF_VEC_SCALE
+          #- -DOVERRIDE_ANR_VEC_CONV_FROM_INT16
 
   add-paths:
     - ../../lib/speexdsp/include

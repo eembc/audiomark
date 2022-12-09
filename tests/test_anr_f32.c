@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "ee_audiomark.h"
 
-#define TEST_NBUFFERS 10 /*104 */
+#define TEST_NBUFFERS 104
 #define NSAMPLES      256
 
 extern const int16_t p_input[TEST_NBUFFERS][NSAMPLES];

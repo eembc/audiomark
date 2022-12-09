@@ -65,7 +65,6 @@ set(EE_SOURCE
 	../../src/ee_mfcc_f32.c
 	../../src/ee_mfcc_f32_tables.c
 
-	#../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 	../../lib/speexdsp/libspeexdsp/buffer.c
 	../../lib/speexdsp/libspeexdsp/fftwrap.c
 	../../lib/speexdsp/libspeexdsp/filterbank.c
@@ -123,7 +122,6 @@ set(TH_SOURCE
 
 set(TEST_AEC_F32_SOURCE
 	../../src/ee_aec_f32.c
-	#../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 	../../lib/speexdsp/libspeexdsp/buffer.c
 	../../lib/speexdsp/libspeexdsp/fftwrap.c
 	../../lib/speexdsp/libspeexdsp/filterbank.c
@@ -145,7 +143,6 @@ add_executable(test_aec_f32 ${TEST_AEC_F32_SOURCE})
 
 set(TEST_ANR_F32_SOURCE
 	../../src/ee_anr_f32.c
-	../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 	../../lib/speexdsp/libspeexdsp/buffer.c
 	../../lib/speexdsp/libspeexdsp/fftwrap.c
 	../../lib/speexdsp/libspeexdsp/filterbank.c

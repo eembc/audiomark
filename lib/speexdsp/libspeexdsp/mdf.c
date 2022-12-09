@@ -1013,7 +1013,7 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
             for (i=0;i<st->frame_size;i++)
                st->y[chan*N+i+st->frame_size] = st->e[chan*N+i+st->frame_size];
 #else
-            vect_copy(&st->e[chan*N+st->frame_size], &st->y[chan*N+st->frame_size], st->frame_size);
+            vect_copy(&st->e[chan*N+st->frame_size], &st->y[chan*N+st->frame_size], st->frame_size * sizeof(spx_word16_t));
 #endif
 #ifndef OVERRIDE_MDF_VEC_SUB
             for (i=0;i<st->frame_size;i++)
@@ -1073,7 +1073,7 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
          st->e[chan*N+i] = 0;
       }
 #else
-      vect_copy(&st->e[chan*N], &st->e[chan*N+st->frame_size], st->frame_size);
+      vect_copy(&st->e[chan*N], &st->e[chan*N+st->frame_size], st->frame_size * sizeof(spx_word16_t));
       vect_clear(&st->e[chan*N], st->frame_size);
 #endif
       /* Compute a bunch of correlations */
@@ -1247,7 +1247,7 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
          st->power_1[i] = FLOAT_SHL(FLOAT_DIV32_FLOAT(r,FLOAT_MUL32U(e,st->power[i]+10)),WEIGHT_SHIFT+16);
       }
 #else
-      mdf_nominal_learning_rate_calc(st->Rf, st->power, st->Yf, st->power_1, st->leak_estimate, RER, st->frame_size);
+      mdf_nominal_learning_rate_calc(st->Rf, st->power, st->Yf, st->power_1, st->leak_estimate, RER, st->frame_size + 1);
 #endif
    } else {
       /* Temporary adaption rate if filter is not yet adapted enough */
@@ -1269,7 +1269,7 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
       for (i=0;i<=st->frame_size;i++)
          st->power_1[i] = FLOAT_SHL(FLOAT_DIV32(EXTEND32(adapt_rate),ADD32(st->power[i],10)),WEIGHT_SHIFT+1);
 #else
-       mdf_non_adapt_learning_rate_calc(st->power, st->power_1, adapt_rate, st->frame_size);
+       mdf_non_adapt_learning_rate_calc(st->power, st->power_1, adapt_rate, st->frame_size + 1);
 #endif
 
 
@@ -1282,7 +1282,7 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
       for (i=0;i<st->frame_size;i++)
          st->last_y[i] = st->last_y[st->frame_size+i];
 #else
-      vect_copy(&st->last_y[st->frame_size], st->last_y, st->frame_size);
+      vect_copy(&st->last_y[st->frame_size], st->last_y, st->frame_size * sizeof(spx_word16_t));
 #endif
    if (st->adapted)
    {
@@ -1334,8 +1334,12 @@ void speex_echo_get_residual(SpeexEchoState *st, spx_word32_t *residual_echo, in
       leak2 = 2*st->leak_estimate;
 #endif
    /* Estimate residual echo */
+#ifndef OVERRIDE_MDF_VEC_SCALE
    for (i=0;i<=st->frame_size;i++)
       residual_echo[i] = (spx_int32_t)MULT16_32_Q15(leak2,residual_echo[i]);
+#else
+    vect_scale(residual_echo, leak2, residual_echo, st->frame_size + 1);
+#endif
 
 }
 

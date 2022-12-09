@@ -632,14 +632,24 @@ static void preprocess_analysis(SpeexPreprocessState *st, spx_int16_t *x)
    spx_word32_t *ps=st->ps;
 
    /* 'Build' input frame */
+#ifndef OVERRIDE_ANR_VEC_COPY
    for (i=0;i<N3;i++)
       st->frame[i]=st->inbuf[i];
+#else
+    vect_copy(st->frame, st->inbuf, N3 * sizeof(spx_word16_t));
+#endif
+
+#ifndef OVERRIDE_ANR_VEC_CONV_FROM_INT16
    for (i=0;i<st->frame_size;i++)
       st->frame[N3+i]=x[i];
 
    /* Update inbuf */
    for (i=0;i<N3;i++)
       st->inbuf[i]=x[N4+i];
+#else
+    vect_conv_from_int16(x, &st->frame[N3], st->frame_size);
+    vect_conv_from_int16(&x[N4], st->inbuf, N3);
+#endif
 
 
    /* Windowing */
@@ -964,7 +974,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
          /*st->gain2[i] = pow(st->gain[i], p) * pow(st->gain_floor[i],1.f-p);*/
       }
 #else
-        update_gains_linear(st, Pframe);
+        update_gains_linear(st);
 #endif
    } else {
       for (i=N;i<N+M;i++)

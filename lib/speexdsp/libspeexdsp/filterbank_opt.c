@@ -34,6 +34,8 @@
 
 #ifdef GENERIC_ARCH
 
+#include <stdint.h>
+
 /*
  * Reference code for optimized routines
  */
