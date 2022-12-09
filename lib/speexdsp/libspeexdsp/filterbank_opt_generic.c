@@ -32,24 +32,50 @@
 */
 
 
-#if defined (GENERIC_ARCH)
-/*
- * Reference C code for optimized routines
- */
-#include "filterbank_opt_generic.c"
 
-#elif defined (__ARM_FEATURE_MVE)
-/*
- * ARM with Helium support
- */
-#include "filterbank_opt_helium.c"
+#include <stdint.h>
 
-#elif defined (OTHER_ARCH)
 /*
- * More architectures to be added
- *
- *  #include "filterbank_opt_others.c"
+ * Reference code for optimized routines
  */
+
+#ifdef OVERRIDE_FB_COMPUTE_BANK32
+void filterbank_compute_bank32(FilterBank * bank, spx_word32_t * ps, spx_word32_t * mel)
+{
+    int             i;
+    for (i = 0; i < bank->nb_banks; i++)
+        mel[i] = 0;
+
+    for (i = 0; i < bank->len; i++) {
+        int             id;
+        id = bank->bank_left[i];
+        mel[id] += MULT16_32_P15(bank->filter_left[i], ps[i]);
+        id = bank->bank_right[i];
+        mel[id] += MULT16_32_P15(bank->filter_right[i], ps[i]);
+    }
+    /* Think I can safely disable normalisation that for fixed-point (and probably float as well) */
+#ifndef FIXED_POINT
+    /*for (i=0;i<bank->nb_banks;i++)
+       mel[i] = MULT16_32_P15(Q15(bank->scaling[i]),mel[i]);
+     */
+#endif
+}
+#endif
+
+#ifdef OVERRIDE_FB_COMPUTE_PSD16
+void filterbank_compute_psd16(FilterBank * bank, spx_word16_t * mel, spx_word16_t * ps)
+{
+    int             i;
+    for (i = 0; i < bank->len; i++) {
+        spx_word32_t    tmp;
+        int             id1, id2;
+        id1 = bank->bank_left[i];
+        id2 = bank->bank_right[i];
+        tmp = MULT16_16(mel[id1], bank->filter_left[i]);
+        tmp += MULT16_16(mel[id2], bank->filter_right[i]);
+        ps[i] = EXTRACT16(PSHR32(tmp, 15));
+    }
+}
 
 #endif
 
