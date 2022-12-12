@@ -51,6 +51,9 @@
 
 #define toMEL(n)    (2595.f*log10(1.f+(n)/700.f))
 
+/* Optimized filter bank routines */
+#include "filterbank_opt.c"
+
 FilterBank *filterbank_new(int banks, spx_word32_t sampling, int len, int type)
 {
    FilterBank *bank;
@@ -131,6 +134,7 @@ void filterbank_destroy(FilterBank *bank)
    speex_free(bank);
 }
 
+#ifndef OVERRIDE_FB_COMPUTE_BANK32
 void filterbank_compute_bank32(FilterBank *bank, spx_word32_t *ps, spx_word32_t *mel)
 {
    int i;
@@ -152,7 +156,9 @@ void filterbank_compute_bank32(FilterBank *bank, spx_word32_t *ps, spx_word32_t 
    */
 #endif
 }
+#endif
 
+#ifndef OVERRIDE_FB_COMPUTE_PSD16
 void filterbank_compute_psd16(FilterBank *bank, spx_word16_t *mel, spx_word16_t *ps)
 {
    int i;
@@ -167,6 +173,7 @@ void filterbank_compute_psd16(FilterBank *bank, spx_word16_t *mel, spx_word16_t 
       ps[i] = EXTRACT16(PSHR32(tmp,15));
    }
 }
+#endif
 
 
 #ifndef FIXED_POINT

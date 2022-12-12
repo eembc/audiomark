@@ -31,11 +31,12 @@ include_directories(../../lib/th_api/CMSIS-NN/Include)
 # configuration files. For now, let's isolate all configuration to the build
 # tool and then decide what TODO how to handle a global `config.h` file. Here
 # are two settings taken from that `config.h` which set the FFT to CMSIS and
-# uses fixed-point (see `fftwrap.c` for the excitement).
+# uses floating-point (see `fftwrap.c` for the excitement).
 
 # For Xiph we are using Float by default
 add_definitions(-DFLOATING_POINT)
-add_definitions(-DUSE_SMALLFT)
+#add_definitions(-DUSE_SMALLFT)
+add_definitions(-DUSE_CMSIS_DSP)
 
 # This macro is used extensively in LibSpeeX for function visibility.
 add_definitions(-DEXPORT=)
@@ -64,7 +65,6 @@ set(EE_SOURCE
 	../../src/ee_mfcc_f32.c
 	../../src/ee_mfcc_f32_tables.c
 
-	../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 	../../lib/speexdsp/libspeexdsp/buffer.c
 	../../lib/speexdsp/libspeexdsp/fftwrap.c
 	../../lib/speexdsp/libspeexdsp/filterbank.c
@@ -93,6 +93,7 @@ set(TH_SOURCE
 	../../lib/th_api/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c
 	../../lib/th_api/CMSIS-DSP/Source/SupportFunctions/arm_float_to_q15.c
 	../../lib/th_api/CMSIS-DSP/Source/SupportFunctions/arm_q15_to_float.c
+	../../lib/th_api/CMSIS-DSP/Source/SupportFunctions/arm_copy_f32.c
 	../../lib/th_api/CMSIS-DSP/Source/TransformFunctions/TransformFunctions.c
 
 	../../lib/th_api/CMSIS-NN/Source/PoolingFunctions/arm_avgpool_s8.c
@@ -121,7 +122,6 @@ set(TH_SOURCE
 
 set(TEST_AEC_F32_SOURCE
 	../../src/ee_aec_f32.c
-	../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 	../../lib/speexdsp/libspeexdsp/buffer.c
 	../../lib/speexdsp/libspeexdsp/fftwrap.c
 	../../lib/speexdsp/libspeexdsp/filterbank.c
@@ -143,7 +143,6 @@ add_executable(test_aec_f32 ${TEST_AEC_F32_SOURCE})
 
 set(TEST_ANR_F32_SOURCE
 	../../src/ee_anr_f32.c
-	../../lib/speexdsp/libspeexdsp/arm_libspeex_kernels.c
 	../../lib/speexdsp/libspeexdsp/buffer.c
 	../../lib/speexdsp/libspeexdsp/fftwrap.c
 	../../lib/speexdsp/libspeexdsp/filterbank.c

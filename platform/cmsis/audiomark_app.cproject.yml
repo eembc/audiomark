@@ -1,0 +1,44 @@
+project:
+  groups:
+    - group: App
+      files:
+        - file: ../../src/ee_audiomark.c
+        - file: ../../src/main.c         
+        - file: ../../src/ee_abf_f32_tables.c     
+        - file: ../../src/ee_nn_tables.c
+
+  add-path:
+    - .
+    - ../../lib/speexdsp/include
+    - ../../lib/speexdsp/libspeexdsp
+    - ../../lib/th_api/CMSIS-NN/Include
+
+  components:
+    - component: ARM::CMSIS:CORE
+    - component: ARM::CMSIS:NN@4.0.0    
+    - component: ARM::CMSIS:DSP&Source@1.14.1
+      misc:
+      - C:
+        - -DARM_DSP_CONFIG_TABLES
+        - -DARM_FAST_ALLOW_TABLES
+        - -DARM_FFT_ALLOW_TABLES
+        - -DARM_ALL_FAST_TABLES
+        - -DARM_MATH_LOOPUNROLL
+        - -DARM_TABLE_BITREVIDX_FXT_128
+        - -DARM_TABLE_BITREVIDX_FXT_256
+        - -DARM_TABLE_BITREVIDX_FXT_512        
+        - -DARM_TABLE_TWIDDLECOEF_F32_128 -DARM_TABLE_BITREVIDX_FLT_128
+        - -DARM_TABLE_TWIDDLECOEF_F32_256 -DARM_TABLE_BITREVIDX_FLT_256
+        - -DARM_TABLE_TWIDDLECOEF_F32_512 -DARM_TABLE_BITREVIDX_FLT_512
+        - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_128
+        - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_256
+        - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_512
+        - -DARM_ALL_FAST_TABLES
+        
+    - component: ARM::CMSIS:DSP:Compute Graph Static Flow
+
+  layers:
+    - layer: boot.clayer.yml
+    - layer: speex.clayer.yml
+    - layer: audiomark_core.clayer.yml
+
