@@ -363,30 +363,118 @@ void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
 }
 
 #elif defined(USE_CMSIS_DSP)
+#include "arm_math.h"
 
-extern void *arm_spx_fft_init(int size);
-extern void arm_spx_fft_destroy(void *table);
-extern void arm_spx_fft(void *table, spx_word16_t *in, spx_word16_t *out);
-extern void arm_spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out);
+struct cmsis_fft_config {
+#ifdef FIXED_POINT
+   arm_rfft_instance_q15 forward;
+   arm_rfft_instance_q15 backward;
+    /* need copy as CMSIS DSP rFFT corrupts input */
+   spx_word16_t * scratchIn;
+    /* need another copy as CMSIS DSP rFFT issue unwanted symmetric part */
+   spx_word16_t * scratchOut;
+   int  shift;
+#else
+   arm_rfft_fast_instance_f32 inst;
+   /* need copy as CMSIS DSP rFFT corrupts input */
+   spx_word16_t * scratchIn;
+    /* need another copy as CMSIS DSP rFFT issue unwanted symmetric part */
+   spx_word16_t * scratchOut;
+#endif
+   int  N;
+};
 
 void *spx_fft_init(int size)
 {
-   return arm_spx_fft_init(size);
+   struct cmsis_fft_config *table;
+   table = (struct cmsis_fft_config*)speex_alloc(sizeof(struct cmsis_fft_config));
+   speex_assert(table != NULL)
+   table->scratchIn = (spx_word16_t *)speex_alloc(size * 2 * sizeof(spx_word16_t));
+   table->scratchOut = (spx_word16_t *)speex_alloc(size * 2 * sizeof(spx_word16_t));
+   speex_assert(table->scratchIn != NULL);
+   speex_assert(table->scratchOut != NULL);
+
+#ifdef FIXED_POINT
+   speex_assert(arm_rfft_init_q15(&table->forward, (uint32_t)size, 0, 1) == ARM_MATH_SUCCESS);
+   speex_assert(arm_rfft_init_q15(&table->backward, (uint32_t)size, 1, 1) == ARM_MATH_SUCCESS);
+
+   /* output format scale */
+   table->shift = 31 - __CLZ(size);
+#else
+   speex_assert(arm_rfft_fast_init_f32(&table->inst, size) == ARM_MATH_SUCCESS);
+#endif
+   table->N = size;
+   return table;
 }
 
 void spx_fft_destroy(void *table)
 {
-    arm_spx_fft_destroy(table);
+   struct cmsis_fft_config *t = (struct cmsis_fft_config *)table;
+
+   speex_free(t->scratchOut);
+   speex_free(t->scratchIn);
+   speex_free(t);
 }
 
 void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
 {
-    arm_spx_fft(table, in, out);
+    struct cmsis_fft_config *t = (struct cmsis_fft_config *)table;
+
+    int N = t->N;
+    spx_word16_t * scratchIn = t->scratchIn;
+    spx_word16_t * scratchOut = t->scratchOut;
+
+#ifdef FIXED_POINT
+    /* copy to avoid RFFT input corruption */
+    arm_copy_q15(in, scratchIn, N);
+
+
+#if defined(__ARM_FEATURE_MVE)
+    /* helium version generates 1st spectrum half */
+    arm_rfft_q15(&((struct cmsis_fft_config *)table)->forward, scratchIn, out);
+#else
+    /* output in a scratch area as CMSIS RFFT is generating conjugate part requiring the double of the buffer size */
+    arm_rfft_q15(&((struct cmsis_fft_config *)table)->forward, scratchIn, scratchOut);
+    memcpy(out, scratchOut, (N+2)*sizeof(spx_word16_t));
+#endif
+#else
+    /* copy to avoid RFFT input corruption */
+    arm_copy_f32(in, scratchIn, N);
+    arm_rfft_fast_f32(&t->inst, scratchIn, scratchOut, 0);
+
+    /* CMSIS DSP to libspeex float RFFT reshufling and rescaling */
+    out[0] = scratchOut[0]/(float)N;
+    out[N-1] = scratchOut[1]/(float)N;
+    arm_scale_f32(scratchOut + 2, 1.0f/(float)N, out + 1, N-2);
+#endif
 }
 
 void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
 {
-    arm_spx_ifft(table, in, out);
+    struct cmsis_fft_config *t = (struct cmsis_fft_config *)table;
+    spx_word16_t * scratchIn = t->scratchIn;
+    spx_word16_t * scratchOut = t->scratchOut;
+    int N = t->N;
+#ifdef FIXED_POINT
+    q15_t max_in;
+
+    arm_absmax_no_idx_q15(in, N, &max_in);
+    int32_t shift = __CLZ(max_in) - 17;
+    arm_shift_q15(in, shift, scratchIn, N+2);
+
+    arm_rfft_q15(&t->backward, scratchIn, out);
+
+    arm_shift_q15(out, t->shift-shift, out, N);
+#else
+    /* CMSIS DSP RFFT float reshuffling */
+    memcpy(scratchIn + 2, in + 1, (N-2) * sizeof(spx_word16_t));
+    scratchIn[0] = in[0];
+    scratchIn[1] = in[N-1];
+
+    arm_rfft_fast_f32(&t->inst, scratchIn, scratchOut, 1);
+    /* CMSIS RIFFT scale down, need to compensate */
+    arm_scale_f32(scratchOut, (float)N, out, N);
+#endif
 }
 
 #else

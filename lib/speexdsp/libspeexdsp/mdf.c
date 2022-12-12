@@ -75,7 +75,6 @@
 #include "speex/speex_echo.h"
 #include "math_approx.h"
 #include "os_support.h"
-#include "speex_kernels.h"
 
 
 /* If enabled, the AEC will use a foreground filter and a background filter to be more robust to double-talk
@@ -174,9 +173,10 @@ struct SpeexEchoState_ {
 };
 
 
+#include "mdf_opt.c"
 
-
-static inline void _filter_dc_notch16(const spx_int16_t *in, spx_word16_t radius, spx_word16_t *out, int len, spx_mem_t *mem, int stride)
+#ifndef OVERRIDE_MDF_DC_NOTCH
+static inline void filter_dc_notch16(const spx_int16_t *in, spx_word16_t radius, spx_word16_t *out, int len, spx_mem_t *mem, int stride)
 {
    int i;
    spx_word16_t den2;
@@ -199,9 +199,11 @@ static inline void _filter_dc_notch16(const spx_int16_t *in, spx_word16_t radius
       out[i] = SATURATE32(PSHR32(MULT16_32_Q15(radius,vout),15),32767);
    }
 }
+#endif
 
 /* This inner product is slightly different from the codec version because of fixed-point */
-static inline spx_word32_t _mdf_inner_prod(const spx_word16_t *x, const spx_word16_t *y, int len)
+#ifndef OVERRIDE_MDF_INNER_PROD
+static inline spx_word32_t mdf_inner_prod(const spx_word16_t *x, const spx_word16_t *y, int len)
 {
    spx_word32_t sum=0;
    len >>= 1;
@@ -215,9 +217,11 @@ static inline spx_word32_t _mdf_inner_prod(const spx_word16_t *x, const spx_word
    }
    return sum;
 }
+#endif
 
 /** Compute power spectrum of a half-complex (packed) vector */
-static inline void _power_spectrum(const spx_word16_t *X, spx_word32_t *ps, int N)
+#ifndef OVERRIDE_MDF_POWER_SPECTRUM
+static inline void power_spectrum(const spx_word16_t *X, spx_word32_t *ps, int N)
 {
    int i, j;
    ps[0]=MULT16_16(X[0],X[0]);
@@ -227,9 +231,11 @@ static inline void _power_spectrum(const spx_word16_t *X, spx_word32_t *ps, int 
    }
    ps[j]=MULT16_16(X[i],X[i]);
 }
+#endif
 
 /** Compute power spectrum of a half-complex (packed) vector and accumulate */
-static inline void _power_spectrum_accum(const spx_word16_t *X, spx_word32_t *ps, int N)
+#ifndef OVERRIDE_MDF_POWER_SPECTRUM_ACCUM
+static inline void power_spectrum_accum(const spx_word16_t *X, spx_word32_t *ps, int N)
 {
    int i, j;
    ps[0]+=MULT16_16(X[0],X[0]);
@@ -239,10 +245,13 @@ static inline void _power_spectrum_accum(const spx_word16_t *X, spx_word32_t *ps
    }
    ps[j]+=MULT16_16(X[i],X[i]);
 }
+#endif
+
 
 /** Compute cross-power spectrum of a half-complex (packed) vectors and add to acc */
 #ifdef FIXED_POINT
-static inline void _spectral_mul_accum(const spx_word16_t *X, const spx_word32_t *Y, spx_word16_t *acc, int N, int M)
+#ifndef OVERRIDE_MDF_SPECTRAL_MUL_ACCUM
+static inline void spectral_mul_accum(const spx_word16_t *X, const spx_word32_t *Y, spx_word16_t *acc, int N, int M)
 {
    int i,j;
    spx_word32_t tmp1=0,tmp2=0;
@@ -269,7 +278,10 @@ static inline void _spectral_mul_accum(const spx_word16_t *X, const spx_word32_t
    }
    acc[N-1] = PSHR32(tmp1,WEIGHT_SHIFT);
 }
-static inline void _spectral_mul_accum16(const spx_word16_t *X, const spx_word16_t *Y, spx_word16_t *acc, int N, int M)
+#endif
+
+#ifndef OVERRIDE_MDF_SPECTRAL_MUL_ACCUM16
+static inline void spectral_mul_accum16(const spx_word16_t *X, const spx_word16_t *Y, spx_word16_t *acc, int N, int M)
 {
    int i,j;
    spx_word32_t tmp1=0,tmp2=0;
@@ -296,9 +308,11 @@ static inline void _spectral_mul_accum16(const spx_word16_t *X, const spx_word16
    }
    acc[N-1] = PSHR32(tmp1,WEIGHT_SHIFT);
 }
+#endif
 
 #else
-static inline void _spectral_mul_accum(const spx_word16_t *X, const spx_word32_t *Y, spx_word16_t *acc, int N, int M)
+#ifndef OVERRIDE_MDF_SPECTRAL_MUL_ACCUM
+static inline void spectral_mul_accum(const spx_word16_t *X, const spx_word32_t *Y, spx_word16_t *acc, int N, int M)
 {
    int i,j;
    for (i=0;i<N;i++)
@@ -316,12 +330,15 @@ static inline void _spectral_mul_accum(const spx_word16_t *X, const spx_word32_t
       Y += N;
    }
 }
+#endif
+
 #define spectral_mul_accum16 spectral_mul_accum
 #endif // FIXED_POINT
 
 
 /** Compute weighted cross-power spectrum of a half-complex (packed) vector with conjugate */
-static inline void _weighted_spectral_mul_conj(const spx_float_t *w, const spx_float_t p, const spx_word16_t *X, const spx_word16_t *Y, spx_word32_t *prod, int N)
+#ifndef OVERRIDE_MDF_WEIGHT_SPECT_MUL_CONJ
+static inline void weighted_spectral_mul_conj(const spx_float_t *w, const spx_float_t p, const spx_word16_t *X, const spx_word16_t *Y, spx_word32_t *prod, int N)
 {
    int i, j;
    spx_float_t W;
@@ -336,8 +353,10 @@ static inline void _weighted_spectral_mul_conj(const spx_float_t *w, const spx_f
    W = FLOAT_AMULT(p, w[j]);
    prod[i] = FLOAT_MUL32(W,MULT16_16(X[i],Y[i]));
 }
+#endif
 
-static inline void _mdf_adjust_prop(const spx_word32_t *W, int N, int M, int P, spx_word16_t *prop)
+#ifndef OVERRIDE_MDF_ADJUST_PROP
+static inline void mdf_adjust_prop(const spx_word32_t *W, int N, int M, int P, spx_word16_t *prop)
 {
    int i, j, p;
    spx_word16_t max_sum = 1;
@@ -368,6 +387,9 @@ static inline void _mdf_adjust_prop(const spx_word32_t *W, int N, int M, int P, 
    }
    /*printf ("\n");*/
 }
+
+#endif
+
 
 #ifdef DUMP_ECHO_CANCEL_DATA
 #include <stdio.h>
@@ -712,6 +734,7 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
       filter_dc_notch16(in+chan, st->notch_radius, st->input+chan*st->frame_size, st->frame_size, st->notch_mem+2*chan, C);
       /* Copy input data to buffer and apply pre-emphasis */
       /* Copy input data to buffer */
+#ifndef OVERRIDE_MDF_PREEMPH_FLT
       for (i=0;i<st->frame_size;i++)
       {
          spx_word32_t tmp32;
@@ -734,10 +757,15 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
          st->memD[chan] = st->input[chan*st->frame_size+i];
          st->input[chan*st->frame_size+i] = EXTRACT16(tmp32);
       }
+#else
+      st->saturated = mdf_preemph(&st->input[chan*st->frame_size],
+                        &st->input[chan*st->frame_size], /* in-place */
+                        st->preemph, st->frame_size, &st->memD[chan]);
+#endif
    }
-
    for (speak = 0; speak < K; speak++)
    {
+#ifndef OVERRIDE_MDF_STRIDED_PREEMPH_FLT
       for (i=0;i<st->frame_size;i++)
       {
          spx_word32_t tmp32;
@@ -759,6 +787,17 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
          st->x[speak*N+i+st->frame_size] = EXTRACT16(tmp32);
          st->memX[speak] = far_end[i*K+speak];
       }
+#else
+
+      memcpy(&st->x[speak*N],
+                &st->x[speak*N+st->frame_size], st->frame_size * sizeof(spx_word16_t));
+      st->saturated = mdf_preemph_with_stride_int(&far_end[speak],
+                        &st->x[speak*N+st->frame_size],
+                        st->preemph, st->frame_size, &st->memX[speak], K);
+
+      if(st->saturated)
+        st->saturated += M;
+#endif
    }
 
    for (speak = 0; speak < K; speak++)
@@ -787,8 +826,13 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
       /* Compute foreground filter */
       spectral_mul_accum16(st->X, st->foreground+chan*N*K*M, st->Y+chan*N, N, M*K);
       spx_ifft(st->fft_table, st->Y+chan*N, st->e+chan*N);
+#ifndef OVERRIDE_MDF_VEC_SUB
       for (i=0;i<st->frame_size;i++)
          st->e[chan*N+i] = SUB16(st->input[chan*st->frame_size+i], st->e[chan*N+i+st->frame_size]);
+#else
+    vect_sub(&st->input[chan*st->frame_size],  &st->e[chan*N+st->frame_size],
+                    &st->e[chan*N], st->frame_size);
+#endif
       Sff += mdf_inner_prod(st->e+chan*N, st->e+chan*N, st->frame_size);
 #endif
    }
@@ -807,8 +851,14 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
             for (j=M-1;j>=0;j--)
             {
                weighted_spectral_mul_conj(st->power_1, FLOAT_SHL(PSEUDOFLOAT(st->prop[j]),-15), &st->X[(j+1)*N*K+speak*N], st->E+chan*N, st->PHI, N);
+#ifndef OVERRIDE_MDF_VEC_ADD
                for (i=0;i<N;i++)
                   st->W[chan*N*K*M + j*N*K + speak*N + i] += st->PHI[i];
+#else
+               vect_add(&st->W[chan*N*K*M + j*N*K + speak*N],
+                           st->PHI,
+                           &st->W[chan*N*K*M + j*N*K + speak*N], N);
+#endif
             }
          }
       }
@@ -858,8 +908,14 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
    }
 
    /* So we can use power_spectrum_accum */
+#ifndef OVERRIDE_MDF_VEC_CLEAR
    for (i=0;i<=st->frame_size;i++)
       st->Rf[i] = st->Yf[i] = st->Xf[i] = 0;
+#else
+   vect_clear(0, st->Rf, st->frame_size + 1);
+   vect_clear(0, st->Yf, st->frame_size + 1);
+   vect_clear(0, st->Xf, st->frame_size + 1);
+#endif
 
    Dbf = 0;
    See = 0;
@@ -869,11 +925,21 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
    {
       spectral_mul_accum(st->X, st->W+chan*N*K*M, st->Y+chan*N, N, M*K);
       spx_ifft(st->fft_table, st->Y+chan*N, st->y+chan*N);
+#ifndef OVERRIDE_MDF_VEC_SUB
       for (i=0;i<st->frame_size;i++)
          st->e[chan*N+i] = SUB16(st->e[chan*N+i+st->frame_size], st->y[chan*N+i+st->frame_size]);
+#else
+      vect_sub(&st->e[chan*N+st->frame_size],  &st->y[chan*N+st->frame_size],
+            &st->e[chan*N], st->frame_size);
+#endif
       Dbf += 10+mdf_inner_prod(st->e+chan*N, st->e+chan*N, st->frame_size);
+#ifndef OVERRIDE_MDF_VEC_SUB
       for (i=0;i<st->frame_size;i++)
          st->e[chan*N+i] = SUB16(st->input[chan*st->frame_size+i], st->y[chan*N+i+st->frame_size]);
+#else
+      vect_sub(&st->input[chan*st->frame_size], &st->y[chan*N+st->frame_size],
+            &st->e[chan*N], st->frame_size);
+#endif
       See += mdf_inner_prod(st->e+chan*N, st->e+chan*N, st->frame_size);
    }
 #endif
@@ -917,9 +983,15 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
       for (i=0;i<N*M*C*K;i++)
          st->foreground[i] = EXTRACT16(PSHR32(st->W[i],16));
       /* Apply a smooth transition so as to not introduce blocking artifacts */
+#ifndef OVERRIDE_MDF_SMOOTHED_ADD
       for (chan = 0; chan < C; chan++)
          for (i=0;i<st->frame_size;i++)
             st->e[chan*N+i+st->frame_size] = MULT16_16_Q15(st->window[i+st->frame_size],st->e[chan*N+i+st->frame_size]) + MULT16_16_Q15(st->window[i],st->y[chan*N+i+st->frame_size]);
+#else
+        smoothed_add(&st->e[st->frame_size], &st->window[st->frame_size],
+            &st->y[st->frame_size], st->window,
+            &st->e[st->frame_size], st->frame_size, C, N);
+#endif
    } else {
       int reset_background=0;
       /* Otherwise, check if the background filter is significantly worse */
@@ -937,10 +1009,18 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
          /* We also need to copy the output so as to get correct adaptation */
          for (chan = 0; chan < C; chan++)
          {
+#ifndef OVERRIDE_MDF_VEC_COPY
             for (i=0;i<st->frame_size;i++)
                st->y[chan*N+i+st->frame_size] = st->e[chan*N+i+st->frame_size];
+#else
+            vect_copy(&st->e[chan*N+st->frame_size], &st->y[chan*N+st->frame_size], st->frame_size * sizeof(spx_word16_t));
+#endif
+#ifndef OVERRIDE_MDF_VEC_SUB
             for (i=0;i<st->frame_size;i++)
                st->e[chan*N+i] = SUB16(st->input[chan*st->frame_size+i], st->y[chan*N+i+st->frame_size]);
+#else
+            vect_sub(&st->input[chan*st->frame_size], &st->y[chan*N+st->frame_size], &st->e[chan*N], st->frame_size);
+#endif
          }
          See = Sff;
          st->Davg1 = st->Davg2 = 0;
@@ -953,6 +1033,7 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
    for (chan = 0; chan < C; chan++)
    {
       /* Compute error signal (for the output with de-emphasis) */
+#ifndef OVERRIDE_MDF_DEEMPH
       for (i=0;i<st->frame_size;i++)
       {
          spx_word32_t tmp_out;
@@ -971,18 +1052,30 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
          out[i*C+chan] = WORD2INT(tmp_out);
          st->memE[chan] = tmp_out;
       }
-
+#else
+      mdf_deemph(&in[chan], &st->input[chan*st->frame_size],
+#ifdef TWO_PATH
+                &st->e[chan*N+st->frame_size],
+#else
+                &st->y[chan*N+st->frame_size],
+#endif
+                &out[chan], st->preemph, st->frame_size, &st->memE[chan], C);
+#endif
 #ifdef DUMP_ECHO_CANCEL_DATA
       dump_audio(in, far_end, out, st->frame_size);
 #endif
 
       /* Compute error signal (filter update version) */
+#if !defined( OVERRIDE_MDF_VEC_COPY) || !defined(OVERRIDE_MDF_VEC_CLEAR)
       for (i=0;i<st->frame_size;i++)
       {
          st->e[chan*N+i+st->frame_size] = st->e[chan*N+i];
          st->e[chan*N+i] = 0;
       }
-
+#else
+      vect_copy(&st->e[chan*N], &st->e[chan*N+st->frame_size], st->frame_size * sizeof(spx_word16_t));
+      vect_clear(&st->e[chan*N], st->frame_size);
+#endif
       /* Compute a bunch of correlations */
       /* FIXME: bad merge */
       Sey += mdf_inner_prod(st->e+chan*N+st->frame_size, st->y+chan*N+st->frame_size, st->frame_size);
@@ -991,8 +1084,12 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
 
       /* Convert error to frequency domain */
       spx_fft(st->fft_table, st->e+chan*N, st->E+chan*N);
+#ifndef OVERRIDE_MDF_VEC_CLEAR
       for (i=0;i<st->frame_size;i++)
          st->y[i+chan*N] = 0;
+#else
+      vect_clear(0, & st->y[chan*N], st->frame_size);
+#endif
       spx_fft(st->fft_table, st->y+chan*N, st->Y+chan*N);
 
       /* Compute power spectrum of echo (X), error (E) and filter response (Y) */
@@ -1012,8 +1109,12 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
    {
       /* Things have gone really bad */
       st->screwed_up += 50;
+#ifndef OVERRIDE_MDF_VEC_CLEAR
       for (i=0;i<st->frame_size*C;i++)
          out[i] = 0;
+#else
+      vect_clear(out, st->frame_size*C);
+#endif
    } else if (SHR32(Sff, 2) > ADD32(Sdd, SHR32(MULT16_16(N, 10000),6)))
    {
       /* AEC seems to add lots of echo instead of removing it, let's see if it will improve */
@@ -1038,12 +1139,15 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
       power_spectrum_accum(st->X+speak*N, st->Xf, N);
    }
 
-
+#ifndef OVERRIDE_MDF_SMOOTH_FE_NRG
    /* Smooth far end energy estimate over time */
    for (j=0;j<=st->frame_size;j++)
       st->power[j] = MULT16_32_Q15(ss_1,st->power[j]) + 1 + MULT16_32_Q15(ss,st->Xf[j]);
-
+#else
+   smooth_fe_nrg(st->power, ss_1, st->Xf, ss, st->power, st->frame_size + 1);
+#endif
    /* Compute filtered spectra and (cross-)correlations */
+#ifndef OVERRIDE_MDF_FILTERED_SPEC_AD_XCORR
    for (j=st->frame_size;j>=0;j--)
    {
       spx_float_t Eh, Yh;
@@ -1059,7 +1163,9 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
       st->Yh[j] = (1-st->spec_average)*st->Yh[j] + st->spec_average*st->Yf[j];
 #endif
    }
-
+#else
+    filtered_spectra_cross_corr(st->Rf, st->Eh, st->Yf, st->Yh, &Pey, &Pyy, st->spec_average, st->frame_size + 1);
+#endif
    Pyy = FLOAT_SQRT(Pyy);
    Pey = FLOAT_DIVU(Pey,Pyy);
 
@@ -1122,6 +1228,7 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
    if (st->adapted)
    {
       /* Normal learning rate calculation once we're past the minimal adaptation phase */
+#ifndef OVERRIDE_MDF_NORM_LEARN_RATE_CALC
       for (i=0;i<=st->frame_size;i++)
       {
          spx_word32_t r, e;
@@ -1139,6 +1246,9 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
          /*st->power_1[i] = adapt_rate*r/(e*(1+st->power[i]));*/
          st->power_1[i] = FLOAT_SHL(FLOAT_DIV32_FLOAT(r,FLOAT_MUL32U(e,st->power[i]+10)),WEIGHT_SHIFT+16);
       }
+#else
+      mdf_nominal_learning_rate_calc(st->Rf, st->power, st->Yf, st->power_1, st->leak_estimate, RER, st->frame_size + 1);
+#endif
    } else {
       /* Temporary adaption rate if filter is not yet adapted enough */
       spx_word16_t adapt_rate=0;
@@ -1155,8 +1265,12 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
 #endif
          adapt_rate = FLOAT_EXTRACT16(FLOAT_SHL(FLOAT_DIV32(tmp32, See),15));
       }
+#ifndef OVERRIDE_MDF_CONVERG_LEARN_RATE_CALC
       for (i=0;i<=st->frame_size;i++)
          st->power_1[i] = FLOAT_SHL(FLOAT_DIV32(EXTEND32(adapt_rate),ADD32(st->power[i],10)),WEIGHT_SHIFT+1);
+#else
+       mdf_non_adapt_learning_rate_calc(st->power, st->power_1, adapt_rate, st->frame_size + 1);
+#endif
 
 
       /* How much have we adapted so far? */
@@ -1164,13 +1278,21 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
    }
 
    /* FIXME: MC conversion required */
+#ifndef OVERRIDE_MDF_VEC_COPY
       for (i=0;i<st->frame_size;i++)
          st->last_y[i] = st->last_y[st->frame_size+i];
+#else
+      vect_copy(&st->last_y[st->frame_size], st->last_y, st->frame_size * sizeof(spx_word16_t));
+#endif
    if (st->adapted)
    {
       /* If the filter is adapted, take the filtered echo */
+#ifndef OVERRIDE_MDF_VEC_SUB_INT16
       for (i=0;i<st->frame_size;i++)
          st->last_y[st->frame_size+i] = in[i]-out[i];
+#else
+       vect_sub16(in, out, &st->last_y[st->frame_size], st->frame_size);
+#endif
    } else {
       /* If filter isn't adapted yet, all we can do is take the far end signal directly */
       /* moved earlier: for (i=0;i<N;i++)
@@ -1189,8 +1311,12 @@ void speex_echo_get_residual(SpeexEchoState *st, spx_word32_t *residual_echo, in
    N = st->window_size;
 
    /* Apply hanning window (should pre-compute it)*/
+#ifndef OVERRIDE_MDF_VEC_MULT
    for (i=0;i<N;i++)
       st->y[i] = MULT16_16_Q15(st->window[i],st->last_y[i]);
+#else
+    vect_mult(st->last_y, st->window, st->y, N);
+#endif
 
    /* Compute power spectrum of the echo */
    spx_fft(st->fft_table, st->y, st->Y);
@@ -1208,8 +1334,12 @@ void speex_echo_get_residual(SpeexEchoState *st, spx_word32_t *residual_echo, in
       leak2 = 2*st->leak_estimate;
 #endif
    /* Estimate residual echo */
+#ifndef OVERRIDE_MDF_VEC_SCALE
    for (i=0;i<=st->frame_size;i++)
       residual_echo[i] = (spx_int32_t)MULT16_32_Q15(leak2,residual_echo[i]);
+#else
+    vect_scale(residual_echo, leak2, residual_echo, st->frame_size + 1);
+#endif
 
 }
 

@@ -22,6 +22,11 @@ long  cumulatedMalloc;
 
 // N.B. Speex will round up to the next 8-byte boundary (or 'long long')
 #define HEAP_SIZE (64 * 1024)
+#ifdef USE_CMSIS_DSP
+#define ERROR_TOLER  1
+#else
+#define ERROR_TOLER  0
+#endif
 
 int
 main(int argc, char *argv[])
@@ -74,7 +79,8 @@ main(int argc, char *argv[])
 
         for (int j = 0; j < NSAMPLES; ++j)
         {
-            if (p_output_sub[j] != p_expected[i][j])
+            if ((p_output_sub[j] > (p_expected[i][j] + ERROR_TOLER)) || 
+                (p_output_sub[j] < (p_expected[i][j] - ERROR_TOLER)))
             {
                 err = 1;
                 printf("S[%03d]B[%03d]I[%-5d]C[%-5d]O[%-5d]E[%-5d] ... FAIL\n",
