@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include "ee_kws.h"
 #include "ee_mfcc_f32.h"
-#include "ee_data.h"
+#include "ee_data/ee_data.h"
 
 enum _component_req
 {
