@@ -115,7 +115,9 @@ adaptive_beamformer_f32(ee_f32_t                  *bf_cmplx_in_pt,
     bf_mem->GSC_det_avg
         = 0.9f * bf_mem->GSC_det_avg + 0.1f * sum0 / (sum1 + bf_params->ep_GSC);
     if (bf_mem->GSC_det_avg > 2.0f)
+    {
         bf_mem->GSC_det_avg = 2.0f;
+    }
     // generate output
     for (int i = 0; i < (NFFT / 2) - 1; i++)
     {
@@ -218,7 +220,9 @@ beamformer_f32_run(abf_f32_instance_t *p_inst,
         {
             ftmp = *pf32_1++;
             if (ftmp == 0)
+            {
                 continue;
+            }
             *pf32_2++ /= ftmp; // real part
             *pf32_2++ /= ftmp; // imaginary part
         }
