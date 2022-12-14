@@ -1,5 +1,6 @@
-/*
- * Copyright (C) EEMBC(R). All Rights Reserved
+/**
+ * Copyright (C) 2022 EEMBC
+ * Copyright (C) 2022 Arm Limited
  *
  * All EEMBC Benchmark Software are products of EEMBC and are provided under the
  * terms of the EEMBC Benchmark License Agreements. The EEMBC Benchmark Software

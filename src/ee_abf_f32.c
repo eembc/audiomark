@@ -1,5 +1,7 @@
-/*
- * Copyright (C) EEMBC(R). All Rights Reserved
+/**
+ * Copyright (C) 2022 EEMBC
+ * Copyright (C) 2022 Arm Limited
+ * Copyright (C) 2022 Infineon
  *
  * All EEMBC Benchmark Software are products of EEMBC and are provided under the
  * terms of the EEMBC Benchmark License Agreements. The EEMBC Benchmark Software
@@ -8,23 +10,6 @@
  *
  * If you received this EEMBC Benchmark Software without having a currently
  * effective EEMBC Benchmark License Agreement, you must discontinue use.
- */
-/*
- * Copyright (C) 2022 Arm Limited or its affiliates. All rights reserved.
- *
- * SPDX-License-Identifier: Apache-2.0
- *
- * Licensed under the Apache License, Version 2.0 (the License); you may
- * not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an AS IS BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 #include "ee_abf_f32.h"
@@ -130,7 +115,9 @@ adaptive_beamformer_f32(ee_f32_t                  *bf_cmplx_in_pt,
     bf_mem->GSC_det_avg
         = 0.9f * bf_mem->GSC_det_avg + 0.1f * sum0 / (sum1 + bf_params->ep_GSC);
     if (bf_mem->GSC_det_avg > 2.0f)
+    {
         bf_mem->GSC_det_avg = 2.0f;
+    }
     // generate output
     for (int i = 0; i < (NFFT / 2) - 1; i++)
     {
@@ -233,7 +220,9 @@ beamformer_f32_run(abf_f32_instance_t *p_inst,
         {
             ftmp = *pf32_1++;
             if (ftmp == 0)
+            {
                 continue;
+            }
             *pf32_2++ /= ftmp; // real part
             *pf32_2++ /= ftmp; // imaginary part
         }
