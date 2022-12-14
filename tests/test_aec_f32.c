@@ -1,9 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "ee_audiomark.h"
 
-#define TEST_NBUFFERS 104
-#define NSAMPLES      256
+#define TEST_NBUFFERS 104U
+#define NSAMPLES      256U
+#define NFRAMEBYTES   512U
+
+#define SNRM50DB 0.003162f
 
 extern const int16_t p_input[TEST_NBUFFERS][NSAMPLES];
 extern const int16_t p_echo[TEST_NBUFFERS][NSAMPLES];
@@ -20,69 +24,76 @@ char *spxGlobalHeapPtr;
 char *spxGlobalHeapEnd;
 long  cumulatedMalloc;
 
-// N.B. Speex will round up to the next 8-byte boundary (or 'long long')
-#define HEAP_SIZE (64 * 1024)
-#ifdef USE_CMSIS_DSP
-#define ERROR_TOLER  1
-#else
-#define ERROR_TOLER  0
-#endif
-
 int
 main(int argc, char *argv[])
 {
-    int       err           = 0;
-    uint32_t  parameters[1] = { 0 };
-    void     *heap          = NULL;
+    bool      err           = false;
     uint32_t  memreq        = 0;
-    uint32_t *ptr           = &memreq;
+    uint32_t *p_req         = &memreq;
+    void     *inst          = NULL;
+    uint32_t  parameters[1] = { 0 };
+    uint32_t  A             = 0;
+    uint32_t  B             = 0;
+    float     ratio         = 0.0f;
 
-    heap = malloc(HEAP_SIZE);
-    if (!heap)
-    {
-        printf("Error allocating heap\n");
-        return -1;
-    }
-    printf("Heap start %016llx\n", (long long)heap);
-    cumulatedMalloc = 0;
-
-    if (ee_aec_f32(NODE_MEMREQ, (void **)&ptr, NULL, NULL))
+    if (ee_aec_f32(NODE_MEMREQ, (void **)&p_req, NULL, NULL))
     {
         printf("AEC NODE_MEMREQ failed\n");
         return -1;
     }
+    printf("AEC MEMREQ = %d bytes\n", memreq);
 
-    SETUP_XDAIS(xdais[0], p_input_sub, 512);
-    SETUP_XDAIS(xdais[1], p_echo_sub, 512);
-    SETUP_XDAIS(xdais[2], p_output_sub, 512);
+    inst = malloc(memreq);
+    if (!inst)
+    {
+        printf("AEC malloc() fail\n");
+        return -1;
+    }
 
-    if (ee_aec_f32(NODE_RESET, (void **)&heap, xdais, &parameters))
+    SETUP_XDAIS(xdais[0], p_input_sub, NFRAMEBYTES);
+    SETUP_XDAIS(xdais[1], p_echo_sub, NFRAMEBYTES);
+    SETUP_XDAIS(xdais[2], p_output_sub, NFRAMEBYTES);
+
+    // SpeeX will call speex_malloc() on NODE_RESET giving us the real mem used
+    cumulatedMalloc = 0;
+    if (ee_aec_f32(NODE_RESET, (void **)&inst, xdais, &parameters))
     {
         printf("AEC NODE_RESET failed\n");
         return -1;
     }
-    if (cumulatedMalloc > HEAP_SIZE)
+
+    // Sanity check the actual allocation from Speex
+    printf("AEC SpeeX cumulatedMalloc = %ld bytes\n", cumulatedMalloc);
+    if (cumulatedMalloc > memreq)
     {
-        printf("cumulatedMalloc = %ld\n", cumulatedMalloc);
-        printf("HEAP_SIZE = %d\n", HEAP_SIZE);
-        printf("AEC ran out of malloc but didn't complain!\n");
+        printf("AEC ran out of memory but didn't complain!\n");
         return -1;
     }
-    printf("cumulatedMalloc = %ld\n", cumulatedMalloc);
 
-    for (int i = 0; i < TEST_NBUFFERS; ++i)
+    for (unsigned i = 0; i < TEST_NBUFFERS; ++i)
     {
-        memcpy(p_input_sub, &p_input[i], 512);
-        memcpy(p_echo_sub, &p_echo[i], 512);
+        memcpy(p_input_sub, &p_input[i], NFRAMEBYTES);
+        memcpy(p_echo_sub, &p_echo[i], NFRAMEBYTES);
 
-        ee_aec_f32(NODE_RUN, (void **)&heap, xdais, 0);
-
-        for (int j = 0; j < NSAMPLES; ++j)
+        if (ee_aec_f32(NODE_RUN, (void **)&inst, xdais, 0))
         {
-            if ((p_output_sub[j] > (p_expected[i][j] + ERROR_TOLER)) || 
-                (p_output_sub[j] < (p_expected[i][j] - ERROR_TOLER)))
+            err = true;
+            printf("AEC NODE_RUN failed\n");
+            break;
+        }
+
+        A = 0;
+        B = 0;
+
+        for (unsigned j = 0; j < NSAMPLES; ++j)
+        {
+            A += abs(p_output_sub[j]);
+            B += abs(p_output_sub[j] - p_expected[i][j]);
+
+#ifdef DEBUG_EXACT_BITS
+            if (p_output_sub[j] != p_expected[i][j])
             {
-                err = 1;
+                err = true;
                 printf("S[%03d]B[%03d]I[%-5d]C[%-5d]O[%-5d]E[%-5d] ... FAIL\n",
                        i,
                        j,
@@ -91,12 +102,20 @@ main(int argc, char *argv[])
                        p_output_sub[j],
                        p_expected[i][j]);
             }
+#endif
+        }
+
+        ratio = (float)B / (float)A;
+        if (ratio > SNRM50DB)
+        {
+            err = true;
+            printf("AEC FAIL: Frame #%d exceeded -50 dB SNR\n", i);
         }
     }
 
     if (err)
     {
-        printf("AEC test failed (%d)\n", err);
+        printf("AEC test failed\n");
         return -1;
     }
     printf("AEC test passed\n");
