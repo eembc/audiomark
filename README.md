@@ -1,37 +1,37 @@
 # Introduction
 
-This is the development repository for AudioMark. It is based on an architecture
-from Arm (Laurent Le Faucheur) based on beamforming and echo cancellation. The
-intent is to review and expand this code base with the remaining blocks in the
-architecture diagram (see minutes) until we have a complete benchmark.
+AudioMark(tm) is a benchmark that models a sophisticated, real-world audio pipeline that uses a neural net for keyword spotting. EEMBC developed this benchmark in response to the massive proliferation of products utilizing an audio controlled Human-Machin Interface (HMI) that rely on such a pipeline. This includes everything from personal assistants like Alexa, to white-box appliances like washers, dryers, and refridgerators, to home entertainment systems, and even cars that respond to voice commands.
 
-# Reviewing
+The benchmark was developed by collaboration of the following member companies:
 
-A few meetings ago we made a quick list of things to keep in mind during review:
+* Arm
+* Infineon
+* onsemi
+* Synopsys
+* Intel
+* STMicroelectronics
+* Texas Instruments
+* EEMBC
 
-* does it require too much memory, 
-* or asynchronous threading, 
-* or it has too many types of instruction sets that h/w doesn’t support,
-* or are trivial functions used where API functions should be used,
-* and pay attention to iterative calculations to make sure they are not redundant (multiplying with a constant in a for-loop
+# Theory of Operation
 
-Feel free to file an issue.
+The benchamrk works by processing two microphone inputs listening to both a speaker and reflected noise. A state-of-the-art adaptive beamformer determines the direction of arrival of the primary speaker. This augmented signal is then treated for echo cancellation and noise reduction. The cleaned signal is sent to an MFCC feature extractor which feeds a neural net that spots one of ten known keywords.
 
-# POC vs. Beta
+The benchmark API facilitates hardware acceleration for key DSP and NN functionality. The file `ee_api.h` describes the functions that the system integrator must implement. The acoustic echo canceller (AEC) and audio noise reduction (ANR) elements are implemented by the SpeeX libspeexdsp library. These functions utilize the SpeeX API, which is a combination of macros that preform fixed math operations, and an FFT wrapper for transformation.
 
-The proof of concept is the shortest path to the minumum viable product. At
-EEMBC, this usually happens in the first 6-9 months of development. It is then
-followed by "beta" where we must test on 3-5 different architectures and
-compilers to guarantee that it will work on all EEMBC members' hardware in an
-optimal way. Right now we are in POC, but please don't hesitate to bring this
-up on your system today and report questions or issues.
+This flexibility to utilize whatever hardware is available means the benchmark scales across a wide variety of MCUs and SoCs.
 
-# Unit-testing for pull requests
+All of the components are implemented in 32-bit floating point, with the exception of the neural net, which is signed 8-bit integer. The data that flows in between components is signed 16-bit integer.
 
-TODO. Eventually we will need to start adding `make`-friendly unit-tests to
-automate code reviews and CI-on-PR via GitHUb.
+<img width="745" alt="image" src="https://user-images.githubusercontent.com/8249735/207705137-0276003b-6892-45e1-b744-5664f3f0de1a.png">
+
+# Porting
+
+TBD
 
 # Building
+
+Typically this benchmark would be built within a product's specific environment, using their own SDK, BSP and methdologies. Given the diversity of build environments, EEMBC instead provides a simpler self-hosted `main.c` and an Arm implementation using CSMSI to quickly examine the functionality of the benchmark on an OS that supports `cmake`. Ideally the target platform would use its own DSP and neural-net acceleration APIs.
 
 ## cmake
 
@@ -40,34 +40,25 @@ GCC, macOS Clang, Cygwin, and MSVC. The first three platforms' `cmake` generate 
 `Makefile` for use with `make`. Compiling with MSVC `cmake` produces a solution
 file `audiomark.sln` which can be opened from the MSVC IDE and compiled/debugged.
 
-# Coding style & guidelines
-
-## Formatting
-
-EEMBC formats according to Barr-C Embedded Standards. The `.clang-format` file
-in the root directory observes this. This file can be used within VSCode or
-MSVC, however it isn't clear if this behaves the same as `clang-format`
-version 14 (which aligns pointer stars differently).
-
-## Memory Model
+# Memory Model
 
 There are four types of memory required for the benchmark: input audio buffers,
 pre-defined inter-component buffers, constant tables, and component-specific
 scractch memory requests.
 
-### Input audio buffers
+## Input audio buffers
 
 Three channels of input audio are provided: left, right, and noise. There are
 roughly 1.69 seconds of audio in these buffers. A fourth buffer, `for_asr` is
 used for propagate the AEC output.
 
-### Inter-component buffers
+## Inter-component buffers
 
 Each component connects to the other components or inputs via one or more
 buffers. These statically allocated buffers' storage is defined in `th_api.c`
 to allow the system integrator to better control placement.
 
-### Table constants
+## Table constants
 
 All files with the name `*_tables.c` define arrays that are referenced via
 extern from their respective components. These array variables have been
@@ -76,7 +67,7 @@ stored in their own source files to facilitate linker placement optimization.
 The adaptive beamformer, MFCC feature extractor, and neural net all have
 several large tables of constants.
 
-### Dynamic allocation for scratch memory
+## Dynamic allocation for scratch memory
 
 Each component needs a certain amount of scratch memory. The components are
 written in such a way that they are first queried to indicate how much
@@ -92,7 +83,16 @@ subsequent address pointers is sufficient (provided there is enough memory).
 Both the LibSpeexDSP and EEMBC-provided components utilize this dynamic
 allocation pattern.
 
-## Function and file naming
+# Coding conventions
+
+## Formatting
+
+EEMBC formats according to Barr-C Embedded Standards. The `.clang-format` file
+in the root directory observes this. This file can be used within VSCode or
+MSVC, however it isn't clear if this behaves the same as `clang-format`
+version 14 (which aligns pointer stars differently).
+
+## Function and filenaming
 
 Traditionally, all functions and files start with either `ee_` or `th_`, where
 the former notation indicates "thou shall not change" and the latter must be
@@ -105,9 +105,6 @@ should fall into a simple `th_api` folder or collection of files so that it is
 obvious what needs to be ported. Currently the `components/eembc` folder
 illustrates this by separating all of the Arm-specific code into `th_api.c`.
 
-# Copyright & license
+# Copyright and license
 
-TODO. Code uploaded to this website that is already copyrighted must have a
-license that allows for derivative works and does not contain copyleft. Any code
-touched by EEMBC becomes copyright EEMBC and is subject to our final license.
-
+Copyright (C) EEMBC, All rights reserved. Please refer to LICENSE.md.
