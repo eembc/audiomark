@@ -23,7 +23,7 @@ This flexibility to utilize whatever hardware is available means the benchmark s
 
 All of the components are implemented in 32-bit floating point, with the exception of the neural net, which is signed 8-bit integer. The data that flows in between components is signed 16-bit integer.
 
-<img width="745" alt="image" src="https://user-images.githubusercontent.com/8249735/207705137-0276003b-6892-45e1-b744-5664f3f0de1a.png">
+<img width="745" alt="image" src="https://user-images.githubusercontent.com/8249735/207705676-966fe230-8eac-4250-a468-437dc4ceebcd.png">
 
 # Porting
 
