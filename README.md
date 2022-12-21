@@ -137,9 +137,133 @@ biases are all frozen and cannot be modified. Instead, the system integrator
 must construct the neural net from the definitions in `src/ee_nn.h` and
 `src/ee_nn_tables.c`.
 
-## SpeeX port layer
+## LibSpeexDSP optimizations
 
-TBD
+The AEC and ANR AudioMark components which are part of the LibSpeexDSP, can be enhanced with architecture specific routines, taking advantage of the underlying CPU capabilities.
+
+FFT can already be replaced with optimized variants thanks to the existing FFT wrapper (lib/speexdsp/libspeexdsp/fftwrap.c) and some parts of the resampler already have SIMD support for ARM Neon and Intel SSE.
+
+For the rest of the software, and given the monolithic nature of the LibSpeexDSP structure, customization of intensive parts could be achieved by defining compiler conditions that would override some of the inner loops with optimized routines that could potentially be vectorized or hardware-accelerated. This is similar to what was implemented for the TriMedia porting (referring the lib/speexdsp/libspeexdsp/tmv folder)
+
+By default, none of these override compiler directives are defined, causing the LibSpeexDSP library to act with its vanilla behaviour. However, the system integrator is free to define all or part of these compiler conditional options. The decision on which of these should be set active is largely architecture and compiler dependant. Simple loop structures are typically properly handled by recent compilers which support vectorization for SIMD targets, but more complex ones could require access to an external library like CMSIS DSP, hand optimization through C with intrinsic or even assembly to reach peak performance.
+
+As a first example, the AEC power_spectrum routine, which is essentially computing the squared magnitude of a complex signal, could use the CMSIS DSP `arm_cmplx_mag_squared_f32` function and for this defining the `OVERRIDE_MDF_POWER_SPECTRUM` would deactivate original definition and use the optimized variant that will be placed in the lib/speexdsp/libspeexdsp/mdf_opt_helium.c and defined the following way:
+
+```C
+#ifdef OVERRIDE_MDF_POWER_SPECTRUM
+void power_spectrum(const spx_word16_t * X, spx_word32_t * ps, int N)
+{
+    ps[0] = MULT16_16(X[0], X[0]);
+    arm_cmplx_mag_squared_f32(&X[1], ps + 1, N - 1);
+}
+#endif
+```
+
+For this one, most of the recent compilers will be able to vectorize the native implementation. Visual inspection of the generated assembly would determine whether it is worth having a specific optimized variant.
+
+A second example would be the ANR final stage overlap-add with 16-bit integer conversion. For this one, there is no native library equivalent. Implementing a customized variant with SIMD C intrinsic will allow to take advantage of SIMD if available. For example, here would be the ARM with Helium intrinsics version proposal:
+
+```C
+#ifdef OVERRIDE_ANR_OLA
+void vect_ola(const spx_word16_t * pSrcA, const spx_word16_t * pSrcB, spx_int16_t * pDst, uint32_t blockSize)
+{
+    int16x8_t converted = vdupq_n_s16(0);
+    
+    for (int i = 0; i < blockSize; i += 4) {
+        float32x4_t vtmp = vaddq(vld1q(pSrcA), vld1q(pSrcB));
+        /* rounding, saturation and 16-bit narrowing with saturation */
+        converted = vqmovnbq(vuninitializedq(converted), vcvtaq_s32_f32(vtmp));
+        vstrhq_s32(pDst, converted);
+        pDst += 4;         
+        pSrcA += 4;         
+        pSrcB += 4;
+    }
+}
+#endif
+```
+
+Override compiler defines and associated C routines prototypes will be listed below.
+
+These are divided into 3 categories, associated to:
+
+* Echo canceller core (lib/speexdsp/libspeexdsp/mdf.c),
+* Noise suppressor core (lib/speexdsp/libspeexdsp/preprocess.c)
+* Associated filter banks, which are noise suppressor subparts for psychoacoustic analysis (lib/speexdsp/libspeexdsp/filterbank.c) 
+
+Code behaviour for these different C routines is respectively provided in:
+
+* lib/speexdsp/libspeexdsp/mfd_opt_generic.c
+* lib/speexdsp/libspeexdsp/preprocess_opt_generic.c
+* lib/speexdsp/libspeexdsp/filterbank_opt_generic.c
+
+These are provided as models, replicated as-is from the core LibSpeexDSP software parts with function embedding and must serve as reference for optimized software equivalent.
+
+It is expected to pass these compiler directives inside build systems like cmake or configuration header as with the standard LibSpeexDSP `config.h`.
+
+An example of use can be found in the ARM CMSIS build YML files (`platform/cmsis/speex.clayer.yml`) where most of these override defines have been activated.
+
+```yaml
+      misc:
+        - C:
+          - -DFLOATING_POINT
+          - -DEXPORT=
+          - -DOS_SUPPORT_CUSTOM
+          # speex boosted routines
+          # FilterBank
+          - -DOVERRIDE_FB_COMPUTE_BANK32
+          - -DOVERRIDE_FB_COMPUTE_PSD16
+          # ANR
+          - -DOVERRIDE_ANR_VEC_MUL
+          - -DOVERRIDE_ANR_UPDATE_NOISE_ESTIMATE
+          ...
+```
+
+### Complete list of overrides, functions, and behavior.
+
+| Override | Function | Beahvior |
+| -------- | -------- | ------------------------ |
+| OVERRIDE_MDF_ADJUST_PROP | mdf_adjust_prop | Computes filter adaptation rate, proportional to inverse of weight filter energy. |
+| OVERRIDE_MDF_CONVERG_LEARN_RATE_CALC | mdf_non_adapt_learning_rate_calc | Part of the process of the computing the adaption rate when filter is not yet adapted enough. This routine divides the adaptation rate by Far End power over the whole subframe. |
+| OVERRIDE_MDF_DC_NOTCH | filter_dc_notch16 | Notch filter with strided spx_int16_t (int16_t) type input and spx_word16_t (floating point) output. |
+| OVERRIDE_MDF_DEEMPH | mdf_deemph | Compute error signal, check input saturation and convert / saturate strided output to spx_int16_t (int16_t). |
+| OVERRIDE_MDF_FILTERED_SPEC_AD_XCORR | void filtered_spectra_cross_corr | Compute filtered spectra and (cross-)correlations. |
+| OVERRIDE_MDF_INNER_PROD | mdf_inner_prod | Dot-product. Was already provided as a stand-alone function in the original software. |
+| OVERRIDE_MDF_NORM_LEARN_RATE_CALC | mdf_nominal_learning_rate_calc | Normal learning rate calculation once we're past the minimal adaptation phase. |
+| OVERRIDE_MDF_POWER_SPECTRUM | power_spectrum | Compute power spectrum of a complex vector. |
+| OVERRIDE_MDF_POWER_SPECTRUM_ACCUM | power_spectrum_accum | Same as power_spectrum above, with extra accumulation. |
+| OVERRIDE_MDF_PREEMPH_FLT | mdf_preemph | Copy spx_word16_(int16_t) input data to buffer and apply pre-emphasis filter. |
+| OVERRIDE_MDF_SMOOTHED_ADD | smoothed_add | Blend error and echo residual to apply a smooth transition to avoid introducing blocking artifacts. |
+| OVERRIDE_MDF_SMOOTH_FE_NRG | smooth_fe_nrg | Smooth far end energy estimate over time. |
+| OVERRIDE_MDF_SPECTRAL_MUL_ACCUM | spectral_mul_accum | Compute cross-power spectrum of a complex vectors and accumulate. Only relevant for fixed-point as mixes spx_word16_t and spx_word32_t. Floating point version, used in Audiomark, has only plain floating point  versions and does not distinguish with spectral_mul_accum16. |
+| OVERRIDE_MDF_SPECTRAL_MUL_ACCUM16 | spectral_mul_accum16 | Same as spectral_mul_accum above but plain spx_word16_t format. Floating point version, used in Audiomark, has only plain floating point versions and does not distinguish with spectral_mul_accum. |
+| OVERRIDE_MDF_STRIDED_PREEMPH_FLT | mdf_preemph_with_stride_int | Strided spx_int16_t (int16_t) pre-emphasis filter with saturation check. |
+| OVERRIDE_MDF_VEC_ADD | vect_add | spx_word16_t (Floating point) vector addition. |
+| OVERRIDE_MDF_VEC_CLEAR | vect_clear | spx_word16_t (Floating point) vector clear. |
+| OVERRIDE_MDF_VEC_COPY | vect_copy | spx_word16_t (Floating point) vector copy. |
+| OVERRIDE_MDF_VEC_MULT | vect_mult | spx_word16_t (Floating point) vector multiplication for windowing. |
+| OVERRIDE_MDF_VEC_SCALE | vect_scale | spx_word16_t (Floating point) vector scaling. |
+| OVERRIDE_MDF_VEC_SUB | vect_sub | spx_word16_t (Floating point) vector subtraction. |
+| OVERRIDE_MDF_VEC_SUB_INT16 | vect_sub16 | spx_int16_t (16-bit signed integer point) vector subtraction for filtered echo computation, difference of AEC input and output subframes. |
+| OVERRIDE_MDF_WEIGHT_SPECT_MUL_CONJ | weighted_spectral_mul_conj | Compute weighted cross-power spectrum of a complex vector with conjugate. |
+| OVERRIDE_ANR_APOSTERIORI_SNR | aposteriori_snr | Compute A-posteriori / A-priori SNRs. |
+| OVERRIDE_ANR_APPLY_SPEC_GAIN | apply_spectral_gain | Apply computed spectral gain. |
+| OVERRIDE_ANR_COMPUTE_GAIN_FLOOR | compute_gain_floor | Compute the gain floor based on different floors for the background noise and residual echo. |
+| OVERRIDE_ANR_HYPERGEOM_GAIN | hypergeom_gain | compute hypergeometric function. |
+| OVERRIDE_ANR_OLA | vect_ola | spx_word16_t vector overlap and add. |
+| OVERRIDE_ANR_POWER_SPECTRUM | power_spectrum | Complex magnitude squared of a spx_word16_t (floating-point) vector. |
+| OVERRIDE_ANR_QCURVE | qcurve | Compute 1 / (1 + 0.15 / (SNR_SCALING_1 * x)) |
+| OVERRIDE_ANR_UPDATE_GAINS_CRITICAL_BANDS | update_gains_critical_bands | Update gains in critical bands (MEL scale). |
+| OVERRIDE_ANR_UPDATE_GAINS_LINEAR | update_gains_linear | Update gains in linear spectral bands. |
+| OVERRIDE_ANR_UPDATE_NOISE_ESTIMATE | update_noise_estimate | Update noise estimates. |
+| OVERRIDE_ANR_UPDATE_NOISE_PROB | update_noise_prob | Update noise probabilities and smoothed power spectrum. |
+| OVERRIDE_ANR_UPDATE_ZETA | preprocess_update_zeta | Update Smoothed a priori SNR. |
+| OVERRIDE_ANR_VEC_CONV_FROM_INT16 | vect_conv_from_int16 | Convert spx_int16_t (16-bit signed integer) vector to spx_word16_t (floating-point). |
+| OVERRIDE_ANR_VEC_COPY | vect_copy* | Generic vector copy. |
+| OVERRIDE_ANR_VEC_MUL | vect_mult* | `spx_word16_t` vector multiplication for windowing. |
+| OVERRIDE_FB_COMPUTE_BANK32 | filterbank_compute_bank32 | Convert linear power spectrum in MEL perceptual scale. |
+| OVERRIDE_FB_COMPUTE_PSD16 | filterbank_compute_psd16 | Compute the linear power spectral density from MEL perceptual scale. |
+
+\* It can be noted that ANR vector multiplications and vector copy routines are similar to AEC ones and can be shared.
 
 # Memory model
 
