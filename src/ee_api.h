@@ -19,7 +19,7 @@
 
 void *th_malloc(size_t size, int req);
 
-void  th_free(void *mem, int req);
+void th_free(void *mem, int req);
 
 void *th_memcpy(void *restrict dst, const void *restrict src, size_t n);
 
