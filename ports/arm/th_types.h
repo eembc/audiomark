@@ -16,6 +16,8 @@
 
 #include "dsp/matrix_functions.h"
 #include "dsp/transform_functions.h"
+#include "dsp/statistics_functions.h"
+#include "dsp/support_functions.h"
 
 #define TH_FLOAT32_TYPE                 float
 #define TH_MATRIX_INSTANCE_FLOAT32_TYPE arm_matrix_instance_f32
