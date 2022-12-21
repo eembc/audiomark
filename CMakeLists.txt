@@ -29,7 +29,7 @@ add_definitions(-D__RESTRICT=)
 
 set(EE_SOURCE
 	# Note: main.c is just for self-hosted testing
-	src/main.c
+	main.c
 	src/ee_audiomark.c
 
 	src/ee_aec_f32.c
