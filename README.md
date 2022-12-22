@@ -72,7 +72,7 @@ and methodology differs, and is explained below.
 
 ## EEMBC port layer
 
-The EEMBC port layer is contained in one two files: `th_types.h` and `th_api.c`.
+The EEMBC port layer is contained in two files: `th_types.h` and `th_api.c`.
 An unimplemented empty set of files is provided in `ports/barebones`, and a 
 reference can be found in `ports/arm_cmsis`.
 
