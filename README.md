@@ -49,9 +49,9 @@ in between components is signed 16-bit integer.
 Typically this benchmark would be built within a product's specific 
 environment, using their own SDK, BSP and methodologies. Given the diversity of 
 build environments, EEMBC instead provides a simpler self-hosted `main.c` and 
-an Arm implementation using CMSIS to quickly examine the functionality of the 
-benchmark on an OS that supports `cmake`. Ideally the target platform would use 
-its own DSP and neural-net acceleration APIs.
+an implementation using Arm's *platform-agnostic* CMSIS functions to quickly 
+examine the functionality of the benchmark on an OS that supports `cmake`. 
+Ideally the target platform would use its own DSP and neural-net acceleration APIs.
 
 To build the self-hosted example, from the root directory type":
 
