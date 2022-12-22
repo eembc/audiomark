@@ -1,6 +1,6 @@
 # Introduction
 
-AudioMark(tm) is a benchmark that models a sophisticated, real-world audio 
+AudioMark(tm) is a benchmark which models a sophisticated, real-world audio 
 pipeline that uses a neural net for keyword spotting. EEMBC developed this 
 benchmark in response to the massive proliferation of products utilizing an 
 audio controlled Human-Machine Interface (HMI) that rely on such a pipeline. 
