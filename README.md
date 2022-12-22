@@ -57,7 +57,7 @@ To build the self-hosted example, from the root directory type":
 
 ~~~
 % mkdir build && cd build
-% cmake .. -DPORT_DIR=arm/cmsis
+% cmake .. -DPORT_DIR=ports/arm
 % make test
 % ./audiomark
 ~~~
