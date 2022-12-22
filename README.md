@@ -139,20 +139,51 @@ must construct the neural net from the definitions in `src/ee_nn.h` and
 
 ## LibSpeexDSP optimizations
 
-The AEC and ANR AudioMark components which are part of the LibSpeexDSP, can be enhanced with architecture specific routines, taking advantage of the underlying CPU capabilities.
+The AEC and ANR AudioMark components which are part of the LibSpeexDSP, can be 
+enhanced with architecture specific routines, taking advantage of the 
+underlying CPU capabilities. There are three types of optimizations available:
 
-FFT can already be replaced with optimized variants thanks to the existing FFT wrapper (lib/speexdsp/libspeexdsp/fftwrap.c) and some parts of the resampler already have SIMD support for ARM Neon and Intel SSE.
+1. FFT - FFT can already be replaced with optimized variants thanks to the 
+existing FFT wrapper (`lib/speexdsp/libspeexdsp/fftwrap.c`) and some parts of 
+the resampler already have SIMD support for ARM Neon and Intel SSE. Additional 
+FFT operations can be added here.
 
-For the rest of the software, and given the monolithic nature of the LibSpeexDSP structure, customization of intensive parts could be achieved by defining compiler conditions that would override some of the inner loops with optimized routines that could potentially be vectorized or hardware-accelerated. This is similar to what was implemented for the TriMedia porting (referring the lib/speexdsp/libspeexdsp/tmv folder)
+2. Intrinsic primitives - These are simple macros that come with several 
+variants (here is the generic implementation of a multiplication: 
+[`MULT16_16`](https://github.com/eembc/audiomark-dev/blob/e0fd95e10d5ce6fd724b525fac998327b4f0dd8f/lib/speexdsp/libspeexdsp/fixed_generic.h#L77)
+and may be replaced as needed. SpeeX comes with several compiler-time selected 
+options stored in the files `fixed_*.c`.
 
-By default, none of these override compiler directives are defined, causing the LibSpeexDSP library to act with its vanilla behaviour. However, the system integrator is free to define all or part of these compiler conditional options. The decision on which of these should be set active is largely architecture and compiler dependant. Simple loop structures are typically properly handled by recent compilers which support vectorization for SIMD targets, but more complex ones could require access to an external library like CMSIS DSP, hand optimization through C with intrinsic or even assembly to reach peak performance.
+3. Override path - This method uses define macros to override individual 
+functions and is described below.
 
-As a first example, the AEC power_spectrum routine, which is essentially computing the squared magnitude of a complex signal, could use the CMSIS DSP `arm_cmplx_mag_squared_f32` function and for this defining the `OVERRIDE_MDF_POWER_SPECTRUM` would deactivate original definition and use the optimized variant that will be placed in the lib/speexdsp/libspeexdsp/mdf_opt_helium.c and defined the following way:
+For the rest of the software, and given the monolithic nature of the 
+LibSpeexDSP structure, customization of intensive parts could be achieved by 
+defining compiler conditions that would override some of the inner loops with 
+optimized routines that could potentially be vectorized or 
+hardware-accelerated. This is similar to what was implemented for the TriMedia 
+porting (referring the `lib/speexdsp/libspeexdsp/tmv` folder)
+
+By default, none of these override compiler directives are defined, causing the 
+LibSpeexDSP library to act with its vanilla behaviour. However, the system 
+integrator is free to define all or part of these compiler conditional options. 
+The decision on which of these should be set active is largely architecture and 
+compiler dependant. Simple loop structures are typically properly handled by 
+recent compilers which support vectorization for SIMD targets, but more complex 
+ones could require access to an external library like CMSIS DSP, hand 
+optimization through C with intrinsic or even assembly to reach peak 
+performance.
+
+As a first example, the AEC power_spectrum routine, which is essentially 
+computing the squared magnitude of a complex signal, could use the CMSIS DSP 
+`arm_cmplx_mag_squared_f32` function and for this defining the 
+`OVERRIDE_MDF_POWER_SPECTRUM` would deactivate original definition and use the 
+optimized variant that will be placed in the 
+lib/speexdsp/libspeexdsp/mdf_opt_helium.c and defined the following way:
 
 Here is the generic example in [`mdf_opt_generic.c`](https://github.com/eembc/audiomark-dev/blob/e0fd95e10d5ce6fd724b525fac998327b4f0dd8f/lib/speexdsp/libspeexdsp/mdf_opt_generic.c#L84-L94):
 
 ```C
-#ifdef OVERRIDE_MDF_POWER_SPECTRUM
 static void power_spectrum(const spx_word16_t * X, spx_word32_t * ps, int N)
 {
     int             i, j;
@@ -162,20 +193,17 @@ static void power_spectrum(const spx_word16_t * X, spx_word32_t * ps, int N)
     }
     ps[j] = MULT16_16(X[i], X[i]);
 }
-#endif
 ```
 
-While it is possible to gain performance improvement by overriding MULT16_16, a larger optimization could be
+While it is possible to gain performance improvement by overriding [`MULT16_16`](https://github.com/eembc/audiomark-dev/blob/e0fd95e10d5ce6fd724b525fac998327b4f0dd8f/lib/speexdsp/libspeexdsp/fixed_generic.h#L77), a better optimization could be
 attained by overriding the function. Here is an example from [`mdf_opt_helium.c`](https://github.com/eembc/audiomark-dev/blob/e0fd95e10d5ce6fd724b525fac998327b4f0dd8f/lib/speexdsp/libspeexdsp/preprocess_opt_helium.c#L172-L180):
 
 ```C
-#ifdef OVERRIDE_MDF_POWER_SPECTRUM
 void power_spectrum(const spx_word16_t * X, spx_word32_t * ps, int N)
 {
     ps[0] = MULT16_16(X[0], X[0]);
     arm_cmplx_mag_squared_f32(&X[1], ps + 1, N - 1);
 }
-#endif
 ```
 
 For this one, most of the recent compilers will be able to vectorize the native implementation. Visual inspection
@@ -187,8 +215,6 @@ A customized variant with SIMD C intrinsic will allow to take advantage of SIMD 
 As before, here is the generic implementation from [`preprocess_opt_generic.c`](https://github.com/eembc/audiomark-dev/blob/e0fd95e10d5ce6fd724b525fac998327b4f0dd8f/lib/speexdsp/libspeexdsp/preprocess_opt_generic.c#L64-L73):
 
 ```C
-#ifdef OVERRIDE_ANR_OLA
-/* vector overlap and add */
 static void vect_ola(const spx_word16_t * pSrcA, const spx_word16_t * pSrcB, spx_int16_t * pDst, uint32_t blockSize)
 {
     int             i;
@@ -196,13 +222,11 @@ static void vect_ola(const spx_word16_t * pSrcA, const spx_word16_t * pSrcB, spx
     for (i = 0; i < blockSize; i++)
         pDst[i] = WORD2INT(ADD32(EXTEND32(pSrcA[i]), EXTEND32(pSrcB[i])));
 }
-#endif
 ```
 
 And here would be the ARM with Helium intrinsics version proposal found in [`preprocess_opt_helium.c`](https://github.com/eembc/audiomark-dev/blob/e0fd95e10d5ce6fd724b525fac998327b4f0dd8f/lib/speexdsp/libspeexdsp/preprocess_opt_helium.c#L110-L127):
 
 ```C
-#ifdef OVERRIDE_ANR_OLA
 void vect_ola(const spx_word16_t * pSrcA, const spx_word16_t * pSrcB, spx_int16_t * pDst, uint32_t blockSize)
 {
     int16x8_t converted = vdupq_n_s16(0);
@@ -217,26 +241,32 @@ void vect_ola(const spx_word16_t * pSrcA, const spx_word16_t * pSrcB, s
         pSrcB += 4;
     }
 }
-#endif
 ```
 
-All override compiler defines and associated C routines prototypes will be listed below. These are divided into 3 categories, associated to:
+All override compiler defines and associated C routines prototypes will be 
+listed below. These are divided into 3 categories, associated to:
 
-* Echo canceller core (lib/speexdsp/libspeexdsp/mdf.c),
-* Noise suppressor core (lib/speexdsp/libspeexdsp/preprocess.c)
-* Associated filter banks, which are noise suppressor subparts for psychoacoustic analysis (lib/speexdsp/libspeexdsp/filterbank.c) 
+* Echo canceller core (`lib/speexdsp/libspeexdsp/mdf.c`),
+* Noise suppressor core (`lib/speexdsp/libspeexdsp/preprocess.c`)
+* Associated filter banks, which are noise suppressor subparts for 
+psychoacoustic analysis (`lib/speexdsp/libspeexdsp/filterbank.c`) 
 
 Code behaviour for these different C routines is respectively provided in:
 
-* lib/speexdsp/libspeexdsp/mfd_opt_generic.c
-* lib/speexdsp/libspeexdsp/preprocess_opt_generic.c
-* lib/speexdsp/libspeexdsp/filterbank_opt_generic.c
+* `lib/speexdsp/libspeexdsp/mfd_opt_generic.c`
+* `lib/speexdsp/libspeexdsp/preprocess_opt_generic.c`
+* `lib/speexdsp/libspeexdsp/filterbank_opt_generic.c`
 
-These are provided as models, replicated as-is from the core LibSpeexDSP software parts with function embedding and must serve as reference for optimized software equivalent.
+These are provided as models, replicated as-is from the core LibSpeexDSP 
+software parts with function embedding and must serve as reference for 
+optimized software equivalent.
 
-It is expected to pass these compiler directives inside build systems like cmake or configuration header as with the standard LibSpeexDSP `config.h`.
+It is expected to pass these compiler directives inside build systems like 
+cmake or configuration header as with the standard LibSpeexDSP `config.h`.
 
-An example of use can be found in the ARM CMSIS build YML files (`platform/cmsis/speex.clayer.yml`) where most of these override defines have been activated.
+An example of use can be found in the ARM CMSIS build YML files 
+(`platform/cmsis/speex.clayer.yml`) where most of these override defines have 
+been activated.
 
 ```yaml
       misc:
