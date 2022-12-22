@@ -378,7 +378,7 @@ allocation pattern.
 
 ## Formatting
 
-EEMBC formats according to Barr-C Embedded Standards. The `.clang-format` file
+EEMBC formats according to [Barr-C Embedded Standards](https://barrgroup.com/sites/default/files/barr_c_coding_standard_2018.pdf). The `.clang-format` file
 in the root directory observes this. This file can be used within VSCode or
 MSVC, however it isn't clear if this behaves the same as `clang-format`
 version 14 (which aligns pointer stars differently).
