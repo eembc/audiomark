@@ -68,13 +68,13 @@ This will run the benchmark for at least 10 seconds and produce a score.
 
 AudioMark has two port layers, one for the EEMBC code, and one for the SpeeX 
 DSP library. Both of these must be adjusted for the target platform. The files 
-and methodology differs, and is explained below. An unimplemented empty set of 
-files is provided in `ports/barebones`, and a reference can be found in 
-`ports/arm_cmsis`.
+and methodology differs, and is explained below. 
 
 ## EEMBC port layer
 
 The EEMBC port layer is contained in one two files: `th_types.h` and `th_api.c`.
+An unimplemented empty set of files is provided in `ports/barebones`, and a 
+reference can be found in `ports/arm_cmsis`.
 
 The `th_types.h` file defines the floating-point type, as well as 2D matrix 
 object type, and both real and complex FFT object types.
@@ -329,6 +329,10 @@ require a Run Rule to avoid this code being altered. Ideally every function
 should fall into a simple `th_api` folder or collection of files so that it is
 obvious what needs to be ported. Currently the `components/eembc` folder
 illustrates this by separating all of the Arm-specific code into `th_api.c`.
+
+# Submitting scores
+
+Score submission is currently not available. It is a future enhancement.
 
 # Copyright and license
 
