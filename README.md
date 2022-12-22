@@ -149,6 +149,25 @@ By default, none of these override compiler directives are defined, causing the 
 
 As a first example, the AEC power_spectrum routine, which is essentially computing the squared magnitude of a complex signal, could use the CMSIS DSP `arm_cmplx_mag_squared_f32` function and for this defining the `OVERRIDE_MDF_POWER_SPECTRUM` would deactivate original definition and use the optimized variant that will be placed in the lib/speexdsp/libspeexdsp/mdf_opt_helium.c and defined the following way:
 
+Here is the generic example in [`mdf_opt_generic.c`](https://github.com/eembc/audiomark-dev/blob/e0fd95e10d5ce6fd724b525fac998327b4f0dd8f/lib/speexdsp/libspeexdsp/mdf_opt_generic.c#L84-L94):
+
+```C
+#ifdef OVERRIDE_MDF_POWER_SPECTRUM
+static void power_spectrum(const spx_word16_t * X, spx_word32_t * ps, int N)
+{
+    int             i, j;
+    ps[0] = MULT16_16(X[0], X[0]);
+    for (i = 1, j = 1; i < N - 1; i += 2, j++) {
+        ps[j] = MULT16_16(X[i], X[i]) + MULT16_16(X[i + 1], X[i + 1]);
+    }
+    ps[j] = MULT16_16(X[i], X[i]);
+}
+#endif
+```
+
+While it is possible to gain performance improvement by overriding MULT16_16, a larger optimization could be
+attained by overriding the function. Here is an example from [`mdf_opt_helium.c`](https://github.com/eembc/audiomark-dev/blob/e0fd95e10d5ce6fd724b525fac998327b4f0dd8f/lib/speexdsp/libspeexdsp/preprocess_opt_helium.c#L172-L180):
+
 ```C
 #ifdef OVERRIDE_MDF_POWER_SPECTRUM
 void power_spectrum(const spx_word16_t * X, spx_word32_t * ps, int N)
@@ -159,9 +178,28 @@ void power_spectrum(const spx_word16_t * X, spx_word32_t * ps, int N)
 #endif
 ```
 
-For this one, most of the recent compilers will be able to vectorize the native implementation. Visual inspection of the generated assembly would determine whether it is worth having a specific optimized variant.
+For this one, most of the recent compilers will be able to vectorize the native implementation. Visual inspection
+of the generated assembly would determine whether it is worth having a specific optimized variant.
 
-A second example would be the ANR final stage overlap-add with 16-bit integer conversion. For this one, there is no native library equivalent. Implementing a customized variant with SIMD C intrinsic will allow to take advantage of SIMD if available. For example, here would be the ARM with Helium intrinsics version proposal:
+A second example would be the ANR final stage overlap-add with 16-bit integer conversion. For this one, there is no native library equivalent.
+A customized variant with SIMD C intrinsic will allow to take advantage of SIMD if available.
+
+As before, here is the generic implementation from [`preprocess_opt_generic.c`](https://github.com/eembc/audiomark-dev/blob/e0fd95e10d5ce6fd724b525fac998327b4f0dd8f/lib/speexdsp/libspeexdsp/preprocess_opt_generic.c#L64-L73):
+
+```C
+#ifdef OVERRIDE_ANR_OLA
+/* vector overlap and add */
+static void vect_ola(const spx_word16_t * pSrcA, const spx_word16_t * pSrcB, spx_int16_t * pDst, uint32_t blockSize)
+{
+    int             i;
+    
+    for (i = 0; i < blockSize; i++)
+        pDst[i] = WORD2INT(ADD32(EXTEND32(pSrcA[i]), EXTEND32(pSrcB[i])));
+}
+#endif
+```
+
+And here would be the ARM with Helium intrinsics version proposal found in [`preprocess_opt_helium.c`](https://github.com/eembc/audiomark-dev/blob/e0fd95e10d5ce6fd724b525fac998327b4f0dd8f/lib/speexdsp/libspeexdsp/preprocess_opt_helium.c#L110-L127):
 
 ```C
 #ifdef OVERRIDE_ANR_OLA
@@ -182,9 +220,7 @@ void vect_ola(const spx_word16_t * pSrcA, const spx_word16_t * pSrcB, s
 #endif
 ```
 
-Override compiler defines and associated C routines prototypes will be listed below.
-
-These are divided into 3 categories, associated to:
+All override compiler defines and associated C routines prototypes will be listed below. These are divided into 3 categories, associated to:
 
 * Echo canceller core (lib/speexdsp/libspeexdsp/mdf.c),
 * Noise suppressor core (lib/speexdsp/libspeexdsp/preprocess.c)
