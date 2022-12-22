@@ -53,6 +53,8 @@ an implementation using Arm's *platform-agnostic* CMSIS functions to quickly
 examine the functionality of the benchmark on an OS that supports `cmake`. 
 Ideally the target platform would use its own DSP and neural-net acceleration APIs.
 
+## Linux and macOS
+
 To build the self-hosted example, from the root directory type":
 
 ~~~
@@ -63,6 +65,11 @@ To build the self-hosted example, from the root directory type":
 ~~~
 
 This will run the benchmark for at least 10 seconds and produce a score.
+
+## Windows
+
+Cygwin `cmake` for windows will create a solution (`audiomark.sln`) file which 
+can be opened and compiled within Visual Studio.
 
 # Porting
 
