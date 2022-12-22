@@ -41,7 +41,8 @@
  */
 
 #if !defined(__ARMCC_VERSION)
-__attribute__((optimize("no-unroll-loops")))
+// NOTE:EEMBC it is not clear why the conditional enables this nonportable attribute (causing Win10 errors)
+//__attribute__((optimize("no-unroll-loops")))
 #endif
 static void
 depthwise_conv_s8_mult_4(const int8_t *input,
