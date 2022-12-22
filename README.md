@@ -396,6 +396,10 @@ should fall into a simple `th_api` folder or collection of files so that it is
 obvious what needs to be ported. Currently the `components/eembc` folder
 illustrates this by separating all of the Arm-specific code into `th_api.c`.
 
+# Run rules
+
+TBD
+
 # Submitting scores
 
 Score submission is currently not available. It is a future enhancement.
