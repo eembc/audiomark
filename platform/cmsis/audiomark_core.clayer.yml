@@ -10,7 +10,7 @@ layer:
         - file: ../../src/ee_anr_f32.c
         - file: ../../src/ee_kws.c
         - file: ../../src/ee_mfcc_f32.c
-        - file: ../../src/th_api.c
+        - file: ../../ports/arm/th_api.c
         - file: ../../src/ee_aec_f32.c
         - file: ../../src/ee_mfcc_f32_tables.c
 

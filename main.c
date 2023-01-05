@@ -24,10 +24,28 @@ void audiomark_release(void);
 #include <time.h>
 #elif defined _WIN32
 #include <sys\timeb.h>
+#elif defined __ARM_PERF_COUNTER__
+extern void SystemCoreClockUpdate (void);
+#include "perf_counter.h"
+static int is_perf_counter_init = false;
 #else
 #error "Operating system not recognized"
 #endif
 #include <assert.h>
+
+#if defined __ARM_PERF_COUNTER__
+extern uint32_t SystemCoreClock;
+
+void SysTick_Handler(void)
+{
+}
+
+void init_perf_counter(void)
+{
+    SystemCoreClockUpdate();
+    init_cycle_counter(false);
+}
+#endif
 
 uint64_t
 th_microseconds(void)
@@ -44,6 +62,13 @@ th_microseconds(void)
     struct timeb t;
     ftime(&t);
     usec = ((uint64_t)t.time) * 1000 * 1000 + ((uint64_t)t.millitm) * 1000;
+#elif defined __ARM_PERF_COUNTER__
+    if(!is_perf_counter_init) {
+        init_perf_counter();
+        is_perf_counter_init = true;
+    }
+    //printf("xxx %lld %d SystemCoreClock  %d\n", get_system_ticks(), get_system_us(), SystemCoreClock );
+    usec = get_system_ticks();
 #else
 #error "Operating system not recognized"
 #endif

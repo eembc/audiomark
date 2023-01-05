@@ -3,7 +3,7 @@ project:
     - group: App
       files:
         - file: ../../src/ee_audiomark.c
-        - file: ../../src/main.c         
+        - file: ../../main.c
         - file: ../../src/ee_abf_f32_tables.c     
         - file: ../../src/ee_nn_tables.c
 
@@ -11,9 +11,11 @@ project:
     - .
     - ../../lib/speexdsp/include
     - ../../lib/speexdsp/libspeexdsp
-    - ../../lib/th_api/CMSIS-NN/Include
+    - ../../ports/arm/
+    - ../../ports/arm/libs/CMSIS-NN/Include
 
   components:
+    - component: perf_counter:Core
     - component: ARM::CMSIS:CORE
     - component: ARM::CMSIS:NN@4.0.0    
     - component: ARM::CMSIS:DSP&Source@1.14.1
@@ -35,7 +37,9 @@ project:
         - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_512
         - -DARM_ALL_FAST_TABLES
         
-    - component: ARM::CMSIS:DSP:Compute Graph Static Flow
+  misc:
+    - C:
+      - -D__ARM_PERF_COUNTER__
 
   layers:
     - layer: boot.clayer.yml
