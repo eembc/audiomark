@@ -6,6 +6,8 @@ project:
         - file: ../../main.c
         - file: ../../src/ee_abf_f32_tables.c     
         - file: ../../src/ee_nn_tables.c
+        - file: platform_init.c
+
 
   add-path:
     - .
@@ -37,12 +39,14 @@ project:
         - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_512
         - -DARM_ALL_FAST_TABLES
         
-  misc:
-    - C:
-      - -D__ARM_PERF_COUNTER__
+
 
   layers:
     - layer: boot.clayer.yml
     - layer: speex.clayer.yml
     - layer: audiomark_core.clayer.yml
+    - layer: printf_mps3.clayer.yml
+      for-type:
+        - +MPS3-Corstone-300
+
 

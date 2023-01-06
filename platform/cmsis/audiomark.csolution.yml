@@ -34,9 +34,6 @@ solution:
     - type: MPS3-Corstone-300
       device: ARM::SSE-300-MPS3
 
-      misc:
-        - C:
-           - -DUSE_CMSIS_DSP 
         #- Link:
         #  - --scatter=./fvp_sse300_mps3_ns_sct/fvp_sse300_mps3_ns.sct
 
@@ -45,7 +42,6 @@ solution:
       misc:
         - C:
           - -D__FVP_PY
-          - -DUSE_CMSIS_DSP
         - CPP:
           - -D__FVP_PY
         - Link:
@@ -57,9 +53,6 @@ solution:
         trustzone: non-secure
 
       misc:
-        - C:
-           - -DUSE_CMSIS_DSP 
-
         - Link:
           - --scatter=./fvp_sse300_mps3_ns_sct/fvp_sse300_mps3_ns.sct
 

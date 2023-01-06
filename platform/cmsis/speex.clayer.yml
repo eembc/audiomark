@@ -20,8 +20,8 @@ layer:
 
       misc:
         - C:
+          - -DUSE_CMSIS_DSP
           - -DFLOATING_POINT
-          - -DEXPORT=
           - -DOS_SUPPORT_CUSTOM
           # speex boosted routines
           # FilterBank
@@ -60,6 +60,7 @@ layer:
           - -DOVERRIDE_MDF_CONVERG_LEARN_RATE_CALC
           - -DOVERRIDE_MDF_VEC_SCALE
           #- -DOVERRIDE_ANR_VEC_CONV_FROM_INT16
+          - -DEXPORT=/**/
 
   add-paths:
     - ../../lib/speexdsp/include
