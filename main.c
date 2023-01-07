@@ -24,10 +24,17 @@ void audiomark_release(void);
 #include <time.h>
 #elif defined _WIN32
 #include <sys\timeb.h>
+#elif defined __arm__
+#include <RTE_Components.h>
+#if defined __PERF_COUNTER__
+#include "perf_counter.h"
+#endif
 #else
 #error "Operating system not recognized"
 #endif
 #include <assert.h>
+
+
 
 uint64_t
 th_microseconds(void)
@@ -44,6 +51,8 @@ th_microseconds(void)
     struct timeb t;
     ftime(&t);
     usec = ((uint64_t)t.time) * 1000 * 1000 + ((uint64_t)t.millitm) * 1000;
+#elif defined __arm__ && defined __PERF_COUNTER__
+    usec = (uint64_t)get_system_us();
 #else
 #error "Operating system not recognized"
 #endif

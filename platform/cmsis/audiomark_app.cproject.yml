@@ -3,17 +3,21 @@ project:
     - group: App
       files:
         - file: ../../src/ee_audiomark.c
-        - file: ../../src/main.c         
+        - file: ../../main.c
         - file: ../../src/ee_abf_f32_tables.c     
         - file: ../../src/ee_nn_tables.c
+        - file: platform_init.c
+
 
   add-path:
     - .
     - ../../lib/speexdsp/include
     - ../../lib/speexdsp/libspeexdsp
-    - ../../lib/th_api/CMSIS-NN/Include
+    - ../../ports/arm/
+    - ../../ports/arm/libs/CMSIS-NN/Include
 
   components:
+    - component: perf_counter:Core
     - component: ARM::CMSIS:CORE
     - component: ARM::CMSIS:NN@4.0.0    
     - component: ARM::CMSIS:DSP&Source@1.14.1
@@ -35,10 +39,14 @@ project:
         - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_512
         - -DARM_ALL_FAST_TABLES
         
-    - component: ARM::CMSIS:DSP:Compute Graph Static Flow
+
 
   layers:
     - layer: boot.clayer.yml
     - layer: speex.clayer.yml
     - layer: audiomark_core.clayer.yml
+    - layer: printf_mps3.clayer.yml
+      for-type:
+        - +MPS3-Corstone-300
+
 

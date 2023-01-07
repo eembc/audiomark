@@ -14,7 +14,8 @@ project:
     - .
     - ../../lib/speexdsp/include
     - ../../lib/speexdsp/libspeexdsp
-    - ../../lib/th_api/CMSIS-NN/Include
+    - ../../ports/arm/
+    - ../../ports/arm/libs/CMSIS-NN/Include
 
   components:
     - component: ARM::CMSIS:CORE
