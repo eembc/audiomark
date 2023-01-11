@@ -81,9 +81,14 @@ typedef struct
         idx_malloc += 1 + REQ / 4;            \
     }
 
+// These are from the component files
 int32_t ee_abf_f32(int32_t, void **, void *, void *);
 int32_t ee_aec_f32(int32_t, void **, void *, void *);
 int32_t ee_anr_f32(int32_t, void **, void *, void *);
 int32_t ee_kws_f32(int32_t, void **, void *, void *);
+
+int  ee_audiomark_initialize(void);
+int  ee_audiomark_run(void);
+void ee_audiomark_release(void);
 
 #endif

@@ -52,8 +52,8 @@ static void *p_kws_inst;
 
 static int read_all_audio_data = 0;
 
-void
-reset_audio(void)
+static void
+ee_reset_audio(void)
 {
     idx_downlink        = 0;
     idx_microphone_L    = 0;
@@ -63,8 +63,8 @@ reset_audio(void)
     progress_count      = 0;
 }
 
-int
-copy_audio(int16_t *pt, int16_t debug)
+static int
+ee_copy_audio(int16_t *pt, int16_t debug)
 {
     uint32_t      *idx = NULL;
     const int16_t *src = NULL;
@@ -123,7 +123,7 @@ copy_audio(int16_t *pt, int16_t debug)
 }
 
 int
-audiomark_initialize(void)
+ee_audiomark_initialize(void)
 {
     // For dereferencing
     uint32_t *p_req;
@@ -192,7 +192,7 @@ audiomark_initialize(void)
 }
 
 void
-audiomark_release(void)
+ee_audiomark_release(void)
 {
     th_free(p_bmf_inst, COMPONENT_BMF);
     th_free(p_aec_inst, COMPONENT_AEC);
@@ -208,14 +208,14 @@ audiomark_release(void)
     }
 
 int
-audiomark_run(void)
+ee_audiomark_run(void)
 {
-    reset_audio();
+    ee_reset_audio();
     while (!read_all_audio_data)
     {
-        copy_audio(audio_input, 0);
-        copy_audio(left_capture, 0);
-        copy_audio(right_capture, 0);
+        ee_copy_audio(audio_input, 0);
+        ee_copy_audio(left_capture, 0);
+        ee_copy_audio(right_capture, 0);
 
         // linear feedback of the loudspeaker to the MICs
         for (int i = 0; i < BYTES_PER_AUDIO_FRAME / 2; i++)
@@ -230,7 +230,7 @@ audiomark_run(void)
         CHECK(ee_kws_f32(NODE_RUN, (void **)&p_kws_inst, xdais_kws, NULL));
 
         // save the cleaned audio for ASR
-        copy_audio(aec_output, 0);
+        ee_copy_audio(aec_output, 0);
     }
     return 0;
 exit_error:

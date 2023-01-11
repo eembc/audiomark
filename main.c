@@ -15,9 +15,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-int  audiomark_initialize(void);
-int  audiomark_run(void);
-void audiomark_release(void);
+#include "ee_audiomark.h"
 
 // There are several POSIX assumptions in this implementation.
 #if defined __linux__ || __APPLE__
@@ -69,7 +67,7 @@ time_audiomark_run(uint32_t iterations, uint64_t *dt)
     t0 = th_microseconds();
     for (uint32_t i = 0; i < iterations; ++i)
     {
-        if (audiomark_run())
+        if (ee_audiomark_run())
         {
             err = true;
             break;
@@ -89,7 +87,7 @@ main(void)
 
     printf("Initializing\n");
 
-    if (audiomark_initialize())
+    if (ee_audiomark_initialize())
     {
         printf("Failed to initialize\n");
         return -1;
@@ -140,6 +138,6 @@ main(void)
     printf("Total iterations : %d iterations\n", iterations);
     printf("Score            : %f AudioMarks\n", score);
 exit:
-    audiomark_release();
+    ee_audiomark_release();
     return err ? -1 : 0;
 }
