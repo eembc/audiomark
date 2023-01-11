@@ -74,8 +74,38 @@ can be opened and compiled within Visual Studio.
 # Porting
 
 AudioMark has two port layers, one for the EEMBC code, and one for the SpeeX 
-DSP library. Both of these must be adjusted for the target platform. The files 
-and methodology differs, and is explained below. 
+DSP library. Both of these must be adjusted for the target platform, and both
+layers differ significantly. They are orthogonal, meaning the EEMBC layer is
+not above or below the SpeeX layer.
+
+The SpeeX layer contains multiple levels of abstraction:
+
+**The ISA level**: These are macros that perform simple math functions that
+could potentially be swapped for a CPU instruction, like `MULT16_32_P15`.
+These macros have generic definitions in the file `fixed_generic.h`.
+
+**The DSP library level**: These are typically more advanced functions that
+can be swapped out rather than optimizing at the ISA level. For example,
+the FFT is abstracted out entirely. See the `fftwrap.c` file for multiple
+examples of how an FFT can be instantiated.
+
+**The application level**: One step above the DSP level we have functions
+that aren't commonly found in libraries, such as `update_gains_critical_bands`.
+There are dozens of optimization options at this level which are described
+below.
+
+The EEMBC layer only focuses on the DSP-library level, with the exception
+of the neural-net intitialization and inference functions. As a result,
+there are far fewer function calls to consider with the EEMBC layer.
+
+**Word of warning**
+
+With all of these options, it is possible to accidentally (or intentionally)
+create a port that runs faster at the expense of quality, thus skewing
+comparisons. However, for a score to be considered valid, it must pass the
+unit tests. These tests permit at most 50 dB of SNR, a failure of a unit
+test means the optimizations have gone too far to be considered a fair
+comparison.
 
 ## EEMBC port layer
 
