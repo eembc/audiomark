@@ -8,6 +8,7 @@ project:
         - file: ../../tests/test_aec_f32.c
         - file: ../../src/ee_nn_tables.c
         - file: ../../src/ee_abf_f32_tables.c
+        - file: platform_init.c
 
   add-path:
     - .
@@ -19,7 +20,7 @@ project:
   components:
     - component: ARM::CMSIS:CORE
     - component: ARM::CMSIS:NN@4.0.0    
-    - component: ARM::CMSIS:DSP&Source@1.14.1
+    - component: ARM::CMSIS:DSP&Source@1.14.2
       misc:
       - C:
         - -DARM_DSP_CONFIG_TABLES
@@ -41,4 +42,6 @@ project:
     - layer: boot.clayer.yml
     - layer: speex.clayer.yml
     - layer: audiomark_core.clayer.yml
-
+    - layer: printf_mps3.clayer.yml
+      for-type:
+        - +MPS3-Corstone-300

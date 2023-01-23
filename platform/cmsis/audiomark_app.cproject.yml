@@ -20,7 +20,7 @@ project:
     - component: perf_counter:Core
     - component: ARM::CMSIS:CORE
     - component: ARM::CMSIS:NN@4.0.0    
-    - component: ARM::CMSIS:DSP&Source@1.14.1
+    - component: ARM::CMSIS:DSP&Source@1.14.2
       misc:
       - C:
         - -DARM_DSP_CONFIG_TABLES
