@@ -10,7 +10,7 @@
  * If you received this EEMBC Benchmark Software without having a currently
  * effective EEMBC Benchmark License Agreement, you must discontinue use.
  */
-
+#include <stdio.h>
 #include "ee_audiomark.h"
 
 extern const int16_t downlink_audio[NINPUT_SAMPLES];
@@ -162,13 +162,13 @@ ee_audiomark_initialize(void)
     p_req = &memreq_kws_f32;
     ee_kws_f32(NODE_MEMREQ, (void **)&p_req, NULL, NULL);
 
-    /*
+    
         printf("Memory alloc summary:\n");
         printf(" bmf = %d\n", memreq_bmf_f32);
         printf(" aec = %d\n", memreq_aec_f32);
         printf(" anr = %d\n", memreq_anr_f32);
         printf(" kws = %d\n", memreq_kws_f32);
-    */
+    
 
     /* Using our heap `all_instances` assign the instances and requests */
     p_bmf_inst = th_malloc(memreq_bmf_f32, COMPONENT_BMF);
@@ -179,7 +179,7 @@ ee_audiomark_initialize(void)
 
     if (!p_bmf_inst || !p_aec_inst || !p_anr_inst || !p_kws_inst)
     {
-        // printf("Out of heap memory\n");
+        printf("Out of heap memory\n");
         return 1;
     }
 
