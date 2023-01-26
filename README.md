@@ -61,6 +61,7 @@ To build the self-hosted example, from the root directory type":
 % mkdir build && cd build
 % cmake .. -DPORT_DIR=ports/arm
 % make test
+% make audiomark
 % ./audiomark
 ~~~
 
@@ -68,7 +69,7 @@ This will run the benchmark for at least 10 seconds and produce a score.
 
 ## Windows
 
-Cygwin `cmake` for windows will create a solution (`audiomark.sln`) file which 
+x64 Native Tools Command Prompt for VS2019 `cmake` for windows will create a solution (`audiomark.sln`) file which 
 can be opened and compiled within Visual Studio.
 
 # Porting
