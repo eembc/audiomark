@@ -436,11 +436,41 @@ illustrates this by separating all of the Arm-specific code into `th_api.c`.
 
 # Run rules
 
-TBD
+1. The minimum resolution of the system timer used for performance measurement shall be one (1) kHz.
+
+2. The minimum runtime shall be 10 seconds iterating on the `audiomark_run()` function. At least 10 iterations must complete in this 10 seconds, otherwise the runtime shall be whatever achieves 10 iterations. 10 seconds of runtime with a 1 ms resolution is effectively 0.01% measurement resolution.
+
+3. Only functions and files starting with `th_*` may be altered. In the case of the `th_api`, this is required. The one exception to this is the SpeeX DSP library code, where the user may modify the `wrapfft.c` to install the optimal FFT, change the override macros and provide their own associated functionality, or modify the primitive DSP math macros. All of the EEMBC provided `ee_` functions ultimately perform DSP computation through a subset of functions declared in the `ee_api.h` header, and implemented however the system integrator choses (the example puts all of the implementation reference code in the `th_api.c` file).
+
+4. For a score to be considered valid, it must pass the AEC, ANR, ABF, and KWS regression tests found in the `tests/` directory. The AEC, ANR, and ABF tests utilize a SNR ratio check of -50 dB over 62.5 ms frames of data. The KWS expects the softmax output to match the Top-1 prediction for each inference, and not the actual probability. This allows for flexibility in optimizing the API functions which may not be bit-exact, but still achieve roughly the same fidelity.
+
+5. All processing must be carried out on the platform locally and not sent to the cloud. The definition of a device includes single chip silicon, and multi-die modules, and multi-chip platforms. External memories are allowed.
+
+6. The AudioMark score shall be computed as "iterations per second * 1000 * 1.5". AudioMark/MHz is simply AudioMark divided by the highest core frequency in MHz. For example, if the benchmark is running on Core A at 100 Mhz and Core A uses a DSP peripheral running at 300 MHz, the highest frequency is used in the computation; in this case, 300 MHz. See footnote #1 below.
+
+
+7. The benchmark score shall be obtained with the serial computation of the following components--ABF, AEC, ANR, KWS--with execution proceeding from one component to another, on completion. The benchmark shall not be altered or implemented in any way that causes any of the components to execute in parallel.
+
+8. Running multiple processes of AudioMark on a platform is allowed. For example, a dual core product could run one instance of AudioMark (`time_audiomark_run()`) on each core  For N cores running the AudioMark concurrently:
+
+```
+    Define: AM(n) is defined in Rule #6. measured per core n
+    Define: f(n) is the clock frequency of core n
+    AudioMark (AM) = Sum {AM(n): n = 1 to N}
+    AudioMark/MHz (AM/MHz) = AM divided by max {f(n): n = 1 to N}
+```
+
+**Footnote #1: Explanation of scoring equation**
+
+First, the 1000 factor is introduced to scale the score into a preferred integer range, this is a common EEMBC technique to avoid comparing small fractional numbers. Second, notice that the benchmark assumes a pipeline operating on 16 kHz audio input, and a platform that is operating efficiently would score 1.0 (with no scalar): it is running exactly at the speed needed, no faster, no slower. A platform with half the performance would measure 0.5 iterations per second. However, the benchmark input dataset is actually 24000 samples worth of data not 16000, so if one iteration completes in one second, the benchmark has in reality performed better than the 16 kHz design goal. To adjust for this, the score is multiplied by 1.5. (Note: The benchmark could reduce the number of samples to one second (or 16k samples), however, the lead-in silence is needed to stabilize the ANR, and the keyword utterance spills over the one-second mark of the sample.)
 
 # Submitting scores
 
-Score submission is currently not available. It is a future enhancement.
+1. A score must be submitted to the website before it can be used in any external publication such as: academic journals, technical papers, and marketing assets. An unsubmitted score may only be discussed internally or with a 3rd party under NDA, but not presented to the public in any way. Note: the score may be submitted but not go live (i.e., visible on the web) until a certain date agreed to between the submitter and EEMBC. This is to account for product launch schedules.
+
+2. A submitted score shall be from hardware that is available for purchase to any member of the general public. Scores for hardware that is yet to be announced must be marked "preliminary". This score may be superseded by a new score on the released product, or cleared by request to EEMBC after the product is launched.
+
+3. A score collected from simulation cannot be submitted. The measured score must come from actual silicon. This includes CPU, MCU, MPU, SoC, and FPGA prototype.
 
 # Copyright and license
 
