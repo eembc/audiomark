@@ -22,7 +22,6 @@ layer:
         - C:
           - -DUSE_CMSIS_DSP
           - -DFLOATING_POINT
-          - -DOS_SUPPORT_CUSTOM
           # speex boosted routines
           # FilterBank
           - -DOVERRIDE_FB_COMPUTE_BANK32

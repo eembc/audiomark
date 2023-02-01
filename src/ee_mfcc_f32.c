@@ -29,7 +29,7 @@ ee_mfcc_f32(mfcc_instance_t *p_inst)
 
     /* Multiply by window */
     th_multiply_f32(
-        p_src, (ee_f32_t *)ee_mfcc_window_coefs_f32, p_src, FFT_LEN);
+        p_src, (ee_f32_t *)ee_mfcc_window_coefs_f32, p_src, EE_NUM_MFCC_WIN_COEFS);
 
     /* Compute spectrum magnitude, g_tmp is now the FFT */
     th_rfft_f32(&(p_inst->rfft_instance), p_src, p_inst->tmp, 0);
