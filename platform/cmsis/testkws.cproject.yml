@@ -36,6 +36,7 @@ project:
         - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_128
         - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_256
         - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_512
+        - -DARM_TABLE_TWIDDLECOEF_RFFT_F32_1024
         
   layers:
     - layer: boot.clayer.yml
