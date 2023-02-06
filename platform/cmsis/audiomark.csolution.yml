@@ -33,7 +33,11 @@ solution:
   target-types:
     - type: MPS3-Corstone-300
       device: ARM::SSE-300-MPS3
-
+      misc:
+        - C:
+          - -DOS_SUPPORT_CUSTOM
+        - CPP:
+          - -DOS_SUPPORT_CUSTOM
         #- Link:
         #  - --scatter=./fvp_sse300_mps3_ns_sct/fvp_sse300_mps3_ns.sct
 
