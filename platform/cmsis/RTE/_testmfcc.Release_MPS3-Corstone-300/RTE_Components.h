@@ -3,8 +3,8 @@
  * Auto generated Run-Time-Environment Configuration File
  *      *** Do not modify ! ***
  *
- * Project: 'testaec.Release+MPS3-Corstone-300' 
- * Target:  'testaec.Release+MPS3-Corstone-300' 
+ * Project: 'testmfcc.Release+MPS3-Corstone-300' 
+ * Target:  'testmfcc.Release+MPS3-Corstone-300' 
  */
 
 #ifndef RTE_COMPONENTS_H

@@ -17,6 +17,10 @@
 extern const int16_t p_input[FRAME_LEN];
 extern const int8_t  p_expected[NUM_MFCC_FEATURES];
 
+// Used deep inside audiomark core
+char *spxGlobalHeapPtr;
+char *spxGlobalHeapEnd;
+
 int8_t p_output[NUM_MFCC_FEATURES];
 
 mfcc_instance_t *mfcc_instance;

@@ -7,12 +7,14 @@ layer:
     - group: AudioMarkCore
       files:
         - file: ../../src/ee_abf_f32.c
+        - file: ../../src/ee_abf_f32_tables.c
+        - file: ../../src/ee_aec_f32.c
         - file: ../../src/ee_anr_f32.c
         - file: ../../src/ee_kws.c
         - file: ../../src/ee_mfcc_f32.c
-        - file: ../../ports/arm/th_api.c
-        - file: ../../src/ee_aec_f32.c
         - file: ../../src/ee_mfcc_f32_tables.c
+        - file: ../../src/ee_nn_tables.c
+        - file: ../../ports/arm/th_api.c      
 
 
       misc:

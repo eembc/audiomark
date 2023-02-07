@@ -38,19 +38,7 @@ solution:
           - -DOS_SUPPORT_CUSTOM
         - CPP:
           - -DOS_SUPPORT_CUSTOM
-        #- Link:
-        #  - --scatter=./fvp_sse300_mps3_ns_sct/fvp_sse300_mps3_ns.sct
 
-    - type: VHT-Corstone-300
-      device: ARM::SSE-300-MPS3
-      misc:
-        - C:
-          - -D__FVP_PY
-        - CPP:
-          - -D__FVP_PY
-        - Link:
-          - --predefine="-D__FVP_PY" --entry=Reset_Handler
-          - --scatter=./fvp_sse300_mps3_ns_sct/fvp_sse300_mps3_ns.sct
     - type: FVP
       device: ARM::SSE-300-MPS3
       processor:
@@ -60,16 +48,15 @@ solution:
         - Link:
           - --scatter=./fvp_sse300_mps3_ns_sct/fvp_sse300_mps3_ns.sct
 
-
   build-types:
     - type: Release
-      #optimize: max
       debug: on
 
   projects:
     - project: ./audiomark_app.cproject.yml
     - project: ./testanr.cproject.yml
     - project: ./testaec.cproject.yml
-    - project: ./testabf.cproject.yml    
-    - project: ./testkws.cproject.yml    
+    - project: ./testabf.cproject.yml
+    - project: ./testkws.cproject.yml
+    - project: ./testmfcc.cproject.yml
 

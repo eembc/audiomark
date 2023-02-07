@@ -23,6 +23,10 @@
 extern const int16_t p_input[NBUFFERS][NSAMPLES];
 extern const int8_t  p_expected[NINFERS][NCLASSES];
 
+// Used deep inside audiomark core
+char *spxGlobalHeapPtr;
+char *spxGlobalHeapEnd;
+
 int32_t ee_kws_f32(int32_t command,
                    void  **pp_instance,
                    void   *p_data,
