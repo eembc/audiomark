@@ -2,9 +2,8 @@ project:
   groups:
     - group: App
       files:
-        - file: ../../tests/test_kws.c
-        - file: ../../tests/data/kws_input.c
-        - file: ../../tests/data/kws_expected.c
+        - file: ../../tests/test_mfcc_f32.c
+        - file: ../../tests/data/mfcc_f32_all.c
         - file: platform_init.c
 
   add-path:

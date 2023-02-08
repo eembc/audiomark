@@ -31,6 +31,11 @@ static int16_t p_output[NSAMPLES];
 
 static xdais_buffer_t xdais[3];
 
+// Used deep inside audiomark core
+char *spxGlobalHeapPtr;
+char *spxGlobalHeapEnd;
+
+
 int
 main(int argc, char *argv[])
 {
