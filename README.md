@@ -30,10 +30,11 @@ known keywords.
 
 The benchmark API facilitates hardware acceleration for key DSP and NN 
 functionality. The file `ee_api.h` describes the functions that the system 
-integrator must implement. The acoustic echo canceller (AEC) and audio noise 
-reduction (ANR) elements are implemented by the SpeeX libspeexdsp library. 
-These functions utilize the SpeeX API, which is a combination of macros that 
-preform fixed math operations, and an FFT wrapper for transformation.
+integrator must implement. The components were derived from several sources:
+
+* The beaformer and direction of arrival algorithms (BF+DOA) were written and tested by Arm and Infineon.
+* The acoustic echo canceller (AEC) and audio noise  reduction (ANR) elements are implemented by the SpeeX libspeexdsp library. These functions utilize the SpeeX API, which is a combination of macros and functions that perform fixed math operations, and an FFT wrapper for transformation.
+* The neural net was derived from the [Arm Model Zoo DS CNN KWS](https://github.com/ARM-software/ML-zoo/tree/master/models/keyword_spotting/ds_cnn_small/tflite_int8).
 
 This flexibility to utilize whatever hardware is available means the benchmark 
 scales across a wide variety of MCUs and SoCs.
@@ -43,6 +44,8 @@ exception of the neural net, which is signed 8-bit integer. The data that flows
 in between components is signed 16-bit integer.
 
 <img width="745" alt="image" src="https://user-images.githubusercontent.com/8249735/207705676-966fe230-8eac-4250-a468-437dc4ceebcd.png">
+
+
 
 # Building
 
