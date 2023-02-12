@@ -8,17 +8,6 @@ This includes everything from personal assistants like Alexa, to white-box
 appliances like washers, dryers, and refrigerators, to home entertainment 
 systems, and even cars that respond to voice commands.
 
-The benchmark was developed by collaboration of the following member companies:
-
-* Arm
-* Infineon
-* Intel
-* Synopsys
-* onsemi
-* STMicroelectronics
-* Texas Instruments
-* EEMBC
-
 # Theory of operation
 
 The benchmark works by processing two microphone inputs listening to both a 
@@ -474,6 +463,25 @@ First, the 1000 factor is introduced to scale the score into a preferred integer
 2. A submitted score shall be from hardware that is available for purchase to any member of the general public. Scores for hardware that is yet to be announced must be marked "preliminary". This score may be superseded by a new score on the released product, or cleared by request to EEMBC after the product is launched.
 
 3. A score collected from simulation cannot be submitted. The measured score must come from actual silicon. This includes CPU, MCU, MPU, SoC, and FPGA prototype.
+
+# Credits
+
+This benchmark would not have been possible without the commitment and contributions of the working group members, and the assistance from various domain experts, including (sorted by given name):
+
+* Ashutosh Pandey, Infineon (Technical Lead)
+* Dmitry Utyansky, Synopsys
+* Fabien Klein, Arm
+* Felix Johnny Thomasmathibalan, Arm
+* Gary Jacobson: Renesas
+* Jim Ryan, onsemi
+* Joseph Yiu, Arm
+* Kaiping Lee, Infineon
+* Laurent Le Faucheur, Arm
+* Mark Wallis, STMicroelectronics
+* Nagendra (GD) Gulur Dwarakanath, Texas Instruments
+* Peter Torelli, EEMBC
+* Rita Chattopadhyay, Intel
+* Ruud Derwig, Synopsys
 
 # Copyright and license
 
