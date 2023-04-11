@@ -23,7 +23,7 @@ integrator must implement. The components were derived from several sources:
 
 * The beaformer and direction of arrival algorithms (BF+DOA) were written and tested by Arm and Infineon.
 * The acoustic echo canceller (AEC) and audio noise  reduction (ANR) elements are implemented by the SpeeX libspeexdsp library. These functions utilize the SpeeX API, which is a combination of macros and functions that perform fixed math operations, and an FFT wrapper for transformation.
-* The neural net was derived from the [Arm Model Zoo DS CNN KWS](https://github.com/ARM-software/ML-zoo/tree/master/models/keyword_spotting/ds_cnn_small/tflite_int8).
+* The neural net was derived from the [Arm Model Zoo DS CNN KWS](https://github.com/ARM-software/ML-zoo/tree/master/models/keyword_spotting/ds_cnn_small/model_package_tf/model_archive/TFLite/tflite_int8).
 
 This flexibility to utilize whatever hardware is available means the benchmark 
 scales across a wide variety of MCUs and SoCs.
