@@ -291,7 +291,6 @@ VISIB_ATTR void mdf_adjust_prop(const spx_word32_t * W, int N, int M, int P, spx
     float32_t       max_sum = 1.0f;
     float32_t       prop_sum = 1.0f;
     int32_t         cnt;
-
     float32x4_t     acc;
 
     if (M <= 4) {
@@ -380,7 +379,7 @@ VISIB_ATTR void mdf_adjust_prop(const spx_word32_t * W, int N, int M, int P, spx
             max_sum = vmaxnmvq_p(max_sum, vecT, tpred);
 
             pprop += 4;
-            vecT += 4;
+            pTmp += 4;
             cnt -= 4;
         };
 
