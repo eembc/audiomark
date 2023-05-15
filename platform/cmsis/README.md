@@ -1,16 +1,22 @@
 # README
 
-- How to build and run EEMBC Audiomark Applications on ARM Corstone 300 FPGA or ARM Virtual Hardware.
-  - The applications will only run on Cortex-M55 MCU.
+- How to build and run EEMBC Audiomark Applications on ARM Corstone-300/310 FPGA or ARM Virtual Hardware.
+  - The applications are intended to run on Cortex-M55/Cortex-M85 MCUs.
   - A dedicated project running the KWS on Ethos-U55 will be added later. Please contact ARM for more details.
+  - Support for running Audiomark on previous Cortex-M generation will be added later.
+  - ARM FPGA images and documentation can be found at https://developer.arm.com/downloads/-/download-fpga-images
+    - `AN552`: Arm® Corstone™ SSE-300 with Cortex®-M55 and Ethos™-U55 Example Subsystem for MPS3 (Partial Reconfiguration Design)
+    - `AN555`: Arm® Corstone™ SSE-310 with Cortex®-M85 and Ethos™-U55 Example Subsystem for MPS3
 
 
 ## CMSIS Build tools option
 
-See description about CMSIS Toolbox here : https://github.com/Open-CMSIS-Pack/cmsis-toolbox/blob/main/docs/installation.md
+If only considering building the benchmarks with Keil MDK without CMSIS Toolbox, following paragraph can be skipped and move directly [here](#keil-mdk-builds).
+
+See description about CMSIS Toolbox here: https://github.com/Open-CMSIS-Pack/cmsis-toolbox/blob/main/docs/installation.md
 
 
-If not installed, decompress cmsis-toolbox in your workspace and setup environment variables as described in the link above
+If not installed, decompress cmsis-toolbox in your workspace and setup environment variables as described in the link above.
 
 ```
 tar -zxvf cmsis-toolbox-linux64.tar.gz
@@ -48,22 +54,12 @@ From this `audiomark/platform/cmsis` folder, type the command:
 csolution list packs -s audiomark.csolution.yml -m > required_packs.txt
 ```
 
-- Remove the *GorgonMeducer::perf_counter@1.9.11* packs from this list.
-- The perf_counter pack has to be downloaded from GitHub and installed separately.
-- More information about the *perf_counter* library can be found here: https://github.com/GorgonMeducer/perf_counter
 
 
 #### Install the packs
 
 ```
 cpackget add -f required_packs.txt
-```
-
-Download *perf_counter* pack 1.9.11 from GitHub and install it:
-
-```
-cpackget add --agree-embedded-license  https://github.com/GorgonMeducer/perf_counter/raw/659eb12026977d81391d90290706f9ac3c8efe7e/cmsis-pack/GorgonMeducer.perf_counter.1.9.11.pack
-
 ```
 
 
@@ -81,20 +77,22 @@ This  will generate several project files for each audiomark application:
  * *testkws* : the key word spotting application
  * *testmfcc* : the MFCC unit test application
 
-For each target : FVP, C300 MPS3
+For each target : FVP, C300 & C310 MPS3
 
 Expected output:
 
 ```
-audiomark/platform/cmsis/audiomark_app.Release+FVP.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/audiomark_app.Release+MPS3-Corstone-300.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/testabf.Release+FVP.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testanr.Release+MPS3-Corstone-300.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testanr.Release+MPS3-Corstone-310.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testanr.Release+VHT-Corstone-300.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testanr.Release+VHT-Corstone-310.cprj - info csolution: file generated successfully
 audiomark/platform/cmsis/testabf.Release+MPS3-Corstone-300.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testabf.Release+MPS3-Corstone-310.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testabf.Release+VHT-Corstone-300.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testabf.Release+VHT-Corstone-310.cprj - info csolution: file generated successfully
 ...
 <full list eluded>
 ...
-audiomark/platform/cmsis/testkws.Release+FVP.cbuild.yml - info csolution: file generated successfully
-audiomark/platform/cmsis/testkws.Release+MPS3-Corstone-300.cbuild.yml - info csolution: file generated successfully
 ```
 
 
@@ -102,12 +100,12 @@ audiomark/platform/cmsis/testkws.Release+MPS3-Corstone-300.cbuild.yml - info cso
 
 To build the different projects, use the **cbuild** command:
 e.g. for the C300 audiomark application:
- 
+
 ```
 cbuild audiomark_app.Release+MPS3-Corstone-300.cprj
 ```
 
-This will generate an bject in `audiomark/platform/cmsis/out/audiomark_app/MPS3-Corstone-300/Release/Release+MPS3-Corstone-300.axf`
+This will generate an object in `audiomark/platform/cmsis/out/audiomark_app/MPS3-Corstone-300/Release/Release+MPS3-Corstone-300.axf`
 
 
 Expected output:
@@ -116,24 +114,25 @@ Expected output:
 info cbuild: Build Invocation 1.5.0 (C) 2023 Arm Ltd. and Contributors
 M650: Command completed successfully.
 
-M652: Generated file for project build: 'git/audiomark-dev/platform/cmsis/tmp/audiomark_app/MPS3-Corstone-300/Release/CMakeLists.txt'
+M652: Generated file for project build: 'git/audiomark/platform/cmsis/tmp/audiomark_app/MPS3-Corstone-300/Release/CMakeLists.txt'
 -- Configuring done
 -- Generating done
--- Build files have been written to: git/audiomark-dev/platform/cmsis/tmp/audiomark_app/MPS3-Corstone-300/Release
-[126/126] Linking C executable git/audiomark-dev/platform/cmsis/out/audiomark_app/MPS3-Corstone-300/Release/audiomark_app.Release+MPS3-Corstone-300.axf
-"git/audiomark-dev/platform/cmsis/RTE/Device/SSE-300-MPS3/fvp_sse300_mps3_s.sct", line 24 (column 11): Warning: L6314W: No section matches pattern *(Veneer$$CMSE).
+-- Build files have been written to: git/audiomark/platform/cmsis/tmp/audiomark_app/MPS3-Corstone-300/Release
+[126/126] Linking C executable git/audiomark/platform/cmsis/out/audiomark_app/MPS3-Corstone-300/Release/Release+MPS3-Corstone-300.axf
+"git/audiomark/platform/cmsis/RTE/Device/SSE-300-MPS3/fvp_sse300_mps3_s.sct", line 24 (column 11): Warning: L6314W: No section matches pattern *(Veneer$$CMSE).
 Finished: 0 information, 1 warning and 0 error messages.
 info cbuild: build finished successfully!
 
 ```
 
-#### Running on Virtual Hardware
+### Running on Virtual Hardware
 
-MP3 Corstone 300 FPGA image can be run with the ARM Virtual Hardware (For more information, please refer to https://www.arm.com/products/development-tools/simulation/virtual-hardware)
+MP3 Corstone-300/310 FPGA image can be run with the ARM Virtual Hardware (For more information, please refer to https://www.arm.com/products/development-tools/simulation/virtual-hardware)
 
 With this configuration, UART output are going through a telnet terminal.
 
-This can be changed by removing printf_mps3.clayer.yml or create a dedicated target in the audiomark.csolution.yml.
+There are `VHT`-prefixed projects variants like **audiomark_app.Release+VHT-Corstone-300.cprj**, similar to MPS3 ones, with the exception of the console handling using semi-hosting instead of UART. This can be useful when running on alternative simulation environments.
+
 
 To start simulation, issue following command from audiomark/platform/cmsis folder
 
@@ -144,24 +143,25 @@ telnetterminal2: Listening for serial connection on port 5001
 
 ```
 
-**Important Note :**
+**Note**
+- Virtual Hardware simulation _does not provide cycle accurate measurements_ hence final audiomark score will differ from the one measured on device.
 
-Virtual Hardware simulation _does not provide cycle accurate measurements_ hence final audiomark score will differ from the one measured on device.
+
+## Keil MDK Builds
+
+The Audiomark Corstone-300 FPGA main application can be built by importing the **audiomark_app.Release+MPS3-Corstone-300.cprj** in uVision (Project=>Import)
+
+- The printf messages are output to MPS3 FPGA board 2nd UART port (settings `115200, 8,N,1`) by project default setting. 
+- To change printf messages to Debug (printf) Viewer window using the tracing method through JTAG, please select ITM for STDOUT under Compiler => I/O in Manage Run-Time Environment menu.
+
+Various individual audiomark components unit-tests project can imported using the different cprojects files provided in this folder (e.g. *testanr.Release+MPS3-Corstone-300.cprj* for Noise suppressor Corstone-300 Unit test)
+
+For Corstone-310 FPGA, similar steps can be followed by importing **audiomark_app.Release+MPS3-Corstone-310.cprj** and / or different unit tests
+
+For Virtual Hardware audiomark components, import projects having `VHT` prefix like **testaec.Release+VHT-Corstone-300.cprj**.
 
 
-## Keil MDK Build
+## Important Notes
 
-As for the CMSIS Build variant, perf_counter library has to be installed manually for now
-It can be retrieved from :
-https://github.com/GorgonMeducer/perf_counter/raw/659eb12026977d81391d90290706f9ac3c8efe7e/cmsis-pack/GorgonMeducer.perf_counter.1.9.11.pack
-
-More information about the *perf_counter* library can be found here: https://github.com/GorgonMeducer/perf_counter
-
-The Audiomark main application can be build by loading the **audiomark_app.Release+MPS3-Corstone-300.uvoptx** uVision project.
-It can be noted that this one has been generated by importing the **audiomark_app.Release+MPS3-Corstone-300.cprj** in uVision (Project=>Import)
-
-The printf messages are output to MPS3 FPGA board 2nd UART port (settings 115200, 8,N,1) by this project default setting. To change printf messages to Debug (printf) Viewer window
-using the tracing method through JTAG, please select ITM for STDOUT under Compiler => I/O in Manage Run-Time Environment menu.
-
-MDK Projects for the various audiomark components can easily be created by importing the different cprojects files generated by CMSIS Build csolution (see Convert csolution above)
-
+ - For Corstone-300, Audiomark Code and Data fit entierely in I/D TCM. MPS3 FPGA system clock frequency runs at `32Mhz`
+ - For Corstone-310, small TCMs prevent Code and Data to fit in these. Internal SRAM are used and benchmarks will run with caches enabled. MPS3 FPGA system clock frequency runs at `25Mhz`
