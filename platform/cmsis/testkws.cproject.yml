@@ -5,6 +5,8 @@ project:
         - file: ../../tests/test_kws.c
         - file: ../../tests/data/kws_input.c
         - file: ../../tests/data/kws_expected.c
+        - file: ../../src/ee_nn_tables.c
+        - file: ../../src/ee_abf_f32_tables.c
         - file: platform_init.c
 
   add-path:

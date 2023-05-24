@@ -5,6 +5,8 @@ project:
         - file: ../../tests/data/anr_f32_expected.c
         - file: ../../tests/data/anr_f32_input.c
         - file: ../../tests/test_anr_f32.c
+        - file: ../../src/ee_nn_tables.c
+        - file: ../../src/ee_abf_f32_tables.c
         - file: platform_init.c
 
   add-path:
