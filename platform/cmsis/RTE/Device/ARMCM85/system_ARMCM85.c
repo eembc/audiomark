@@ -36,9 +36,10 @@
 /*----------------------------------------------------------------------------
   Define clocks
  *----------------------------------------------------------------------------*/
-#define  XTAL            (50000000UL)     /* Oscillator frequency */
 
-#define  SYSTEM_CLOCK    (XTAL / 2U)
+ #define  XTAL             (32000000UL)     /* Oscillator frequency */
+ #define  SYSTEM_CLOCK     (XTAL)
+
 
 /*----------------------------------------------------------------------------
   Exception / Interrupt Vector table
