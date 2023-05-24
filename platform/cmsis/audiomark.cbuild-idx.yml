@@ -1,0 +1,70 @@
+build-idx:
+  csolution: audiomark.csolution.yml
+  cprojects:
+    - cproject: testanr.cproject.yml
+      clayers:
+        - clayer: boot.clayer.yml
+        - clayer: speex.clayer.yml
+        - clayer: audiomark_core.clayer.yml
+        - clayer: printf_mps3.clayer.yml
+    - cproject: testaec.cproject.yml
+      clayers:
+        - clayer: boot.clayer.yml
+        - clayer: speex.clayer.yml
+        - clayer: audiomark_core.clayer.yml
+        - clayer: printf_mps3.clayer.yml
+    - cproject: testabf.cproject.yml
+      clayers:
+        - clayer: boot.clayer.yml
+        - clayer: speex.clayer.yml
+        - clayer: audiomark_core.clayer.yml
+        - clayer: printf_mps3.clayer.yml
+    - cproject: testkws.cproject.yml
+      clayers:
+        - clayer: boot.clayer.yml
+        - clayer: speex.clayer.yml
+        - clayer: audiomark_core.clayer.yml
+        - clayer: printf_mps3.clayer.yml
+    - cproject: testmfcc.cproject.yml
+      clayers:
+        - clayer: boot.clayer.yml
+        - clayer: speex.clayer.yml
+        - clayer: audiomark_core.clayer.yml
+        - clayer: printf_mps3.clayer.yml
+    - cproject: audiomark_app.cproject.yml
+      clayers:
+        - clayer: boot.clayer.yml
+        - clayer: speex.clayer.yml
+        - clayer: audiomark_core.clayer.yml
+        - clayer: printf_mps3.clayer.yml
+  cbuilds:
+    - cbuild: testanr.Release+MPS3-Corstone-300.cbuild.yml
+    - cbuild: testanr.Release+MPS3-Corstone-310.cbuild.yml
+    - cbuild: testanr.Release+VHT-Corstone-300.cbuild.yml
+    - cbuild: testanr.Release+VHT-Corstone-310.cbuild.yml
+    - cbuild: testanr.Release+VHT_M85.cbuild.yml
+    - cbuild: testaec.Release+MPS3-Corstone-300.cbuild.yml
+    - cbuild: testaec.Release+MPS3-Corstone-310.cbuild.yml
+    - cbuild: testaec.Release+VHT-Corstone-300.cbuild.yml
+    - cbuild: testaec.Release+VHT-Corstone-310.cbuild.yml
+    - cbuild: testaec.Release+VHT_M85.cbuild.yml
+    - cbuild: testabf.Release+MPS3-Corstone-300.cbuild.yml
+    - cbuild: testabf.Release+MPS3-Corstone-310.cbuild.yml
+    - cbuild: testabf.Release+VHT-Corstone-300.cbuild.yml
+    - cbuild: testabf.Release+VHT-Corstone-310.cbuild.yml
+    - cbuild: testabf.Release+VHT_M85.cbuild.yml
+    - cbuild: testkws.Release+MPS3-Corstone-300.cbuild.yml
+    - cbuild: testkws.Release+MPS3-Corstone-310.cbuild.yml
+    - cbuild: testkws.Release+VHT-Corstone-300.cbuild.yml
+    - cbuild: testkws.Release+VHT-Corstone-310.cbuild.yml
+    - cbuild: testkws.Release+VHT_M85.cbuild.yml
+    - cbuild: testmfcc.Release+MPS3-Corstone-300.cbuild.yml
+    - cbuild: testmfcc.Release+MPS3-Corstone-310.cbuild.yml
+    - cbuild: testmfcc.Release+VHT-Corstone-300.cbuild.yml
+    - cbuild: testmfcc.Release+VHT-Corstone-310.cbuild.yml
+    - cbuild: testmfcc.Release+VHT_M85.cbuild.yml
+    - cbuild: audiomark_app.Release+MPS3-Corstone-300.cbuild.yml
+    - cbuild: audiomark_app.Release+MPS3-Corstone-310.cbuild.yml
+    - cbuild: audiomark_app.Release+VHT-Corstone-300.cbuild.yml
+    - cbuild: audiomark_app.Release+VHT-Corstone-310.cbuild.yml
+    - cbuild: audiomark_app.Release+VHT_M85.cbuild.yml

@@ -23,6 +23,18 @@ LR_CODE S_CODE_START {
     ER_CODE S_CODE_START {
         *.o (RESET +First)
         .ANY (+RO)
+        /* different test vectors */
+        th_api.o
+        abf_f32_expected.o
+        abf_f32_input_ch1.o
+        abf_f32_input_ch2.o
+        aec_f32_expected.o
+        aec_f32_input_echo.o
+        aec_f32_input_source.o
+        kws_expected.o
+        kws_input.o
+        mfcc_f32_all.o
+        * (InRoot$$Sections)
     }
 
     /* This empty, zero long execution region is here to mark the limit address
@@ -36,7 +48,7 @@ LR_CODE S_CODE_START {
     ScatterAssert(ImageLimit(CODE_WATERMARK) <= S_CODE_START + S_CODE_SIZE)
 
     ER_DATA S_DATA_START {
-        .ANY (+ZI +RW)
+        .ANY (+ZI +RW +RO-DATA)
     }
 
     #if HEAP_SIZE > 0

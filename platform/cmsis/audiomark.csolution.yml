@@ -33,17 +33,15 @@ solution:
 
   target-types:
 
+    # CM85 with large TCMs
+    - type: VHT_M85
+      device: ARMCM85
+
     - type: MPS3-Corstone-310
       device: ARM::SSE-310-MPS3
-      misc:
-        - for-compiler: GCC
-          C-CPP: [-flax-vector-conversions]
 
     - type: VHT-Corstone-310
       device: ARM::SSE-310-MPS3
-      misc:
-        - for-compiler: GCC
-          C-CPP: [-flax-vector-conversions]
 
     - type: MPS3-Corstone-300
       device: ARM::SSE-300-MPS3
