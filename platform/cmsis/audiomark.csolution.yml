@@ -1,17 +1,17 @@
 solution:
   compiler: AC6
+  define:
+    - OS_SUPPORT_CUSTOM
   misc:
     - C:
       - -std=gnu11
-      - -Ofast
-      - -g
-      - -ffast-math
       - -fshort-enums -fshort-wchar
     - CPP:
       - -std=c++11
+      - -fno-rtti
+    - C-CPP:
       - -Ofast
       - -ffast-math
-      - -fno-rtti
     - ASM:
       - -masm=auto
     - Link:
@@ -26,25 +26,29 @@ solution:
     - pack: ARM::CMSIS-NN@4.0.0
     - pack: ARM::CMSIS@5.9.0
     - pack: ARM::V2M_MPS3_SSE_300_BSP@1.3.0
-    - pack: ARM::V2M_MPS3_SSE_310_BSP@1.0.0
+    - pack: ARM::V2M_MPS3_SSE_310_BSP@1.1.0
     - pack: Keil::ARM_Compiler@1.7.2
+    - pack: ARM::DMA350@1.0.0
     - pack: GorgonMeducer::perf_counter@1.9.11
 
   target-types:
+
+    # CM85 with large TCMs
+    - type: VHT_M85
+      device: ARMCM85
+
+    - type: MPS3-Corstone-310
+      device: ARM::SSE-310-MPS3
+
+    - type: VHT-Corstone-310
+      device: ARM::SSE-310-MPS3
+
     - type: MPS3-Corstone-300
       device: ARM::SSE-300-MPS3
-      misc:
-        - C-CPP:
-          - -DOS_SUPPORT_CUSTOM
 
-    - type: FVP
+    - type: VHT-Corstone-300
       device: ARM::SSE-300-MPS3
-      processor:
-        trustzone: non-secure
 
-      misc:
-        - Link:
-          - --scatter=./fvp_sse300_mps3_ns_sct/fvp_sse300_mps3_ns.sct
 
   build-types:
     - type: Release
