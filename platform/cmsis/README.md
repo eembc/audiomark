@@ -1,13 +1,13 @@
 # README
 
-- How to build and run EEMBC Audiomark Applications on ARM Corstone-300/310 FPGA or ARM Virtual Hardware.
-  - The applications are intended to run on Cortex-M55/Cortex-M85 MCUs.
+- How to build and run EEMBC Audiomark Applications on ARM Corstone-300/310 MPS3 FPGA, IoT kit, Cortex-M CMSDK or ARM Virtual Hardware.
+  - The applications are intended to run on Cortex-M55/Cortex-M85 MCUs supporting Helium™ and Arm V7M-E/Arm V8.0M cores. FPU is required.
   - A dedicated project running the KWS on Ethos-U55 will be added later. Please contact ARM for more details.
-  - Support for running Audiomark on previous Cortex-M generation will be added later.
-  - ARM FPGA images and documentation can be found at https://developer.arm.com/downloads/-/download-fpga-images
+  - ARM FPGA images and documentation can be found at https://developer.arm.com/downloads/-/download-fpga-images.
     - `AN552`: Arm® Corstone™ SSE-300 with Cortex®-M55 and Ethos™-U55 Example Subsystem for MPS3 (Partial Reconfiguration Design)
     - `AN555`: Arm® Corstone™ SSE-310 with Cortex®-M85 and Ethos™-U55 Example Subsystem for MPS3
-
+    - `AN505`: Arm® Cortex™-M33 with IoT kit FPGA for MPS2+
+    - `AN386`, `AN500`: Arm® Cortex™-M4 / Arm® Cortex™-M7 Prototyping System version 3.1 (VEM31)
 
 ## CMSIS Build tools option
 
@@ -158,6 +158,8 @@ Various individual audiomark components unit-tests project can imported using th
 
 For Corstone-310 FPGA, similar steps can be followed by importing **audiomark_app.Release+MPS3-Corstone-310.cprj** and / or different unit tests
 
+For Arm V7M-E/ Arm V8.0M MPS2+ FPGA, similar steps can be followed by importing **audiomark_app.Release+MPS2-IOTKit-CM33.cprj**, **audiomark_app.Release+MPS2-CMSDK_CM7_SP.cprj**, **audiomark_app.Release+MPS2-CMSDK_CM4_FP.cprj** and / or different unit tests
+
 For Virtual Hardware audiomark components, import projects having `VHT` prefix like **testaec.Release+VHT-Corstone-300.cprj**.
 
 
@@ -165,3 +167,5 @@ For Virtual Hardware audiomark components, import projects having `VHT` prefix l
 
  - For Corstone-300, Audiomark Code and Data fit entierely in I/D TCM. MPS3 FPGA system clock frequency runs at `32Mhz`
  - For Corstone-310, small TCMs prevent Code and Data to fit in these. Internal SRAM are used and benchmarks will run with caches enabled. MPS3 FPGA system clock frequency runs at `25Mhz`
+ - For MPS2+ Cortex-M33 IoTKit, default system clock frequency runs at `20Mhz`
+ - For MPS2+ Cortex-M4/Cortex-M7, CMSDK default system clock frequency runs at `25Mhz`
