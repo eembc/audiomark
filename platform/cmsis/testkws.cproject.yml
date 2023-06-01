@@ -43,6 +43,8 @@ project:
     - layer: boot.clayer.yml
     - layer: speex.clayer.yml
     - layer: audiomark_core.clayer.yml
-    - layer: printf_mps3.clayer.yml
-      for-type:
-        - +MPS3-Corstone-300
+    - layer: printf_mpsx.clayer.yml
+      not-for-context:
+        - +VHT-Corstone-300
+        - +VHT-Corstone-310
+        - +VHT_M85

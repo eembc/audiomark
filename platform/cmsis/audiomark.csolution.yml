@@ -30,6 +30,8 @@ solution:
     - pack: Keil::ARM_Compiler@1.7.2
     - pack: ARM::DMA350@1.0.0
     - pack: GorgonMeducer::perf_counter@1.9.11
+    - pack: Keil::V2M-MPS2_IOTKit_BSP@1.5.0
+    - pack: Keil::V2M-MPS2_CMx_BSP@1.8.0
 
   target-types:
 
@@ -48,6 +50,21 @@ solution:
 
     - type: VHT-Corstone-300
       device: ARM::SSE-300-MPS3
+
+    - type: MPS2-IOTKit-CM33
+      device: ARM::IOTKit_CM33_FP
+      define:
+        - GENERIC_ARCH
+
+    - type: MPS2-CMSDK_CM4_FP
+      device: ARM::CMSDK_CM4_FP
+      define:
+        - GENERIC_ARCH
+
+    - type: MPS2-CMSDK_CM7_SP
+      device: ARM::CMSDK_CM7_SP
+      define:
+        - GENERIC_ARCH
 
 
   build-types:
