@@ -1,0 +1,458 @@
+build:
+  generated-by: csolution version 2.1.0
+  solution: ../audiomark.csolution.yml
+  project: audiomark_app.cproject.yml
+  context: audiomark_app.Release+VHT_M85
+  compiler: AC6@6.20
+  device: ARMCM85
+  processor:
+    fpu: on
+  packs:
+    - pack: ARM::CMSIS-DSP@1.14.2
+      path: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2
+    - pack: ARM::CMSIS-NN@4.1.0
+      path: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0
+    - pack: ARM::CMSIS@5.9.0
+      path: ${CMSIS_PACK_ROOT}/ARM/CMSIS/5.9.0
+    - pack: GorgonMeducer::perf_counter@1.9.11
+      path: ${CMSIS_PACK_ROOT}/GorgonMeducer/perf_counter/1.9.11
+  debug: on
+  misc:
+    ASM:
+      - -masm=auto
+    C:
+      - -std=gnu11
+      - -Ofast
+      - -ffast-math
+      - -ffunction-sections
+      - -Wno-macro-redefined
+      - -Wno-pragma-pack
+      - -Wno-parentheses-equality
+      - -Wno-license-management
+      - -fshort-enums -fshort-wchar
+    CPP:
+      - -Ofast
+      - -ffast-math
+      - -ffunction-sections
+      - -Wno-macro-redefined
+      - -Wno-pragma-pack
+      - -Wno-parentheses-equality
+      - -Wno-license-management
+      - -fshort-enums -fshort-wchar
+    Link:
+      - --entry=Reset_Handler
+      - --map
+      - --info summarysizes
+      - --diag_suppress=L6314W
+  define:
+    - OS_SUPPORT_CUSTOM
+    - ARMCM85
+    - _RTE_
+  add-path:
+    - ../../../lib/speexdsp/include
+    - ../../../lib/speexdsp/libspeexdsp
+    - ../../../ports/arm
+    - ../../../src
+    - ../../../lib/speexdsp/include/speex
+    - ../../../lib/speexdsp
+    - ../RTE/Device/ARMCM85
+    - RTE/_Release_VHT_M85
+    - ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Include
+    - ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/PrivateInclude
+    - ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Include
+    - ${CMSIS_PACK_ROOT}/ARM/CMSIS/5.9.0/CMSIS/Core/Include
+    - ${CMSIS_PACK_ROOT}/ARM/CMSIS/5.9.0/Device/ARM/ARMCM85/Include
+    - ${CMSIS_PACK_ROOT}/GorgonMeducer/perf_counter/1.9.11/lib
+  output-dirs:
+    intdir: ../tmp/audiomark_app/VHT_M85/Release
+    outdir: ../out/audiomark_app/VHT_M85/Release
+    rtedir: RTE
+  output:
+    - type: elf
+      file: audiomark_app.axf
+  components:
+    - component: ARM::CMSIS:CORE@5.6.0
+      condition: ARMv6_7_8-M Device
+      from-pack: ARM::CMSIS@5.9.0
+      selected-by: ARM::CMSIS:CORE
+    - component: ARM::CMSIS:DSP&Source@1.14.2
+      condition: CMSISCORE
+      from-pack: ARM::CMSIS-DSP@1.14.2
+      selected-by: ARM::CMSIS:DSP&Source@1.14.2
+      define:
+        - ARM_DSP_CONFIG_TABLES
+        - ARM_FAST_ALLOW_TABLES
+        - ARM_FFT_ALLOW_TABLES
+        - ARM_ALL_FAST_TABLES
+        - ARM_MATH_LOOPUNROLL
+        - ARM_TABLE_BITREVIDX_FXT_128
+        - ARM_TABLE_BITREVIDX_FXT_256
+        - ARM_TABLE_BITREVIDX_FXT_512
+        - ARM_TABLE_TWIDDLECOEF_F32_128
+        - ARM_TABLE_BITREVIDX_FLT_128
+        - ARM_TABLE_TWIDDLECOEF_F32_256
+        - ARM_TABLE_BITREVIDX_FLT_256
+        - ARM_TABLE_TWIDDLECOEF_F32_512
+        - ARM_TABLE_BITREVIDX_FLT_512
+        - ARM_TABLE_TWIDDLECOEF_RFFT_F32_128
+        - ARM_TABLE_TWIDDLECOEF_RFFT_F32_256
+        - ARM_TABLE_TWIDDLECOEF_RFFT_F32_512
+        - ARM_TABLE_TWIDDLECOEF_RFFT_F32_1024
+      files:
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/BasicMathFunctions/BasicMathFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/BasicMathFunctions/BasicMathFunctionsF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/BayesFunctions/BayesFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/BayesFunctions/BayesFunctionsF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/CommonTables/CommonTables.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/CommonTables/CommonTablesF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/ComplexMathFunctions/ComplexMathFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/ComplexMathFunctions/ComplexMathFunctionsF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/ControllerFunctions/ControllerFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/DistanceFunctions/DistanceFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/DistanceFunctions/DistanceFunctionsF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/FastMathFunctions/FastMathFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/FastMathFunctions/FastMathFunctionsF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/FilteringFunctions/FilteringFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/FilteringFunctions/FilteringFunctionsF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/InterpolationFunctions/InterpolationFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/InterpolationFunctions/InterpolationFunctionsF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/MatrixFunctions/MatrixFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/MatrixFunctions/MatrixFunctionsF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/QuaternionMathFunctions/QuaternionMathFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/SVMFunctions/SVMFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/SVMFunctions/SVMFunctionsF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/StatisticsFunctions/StatisticsFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/StatisticsFunctions/StatisticsFunctionsF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/SupportFunctions/SupportFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/SupportFunctions/SupportFunctionsF16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/TransformFunctions/TransformFunctions.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/Source/TransformFunctions/TransformFunctionsF16.c
+          category: source
+    - component: ARM::CMSIS:NN Lib@4.1.0
+      condition: CMSIS-NN
+      from-pack: ARM::CMSIS-NN@4.1.0
+      selected-by: ARM::CMSIS:NN@4.1.0
+      files:
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ActivationFunctions/arm_nn_activation_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ActivationFunctions/arm_relu6_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ActivationFunctions/arm_relu_q15.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ActivationFunctions/arm_relu_q7.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/BasicMathFunctions/arm_elementwise_add_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/BasicMathFunctions/arm_elementwise_add_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/BasicMathFunctions/arm_elementwise_mul_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/BasicMathFunctions/arm_elementwise_mul_s16_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/BasicMathFunctions/arm_elementwise_mul_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConcatenationFunctions/arm_concatenation_s8_w.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConcatenationFunctions/arm_concatenation_s8_x.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConcatenationFunctions/arm_concatenation_s8_y.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConcatenationFunctions/arm_concatenation_s8_z.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_convolve_1_x_n_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_convolve_1x1_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_convolve_1x1_s8_fast.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_convolve_fast_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_convolve_get_buffer_sizes_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_convolve_get_buffer_sizes_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_convolve_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_convolve_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_convolve_wrapper_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_convolve_wrapper_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_depthwise_conv_3x3_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_depthwise_conv_fast_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_depthwise_conv_get_buffer_sizes_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_depthwise_conv_get_buffer_sizes_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_depthwise_conv_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_depthwise_conv_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_depthwise_conv_s8_opt.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_depthwise_conv_wrapper_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_depthwise_conv_wrapper_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_nn_depthwise_conv_s8_core.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_nn_mat_mult_kernel_s8_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ConvolutionFunctions/arm_nn_mat_mult_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/FullyConnectedFunctions/arm_fully_connected_get_buffer_sizes_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/FullyConnectedFunctions/arm_fully_connected_get_buffer_sizes_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/FullyConnectedFunctions/arm_fully_connected_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/FullyConnectedFunctions/arm_fully_connected_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/LSTMFunctions/arm_lstm_unidirectional_s8_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_depthwise_conv_nt_t_padded_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_depthwise_conv_nt_t_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_depthwise_conv_nt_t_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_lstm_calculate_gate_s8_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_lstm_step_s8_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_lstm_update_cell_state_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_lstm_update_output_s8_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_mat_mul_core_1x_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_mat_mul_core_4x_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_mat_mul_kernel_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_mat_mult_nt_t_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_vec_mat_mul_result_acc_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_vec_mat_mult_t_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_vec_mat_mult_t_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nn_vec_mat_mult_t_svdf_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_nntables.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/NNSupportFunctions/arm_q7_to_q15_with_offset.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/PoolingFunctions/arm_avgpool_get_buffer_sizes_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/PoolingFunctions/arm_avgpool_get_buffer_sizes_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/PoolingFunctions/arm_avgpool_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/PoolingFunctions/arm_avgpool_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/PoolingFunctions/arm_max_pool_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/PoolingFunctions/arm_max_pool_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/ReshapeFunctions/arm_reshape_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/SVDFunctions/arm_svdf_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/SVDFunctions/arm_svdf_state_s16_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/SoftmaxFunctions/arm_nn_softmax_common_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/SoftmaxFunctions/arm_softmax_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/SoftmaxFunctions/arm_softmax_s8.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/SoftmaxFunctions/arm_softmax_s8_s16.c
+          category: source
+        - file: ${CMSIS_PACK_ROOT}/ARM/CMSIS-NN/4.1.0/Source/SoftmaxFunctions/arm_softmax_u8.c
+          category: source
+    - component: ARM::Device:Startup&C Startup@1.0.0
+      condition: ARMCM85 CMSIS
+      from-pack: ARM::CMSIS@5.9.0
+      selected-by: Device:Startup&C Startup
+      files:
+        - file: ../RTE/Device/ARMCM85/partition_ARMCM85.h
+          category: header
+          attr: config
+          version: 1.0.0
+        - file: ../RTE/Device/ARMCM85/ARMCM85_ac6_s.sct
+          category: linkerScript
+          attr: config
+          version: 1.0.0
+        - file: ../RTE/Device/ARMCM85/startup_ARMCM85.c
+          category: sourceC
+          attr: config
+          version: 1.0.0
+        - file: ../RTE/Device/ARMCM85/system_ARMCM85.c
+          category: sourceC
+          attr: config
+          version: 1.0.0
+    - component: GorgonMeducer::Utilities&Performance Counter:perf_counter:Core&Library@1.9.11
+      condition: CMSIS-CORE
+      from-pack: GorgonMeducer::perf_counter@1.9.11
+      selected-by: perf_counter:Core
+      files:
+        - file: ${CMSIS_PACK_ROOT}/GorgonMeducer/perf_counter/1.9.11/lib/perf_counter.lib
+          category: library
+  linker:
+    script: ../RTE/Device/ARMCM85/ARMCM85_ac6_s.sct
+  groups:
+    - group: App
+      files:
+        - file: ../../../src/ee_audiomark.c
+          category: sourceC
+        - file: ../../../main.c
+          category: sourceC
+        - file: ../platform_init.c
+          category: sourceC
+        - file: ../arm_s8_to_s16_unordered_with_offset.c
+          category: sourceC
+    - group: AudioMarkCore
+      misc:
+        C:
+          - -DFLOATING_POINT
+      files:
+        - file: ../../../src/ee_abf_f32.c
+          category: sourceC
+        - file: ../../../src/ee_abf_f32_tables.c
+          category: sourceC
+        - file: ../../../src/ee_aec_f32.c
+          category: sourceC
+        - file: ../../../src/ee_anr_f32.c
+          category: sourceC
+        - file: ../../../src/ee_kws.c
+          category: sourceC
+        - file: ../../../src/ee_mfcc_f32.c
+          category: sourceC
+        - file: ../../../src/ee_mfcc_f32_tables.c
+          category: sourceC
+        - file: ../../../src/ee_nn_tables.c
+          category: sourceC
+        - file: ../../../ports/arm/th_api.c
+          category: sourceC
+    - group: Libspeex
+      misc:
+        C:
+          - -DUSE_CMSIS_DSP
+          - -DFLOATING_POINT
+          - -DOVERRIDE_FB_COMPUTE_BANK32
+          - -DOVERRIDE_FB_COMPUTE_PSD16
+          - -DOVERRIDE_ANR_VEC_MUL
+          - -DOVERRIDE_ANR_UPDATE_NOISE_ESTIMATE
+          - -DOVERRIDE_ANR_APOSTERIORI_SNR
+          - -DOVERRIDE_ANR_POWER_SPECTRUM
+          - -DOVERRIDE_ANR_COMPUTE_GAIN_FLOOR
+          - -DOVERRIDE_ANR_UPDATE_ZETA
+          - -DOVERRIDE_ANR_UPDATE_GAINS_CRITICAL_BANDS
+          - -DOVERRIDE_ANR_UPDATE_GAINS_LINEAR
+          - -DOVERRIDE_ANR_APPLY_SPEC_GAIN
+          - -DOVERRIDE_ANR_OLA
+          - -DOVERRIDE_ANR_UPDATE_NOISE_PROB
+          - -DOVERRIDE_MDF_DC_NOTCH
+          - -DOVERRIDE_MDF_INNER_PROD
+          - -DOVERRIDE_MDF_POWER_SPECTRUM
+          - -DOVERRIDE_MDF_POWER_SPECTRUM_ACCUM
+          - -DOVERRIDE_MDF_SPECTRAL_MUL_ACCUM
+          - -DOVERRIDE_MDF_WEIGHT_SPECT_MUL_CONJ
+          - -DOVERRIDE_MDF_ADJUST_PROP
+          - -DOVERRIDE_MDF_PREEMPH_FLT
+          - -DOVERRIDE_MDF_STRIDED_PREEMPH_FLT
+          - -DOVERRIDE_MDF_VEC_SUB
+          - -DOVERRIDE_MDF_VEC_SUB16
+          - -DOVERRIDE_MDF_VEC_ADD
+          - -DOVERRIDE_MDF_SMOOTHED_ADD
+          - -DOVERRIDE_MDF_DEEMPH
+          - -DOVERRIDE_MDF_SMOOTH_FE_NRG
+          - -DOVERRIDE_MDF_FILTERED_SPEC_AD_XCORR
+          - -DOVERRIDE_MDF_NORM_LEARN_RATE_CALC
+          - -DOVERRIDE_MDF_CONVERG_LEARN_RATE_CALC
+          - -DOVERRIDE_MDF_VEC_SCALE
+          - -DEXPORT=/**/
+      files:
+        - file: ../../../lib/speexdsp/libspeexdsp/buffer.c
+          category: sourceC
+        - file: ../../../lib/speexdsp/libspeexdsp/fftwrap.c
+          category: sourceC
+        - file: ../../../lib/speexdsp/libspeexdsp/filterbank.c
+          category: sourceC
+        - file: ../../../lib/speexdsp/libspeexdsp/jitter.c
+          category: sourceC
+        - file: ../../../lib/speexdsp/libspeexdsp/kiss_fft.c
+          category: sourceC
+        - file: ../../../lib/speexdsp/libspeexdsp/kiss_fftr.c
+          category: sourceC
+        - file: ../../../lib/speexdsp/libspeexdsp/mdf.c
+          category: sourceC
+        - file: ../../../lib/speexdsp/libspeexdsp/preprocess.c
+          category: sourceC
+        - file: ../../../lib/speexdsp/libspeexdsp/resample.c
+          category: sourceC
+        - file: ../../../lib/speexdsp/libspeexdsp/scal.c
+          category: sourceC
+        - file: ../../../lib/speexdsp/libspeexdsp/smallft.c
+          category: sourceC
+  constructed-files:
+    - file: RTE/_Release_VHT_M85/Pre_Include_Global.h
+      category: preIncludeGlobal
+    - file: RTE/_Release_VHT_M85/RTE_Components.h
+      category: header
+  licenses:
+    - license: <unknown>
+      license-agreement: ${CMSIS_PACK_ROOT}/ARM/CMSIS-DSP/1.14.2/LICENSE.txt
+      packs:
+        - pack: ARM::CMSIS-DSP@1.14.2
+      components:
+        - component: ARM::CMSIS:DSP&Source@1.14.2
+    - license: <unknown>
+      packs:
+        - pack: ARM::CMSIS-NN@4.1.0
+      components:
+        - component: ARM::CMSIS:NN Lib@4.1.0
+    - license: <unknown>
+      packs:
+        - pack: ARM::CMSIS@5.9.0
+      components:
+        - component: ARM::CMSIS:CORE@5.6.0
+        - component: ARM::Device:Startup&C Startup@1.0.0
+    - license: <unknown>
+      license-agreement: ${CMSIS_PACK_ROOT}/GorgonMeducer/perf_counter/1.9.11/lib/LICENSE
+      packs:
+        - pack: GorgonMeducer::perf_counter@1.9.11
+      components:
+        - component: GorgonMeducer::Utilities&Performance Counter:perf_counter:Core&Library@1.9.11

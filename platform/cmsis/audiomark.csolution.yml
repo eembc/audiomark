@@ -1,25 +1,8 @@
 solution:
-  compiler: AC6
+  cdefault:
+
   define:
     - OS_SUPPORT_CUSTOM
-  misc:
-    - C:
-      - -std=gnu11
-      - -fshort-enums -fshort-wchar
-    - CPP:
-      - -std=c++11
-      - -fno-rtti
-    - C-CPP:
-      - -Ofast
-      - -ffast-math
-    - ASM:
-      - -masm=auto
-    - Link:
-      - --info=summarysizes
-      - --info=sizes
-      - --info=totals
-      - --info=unused
-      - --info=veneers
 
   packs:
     - pack: ARM::CMSIS-DSP@1.14.2
@@ -73,9 +56,9 @@ solution:
 
   projects:
 
-    - project: ./testanr.cproject.yml
-    - project: ./testaec.cproject.yml
-    - project: ./testabf.cproject.yml
-    - project: ./testkws.cproject.yml
-    - project: ./testmfcc.cproject.yml
-    - project: ./audiomark_app.cproject.yml
+    - project: ./testanr/testanr.cproject.yml
+    - project: ./testaec/testaec.cproject.yml
+    - project: ./testabf/testabf.cproject.yml
+    - project: ./testkws/testkws.cproject.yml
+    - project: ./testmfcc/testmfcc.cproject.yml
+    - project: ./audiomark_app/audiomark_app.cproject.yml

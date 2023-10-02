@@ -61,6 +61,6 @@ layer:
           #- -DOVERRIDE_ANR_VEC_CONV_FROM_INT16
           - -DEXPORT=/**/
 
-  add-paths:
+  add-path:
     - ../../lib/speexdsp/include
     - ../../lib/speexdsp/
