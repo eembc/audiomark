@@ -2,7 +2,7 @@
 
 - How to build and run EEMBC Audiomark Applications on ARM Corstone-300/310 MPS3 FPGA, IoT kit, Cortex-M CMSDK or ARM Virtual Hardware.
   - The applications are intended to run on Cortex-M55/Cortex-M85 MCUs supporting Helium™ and Arm V7M-E/Arm V8.0M cores. FPU is required.
-  - A dedicated project running the KWS on Ethos-U55 will be added later. Please contact ARM for more details.
+  - Dedicated projects running the KWS on Ethos-U55 NPU will be added later. Please contact ARM for more details.
   - ARM FPGA images and documentation can be found at https://developer.arm.com/downloads/-/download-fpga-images.
     - `AN552`: Arm® Corstone™ SSE-300 with Cortex®-M55 and Ethos™-U55 Example Subsystem for MPS3 (Partial Reconfiguration Design)
     - `AN555`: Arm® Corstone™ SSE-310 with Cortex®-M85 and Ethos™-U55 Example Subsystem for MPS3
@@ -27,6 +27,8 @@ export CMSIS_PACK_ROOT=<your_cmsis_pack_storage_path>cmsis-pack
 ```
 
 If not already installed, download **Arm Compiler 6.18** or later and report the tool path in : `<your_cmsis_tool_path>/cmsis-toolbox-linux64/etc/AC6.6.18.0.cmake`
+Support for other toolchains like CLANG, GCC or IAR will be added later.
+
 
 ```makefile
  ############### EDIT BELOW ###############
@@ -67,7 +69,7 @@ cpackget add -f required_packs.txt
 #### Projects generation
 
 ```
-csolution convert -s audiomark.csolution.yml
+csolution convert -s audiomark.csolution.yml -t AC6
 ```
 
 This  will generate several project files for each audiomark application:
@@ -78,7 +80,7 @@ This  will generate several project files for each audiomark application:
  * *testkws* : the key word spotting application
  * *testmfcc* : the MFCC unit test application
 
-For each target : FVP, C300 & C310 MPS3
+For each target : FVP, C300 & C310 MPS3, CM4, CM7 and CM33 MPS2
 
 Expected output:
 
@@ -119,14 +121,14 @@ Expected output:
 info cbuild: Build Invocation 2.1.0 (C) 2023 Arm Ltd. and Contributors
 info csolution: config files for each component:
   ARM::Device:Definition@1.2.0:
-    - /projects/iot/pj03124_ecps/fabkle01/git/forks/audiomark/platform/cmsis/audiomark_app/../RTE/Device/SSE-300-MPS3/platform_base_address.h (base@1.1.2)
+    - git/forks/audiomark/platform/cmsis/audiomark_app/../RTE/Device/SSE-300-MPS3/platform_base_address.h (base@1.1.2)
   ARM::Device:Startup&Baremetal@1.2.0:
 
 ...
 -- Configuring done
 -- Generating done
--- Build files have been written to: /projects/iot/pj03124_ecps/fabkle01/git/forks/audiomark/platform/cmsis/tmp/audiomark_app/MPS3-Corstone-300/Release
-[1/1] Linking C executable /projects/iot/pj03124_ecps/fabkle01/git/forks/audiomark/platform/cmsis/out/audiomark_app/MPS3-Corstone-300/Release/audiomark_app.axf
+-- Build files have been written to: git/forks/audiomark/platform/cmsis/tmp/audiomark_app/MPS3-Corstone-300/Release
+[1/1] Linking C executable git/forks/audiomark/platform/cmsis/out/audiomark_app/MPS3-Corstone-300/Release/audiomark_app.axf
 info cbuild: build finished successfully!
 
 ```
@@ -143,7 +145,7 @@ There are `VHT`-prefixed projects variants like **audiomark_app.Release+VHT-Cors
 To start simulation, issue following command from audiomark/platform/cmsis folder
 
 ```
->> VHT_MPS3_Corstone_SSE-300 ./out/audiomark_app/MPS3-Corstone-300/Release/Release+MPS3-Corstone-300.axf -f model_config_sse300.txt  --stat
+>> VHT_MPS3_Corstone_SSE-300 out/audiomark_app/MPS3-Corstone-300/Release/audiomark_app.axf -f model_config_sse300.txt  --stat
 telnetterminal1: Listening for serial connection on port 5000
 telnetterminal2: Listening for serial connection on port 5001
 
