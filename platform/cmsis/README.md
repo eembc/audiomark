@@ -17,6 +17,7 @@ See description about CMSIS Toolbox here: https://github.com/Open-CMSIS-Pack/cms
 
 
 If not installed, decompress cmsis-toolbox in your workspace and setup environment variables as described in the link above.
+CMSIS Toolbox v2.0.0 or above is required.
 
 ```
 tar -zxvf cmsis-toolbox-linux64.tar.gz
@@ -82,14 +83,14 @@ For each target : FVP, C300 & C310 MPS3
 Expected output:
 
 ```
-audiomark/platform/cmsis/testanr.Release+MPS3-Corstone-300.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/testanr.Release+MPS3-Corstone-310.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/testanr.Release+VHT-Corstone-300.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/testanr.Release+VHT-Corstone-310.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/testabf.Release+MPS3-Corstone-300.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/testabf.Release+MPS3-Corstone-310.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/testabf.Release+VHT-Corstone-300.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/testabf.Release+VHT-Corstone-310.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testanr/testanr.Release+MPS3-Corstone-300.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testanr/testanr.Release+MPS3-Corstone-310.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testanr/testanr.Release+VHT-Corstone-300.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testanr/testanr.Release+VHT-Corstone-310.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testabf/testabf.Release+MPS3-Corstone-300.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testabf/testabf.Release+MPS3-Corstone-310.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testabf/testabf.Release+VHT-Corstone-300.cprj - info csolution: file generated successfully
+audiomark/platform/cmsis/testabf/testabf.Release+VHT-Corstone-310.cprj - info csolution: file generated successfully
 ...
 <full list eluded>
 ...
@@ -104,23 +105,28 @@ e.g. for the C300 audiomark application:
 ```
 cbuild audiomark_app.Release+MPS3-Corstone-300.cprj
 ```
+or
+```
+cbuild --context audiomark_app.Release+MPS3-Corstone-300 audiomark.csolution.yml  --update-rte -v --toolchain AC6@6.20
+```
 
-This will generate an object in `audiomark/platform/cmsis/out/audiomark_app/MPS3-Corstone-300/Release/Release+MPS3-Corstone-300.axf`
+This will generate an object in `audiomark/platform/cmsis/out/audiomark_app/MPS3-Corstone-300/Release/audiomark_app.axf`
 
 
 Expected output:
 ```
->> cbuild audiomark_app.Release+MPS3-Corstone-300.cprj
-info cbuild: Build Invocation 1.5.0 (C) 2023 Arm Ltd. and Contributors
-M650: Command completed successfully.
+>> cbuild --context audiomark_app.Release+MPS3-Corstone-300 audiomark.csolution.yml  --update-rte -v --toolchain AC6@6.20
+info cbuild: Build Invocation 2.1.0 (C) 2023 Arm Ltd. and Contributors
+info csolution: config files for each component:
+  ARM::Device:Definition@1.2.0:
+    - /projects/iot/pj03124_ecps/fabkle01/git/forks/audiomark/platform/cmsis/audiomark_app/../RTE/Device/SSE-300-MPS3/platform_base_address.h (base@1.1.2)
+  ARM::Device:Startup&Baremetal@1.2.0:
 
-M652: Generated file for project build: 'git/audiomark/platform/cmsis/tmp/audiomark_app/MPS3-Corstone-300/Release/CMakeLists.txt'
+...
 -- Configuring done
 -- Generating done
--- Build files have been written to: git/audiomark/platform/cmsis/tmp/audiomark_app/MPS3-Corstone-300/Release
-[126/126] Linking C executable git/audiomark/platform/cmsis/out/audiomark_app/MPS3-Corstone-300/Release/Release+MPS3-Corstone-300.axf
-"git/audiomark/platform/cmsis/RTE/Device/SSE-300-MPS3/fvp_sse300_mps3_s.sct", line 24 (column 11): Warning: L6314W: No section matches pattern *(Veneer$$CMSE).
-Finished: 0 information, 1 warning and 0 error messages.
+-- Build files have been written to: /projects/iot/pj03124_ecps/fabkle01/git/forks/audiomark/platform/cmsis/tmp/audiomark_app/MPS3-Corstone-300/Release
+[1/1] Linking C executable /projects/iot/pj03124_ecps/fabkle01/git/forks/audiomark/platform/cmsis/out/audiomark_app/MPS3-Corstone-300/Release/audiomark_app.axf
 info cbuild: build finished successfully!
 
 ```
@@ -149,18 +155,18 @@ telnetterminal2: Listening for serial connection on port 5001
 
 ## Keil MDK Builds
 
-The Audiomark Corstone-300 FPGA main application can be built by importing the **audiomark_app.Release+MPS3-Corstone-300.cprj** in uVision (Project=>Import)
+The Audiomark Corstone-300 FPGA main application can be built by importing the **audiomark_app/audiomark_app.Release+MPS3-Corstone-300.cprj** in uVision (Project=>Import)
 
-- The printf messages are output to MPS3 FPGA board 2nd UART port (settings `115200, 8,N,1`) by project default setting. 
+- The printf messages are output to MPS3 FPGA board 2nd UART port (settings `115200, 8,N,1`) by project default setting.
 - To change printf messages to Debug (printf) Viewer window using the tracing method through JTAG, please select ITM for STDOUT under Compiler => I/O in Manage Run-Time Environment menu.
 
 Various individual audiomark components unit-tests project can imported using the different cprojects files provided in this folder (e.g. *testanr.Release+MPS3-Corstone-300.cprj* for Noise suppressor Corstone-300 Unit test)
 
-For Corstone-310 FPGA, similar steps can be followed by importing **audiomark_app.Release+MPS3-Corstone-310.cprj** and / or different unit tests
+For Corstone-310 FPGA, similar steps can be followed by importing **audiomark_app/audiomark_app.Release+MPS3-Corstone-310.cprj** and / or different unit tests
 
-For Arm V7M-E/ Arm V8.0M MPS2+ FPGA, similar steps can be followed by importing **audiomark_app.Release+MPS2-IOTKit-CM33.cprj**, **audiomark_app.Release+MPS2-CMSDK_CM7_SP.cprj**, **audiomark_app.Release+MPS2-CMSDK_CM4_FP.cprj** and / or different unit tests
+For Arm V7M-E/ Arm V8.0M MPS2+ FPGA, similar steps can be followed by importing **audiomark_app/audiomark_app.Release+MPS2-IOTKit-CM33.cprj**, **audiomark_app/audiomark_app.Release+MPS2-CMSDK_CM7_SP.cprj**, **audiomark_app/audiomark_app.Release+MPS2-CMSDK_CM4_FP.cprj** and / or different unit tests
 
-For Virtual Hardware audiomark components, import projects having `VHT` prefix like **testaec.Release+VHT-Corstone-300.cprj**.
+For Virtual Hardware audiomark components, import projects having `VHT` prefix like **testaec/testaec.Release+VHT-Corstone-300.cprj**.
 
 
 ## Important Notes

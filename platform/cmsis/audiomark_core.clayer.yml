@@ -21,7 +21,7 @@ layer:
         - C:
           - -DFLOATING_POINT 
   
-  add-paths:
+  add-path:
     - ../../src/
     - ../../lib/speexdsp/include/speex/
     - ../../lib/speexdsp/include
