@@ -1,9 +1,9 @@
 /*-----------------------------------------------------------------------------
  * Name:    stdout_USART.c
  * Purpose: STDOUT USART Template
- * Rev.:    1.0.0
+ * Rev.:    1.0.1
  *-----------------------------------------------------------------------------*/
- 
+
 /* Copyright (c) 2013 - 2015 ARM LIMITED
 
    All rights reserved.
@@ -30,44 +30,49 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE.
    ---------------------------------------------------------------------------*/
- 
+
 #include "Driver_USART.h"
- 
+
 //-------- <<< Use Configuration Wizard in Context Menu >>> --------------------
- 
+
 // <h>STDOUT USART Interface
- 
+
 //   <o>Connect to hardware via Driver_USART# <0-255>
 //   <i>Select driver control block for USART interface
 #define USART_DRV_NUM           0
- 
+
 //   <o>Baudrate
+#if (defined (IOTKit_CM33) || (IOTKit_CM33_FP) || (IOTKit_CM33_VHT) || (IOTKit_CM33_FP_VHT))
+    /*  Adjustment based on Peripheral / System clock ratio */
+#define USART_BAUDRATE          (115200 * 20 / 25)
+#else
 #define USART_BAUDRATE          115200
- 
+#endif
+
 // </h>
- 
- 
+
+
 #define _USART_Driver_(n)  Driver_USART##n
 #define  USART_Driver_(n) _USART_Driver_(n)
- 
+
 extern ARM_DRIVER_USART  USART_Driver_(USART_DRV_NUM);
 #define ptrUSART       (&USART_Driver_(USART_DRV_NUM))
- 
- 
+
+
 /**
   Initialize stdout
- 
+
   \return          0 on success, or -1 on error.
 */
 int stdout_init (void) {
   int32_t status;
- 
+
   status = ptrUSART->Initialize(NULL);
   if (status != ARM_DRIVER_OK) return (-1);
- 
+
   status = ptrUSART->PowerControl(ARM_POWER_FULL);
   if (status != ARM_DRIVER_OK) return (-1);
- 
+
   status = ptrUSART->Control(ARM_USART_MODE_ASYNCHRONOUS |
                              ARM_USART_DATA_BITS_8       |
                              ARM_USART_PARITY_NONE       |
@@ -81,17 +86,17 @@ int stdout_init (void) {
 
   return (0);
 }
- 
- 
+
+
 /**
   Put a character to the stdout
- 
+
   \param[in]   ch  Character to output
   \return          The character written, or -1 on write error.
 */
 int stdout_putchar (int ch) {
   uint8_t buf[1];
- 
+
   buf[0] = ch;
   if (ptrUSART->Send(buf, 1) != ARM_DRIVER_OK) {
     return (-1);
