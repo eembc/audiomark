@@ -18,7 +18,12 @@ static void init_perf_counter(void)
 {
     extern void SystemCoreClockUpdate (void);
 
+#if (defined (IOTKit_CM33) || (IOTKit_CM33_FP) || (IOTKit_CM33_VHT) || (IOTKit_CM33_FP_VHT))
+    /*  Correct SystemCoreClock to match the clock speed of the FPGA platform */
+    SystemCoreClock = 20000000UL;
+#else
     SystemCoreClockUpdate();
+#endif
     init_cycle_counter(false);
 }
 
