@@ -8,14 +8,10 @@ project:
         - file: ../../../tests/test_aec_f32.c
         - file: ../platform_init.c
 
-  add-path:
-    - ../../../lib/speexdsp/include
-    - ../../../lib/speexdsp/libspeexdsp
-    - ../../../ports/arm/
 
   components:
     - component: ARM::CMSIS:CORE
-    - component: ARM::CMSIS:NN@4.0.0
+    - component: ARM::CMSIS:NN@4.1.0
     - component: ARM::CMSIS:DSP&Source@1.14.2
       define:
         - ARM_DSP_CONFIG_TABLES
@@ -43,7 +39,3 @@ project:
     - layer: ../speex.clayer.yml
     - layer: ../audiomark_core.clayer.yml
     - layer: ../printf_mpsx.clayer.yml
-      not-for-context:
-        - +VHT-Corstone-300
-        - +VHT-Corstone-310
-        - +VHT_M85

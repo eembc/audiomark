@@ -16,6 +16,9 @@ default:
 
       C:
         - -std=gnu11
+        - -DFLOATING_POINT
+        - -DUSE_CMSIS_DSP
+
       ASM:
         - -masm=auto
       Link:
@@ -23,6 +26,8 @@ default:
         - --map
         - --info summarysizes
         - --diag_suppress=L6314W
+        - --diag_suppress=L6329W
+        - --diag_suppress=L6439W
 
     - for-compiler: GCC
       C:

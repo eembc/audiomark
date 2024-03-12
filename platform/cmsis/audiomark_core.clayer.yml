@@ -14,15 +14,16 @@ layer:
         - file: ../../src/ee_mfcc_f32.c
         - file: ../../src/ee_mfcc_f32_tables.c
         - file: ../../src/ee_nn_tables.c
-        - file: ../../ports/arm/th_api.c      
+        - file: ../../ports/arm/th_api.c
 
+      add-path:
+      - ../../lib/speexdsp/include/speex/
+      - ../../lib/speexdsp/include
+      - ../../lib/speexdsp/
+      - ../../lib/speexdsp/libspeexdsp
 
-      misc:
-        - C:
-          - -DFLOATING_POINT 
-  
   add-path:
     - ../../src/
-    - ../../lib/speexdsp/include/speex/
-    - ../../lib/speexdsp/include
-    - ../../lib/speexdsp/
+    - ../../ports/arm
+    - ../../ports/arm/include
+

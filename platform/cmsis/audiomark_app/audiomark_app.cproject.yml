@@ -1,4 +1,31 @@
 project:
+  setups:
+    - setup: Ethos target options
+
+      for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +MPS3-Corstone-300
+        - +MPS3-Corstone-310
+
+      add-path:
+        - .
+        - ../../../ports/arm/include
+        - ../../../ports/arm/
+
+    - setup: Default target options
+      not-for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +MPS3-Corstone-300
+        - +MPS3-Corstone-310
+
+      add-path:
+
+      - ../../../lib/speexdsp/include
+      - ../../../lib/speexdsp/libspeexdsp
+      - ../../../ports/arm/
+
   groups:
     - group: App
       files:
@@ -7,14 +34,9 @@ project:
         - file: ../platform_init.c
 
 
-  add-path:
-    - ../../../lib/speexdsp/include
-    - ../../../lib/speexdsp/libspeexdsp
-    - ../../../ports/arm/
-
   components:
     - component: ARM::CMSIS:CORE
-    - component: ARM::CMSIS:NN@4.0.0
+    - component: ARM::CMSIS:NN@4.1.0
     - component: ARM::CMSIS:DSP&Source@1.14.2
       define:
         - ARM_DSP_CONFIG_TABLES
@@ -41,11 +63,11 @@ project:
   layers:
     - layer: ../boot.clayer.yml
     - layer: ../speex.clayer.yml
+    - layer: ../ethos_tfmicro.clayer.yml
+      for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +MPS3-Corstone-300
+        - +MPS3-Corstone-310
     - layer: ../audiomark_core.clayer.yml
     - layer: ../printf_mpsx.clayer.yml
-      not-for-context:
-        - +VHT-Corstone-300
-        - +VHT-Corstone-310
-        - +VHT_M85
-
-

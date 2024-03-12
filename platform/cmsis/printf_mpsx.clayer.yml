@@ -11,12 +11,16 @@ layer:
     - component: ARM::Native Driver:UART
       for-context:
         - +MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-300
         - +MPS3-Corstone-310
+        - +Ethos-MPS3-Corstone-310
 
     - component: ARM::CMSIS Driver:USART
       for-context:
         - +MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-300
         - +MPS3-Corstone-310
+        - +Ethos-MPS3-Corstone-310
 
     - component: Keil::Board Support&V2M-MPS2 IOT-Kit:Common@2.0.0
       for-context:
@@ -30,6 +34,7 @@ layer:
     - component: Keil::CMSIS Driver:USART
       not-for-context:
         - +MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-300
         - +MPS3-Corstone-310
-
+        - +Ethos-MPS3-Corstone-310
 

@@ -1,4 +1,26 @@
+#
+# * SPDX-FileCopyrightText: Copyright 2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+# *
+# * SPDX-License-Identifier: Apache-2.0
+# *
+# * Licensed under the Apache License, Version 2.0 (the License); you may
+# * not use this file except in_q7x4 compliance with the License.
+# * You may obtain a copy of the License at
+# *
+# * www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in_q7x4 writing, software
+# * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+# * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+#
+
 solution:
+  description: EEMBC/SPEC Audiomark build system for Cortex-M ARM platforms (FPGA & VHT)
+
+  created-for: cmsis-toolbox@2.0.0
+
   cdefault:
 
   define:
@@ -6,7 +28,7 @@ solution:
 
   packs:
     - pack: ARM::CMSIS-DSP@1.14.2
-    - pack: ARM::CMSIS-NN@4.0.0
+    - pack: ARM::CMSIS-NN@4.1.0
     - pack: ARM::CMSIS@5.9.0
     - pack: ARM::V2M_MPS3_SSE_300_BSP@1.3.0
     - pack: ARM::V2M_MPS3_SSE_310_BSP@1.1.0
@@ -16,23 +38,71 @@ solution:
     - pack: Keil::V2M-MPS2_IOTKit_BSP@1.5.0
     - pack: Keil::V2M-MPS2_CMx_BSP@1.8.0
 
+
+    - pack: ARM::ml-embedded-eval-kit-uc-api@22.8.0-Beta
+      for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +MPS3-Corstone-300
+        - +MPS3-Corstone-310
+
+    - pack: tensorflow::tensorflow-lite-micro@1.22.8
+      for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +MPS3-Corstone-300
+        - +MPS3-Corstone-310
+
+    - pack: Arm::ethos-u-core-driver@1.22.8
+      for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+
+    - pack: tensorflow::flatbuffers@1.22.8
+      for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +MPS3-Corstone-300
+        - +MPS3-Corstone-310
+
+    - pack: tensorflow::gemmlowp@1.22.8
+      for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +MPS3-Corstone-300
+        - +MPS3-Corstone-310
+
+    - pack: tensorflow::kissfft@1.22.8
+      for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +MPS3-Corstone-300
+        - +MPS3-Corstone-310
+
+    - pack: tensorflow::ruy@1.22.8
+      for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +MPS3-Corstone-300
+        - +MPS3-Corstone-310
+
   target-types:
 
-    # CM85 with large TCMs
-    - type: VHT_M85
-      device: ARMCM85
-
     - type: MPS3-Corstone-310
-      device: ARM::SSE-310-MPS3
-
-    - type: VHT-Corstone-310
       device: ARM::SSE-310-MPS3
 
     - type: MPS3-Corstone-300
       device: ARM::SSE-300-MPS3
 
-    - type: VHT-Corstone-300
+    - type: Ethos-MPS3-Corstone-300
       device: ARM::SSE-300-MPS3
+      define:
+        - ETHOSU55
+
+    - type: Ethos-MPS3-Corstone-310
+      device: ARM::SSE-310-MPS3
+      define:
+        - ETHOSU55
 
     - type: MPS2-IOTKit-CM33
       device: ARM::IOTKit_CM33_FP
@@ -52,7 +122,8 @@ solution:
 
   build-types:
     - type: Release
-      debug: on
+      optimize: speed
+      debug: off
 
   projects:
 

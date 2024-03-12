@@ -1,0 +1,138 @@
+;#! armclang --target=arm-arm-none-eabi -march=armv8.1-m.main -E -xc
+;/*
+; * Copyright (c) 2018-2024 Arm Limited
+; *
+; * Licensed under the Apache License, Version 2.0 (the "License");
+; * you may not use this file except in compliance with the License.
+; * You may obtain a copy of the License at
+; *
+; *     http://www.apache.org/licenses/LICENSE-2.0
+; *
+; * Unless required by applicable law or agreed to in writing, software
+; * distributed under the License is distributed on an "AS IS" BASIS,
+; * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+; * See the License for the specific language governing permissions and
+; * limitations under the License.
+; *
+; */
+
+#include "region_defs.h"
+
+#define DTCM_START 0x30000000
+#define DTCM_SIZE  0x00008000
+#define ITCM_START 0x10000000
+#define ITCM_SIZE  0x00008000
+
+
+LR_CODE S_CODE_START {
+ER_CODE S_CODE_START {
+	*.o (RESET, +First)
+	.ANY (+RO +ZI +RW)
+	th_api.o(.rodata.downlink_audio)
+	th_api.o(.rodata.left_microphone_capture)
+	th_api.o(.rodata.right_microphone_capture)
+	ee_abf_f32_tables.o
+}
+
+
+/* This empty, zero long execution region is here to mark the limit address
+ * of the last execution region that is allocated in SRAM.
+ */
+CODE_WATERMARK +0 EMPTY 0x0 {
+}
+/* Make sure that the sections allocated in the SRAM does not exceed the
+ * size of the SRAM available.
+ */
+ScatterAssert(ImageLimit(CODE_WATERMARK) <= S_CODE_START + S_CODE_SIZE)
+
+
+#if HEAP_SIZE > 0
+ARM_LIB_HEAP +0 ALIGN 8 EMPTY  HEAP_SIZE  {   ; Reserve empty region for heap
+}
+#endif
+
+ARM_LIB_STACK +0 ALIGN 32 EMPTY STACK_SIZE {}   ; Reserve empty region for stack
+
+
+;-----------------------------------------------------
+; FPGA internal SRAM of 2MiB - reserved for activation
+; buffers.
+; This region should have 3 cycle read latency from
+; both Cortex-M85 and Ethos-U NPU
+;-----------------------------------------------------
+isram.bin       0x31000000  UNINIT ALIGN 16 0x00400000
+{
+	; Cache area (if used)
+	*.o (.bss.NoInit.ethos_u_cache)
+
+	; activation buffers a.k.a tensor arena when
+	; memory mode sram only or shared sram
+	*.o (.bss.NoInit.activation_buf_sram)
+
+	.ANY (+RO-DATA )
+
+}
+}
+
+DTCM       DTCM_START                  DTCM_SIZE
+{
+dtcm.bin        DTCM_START ALIGN 16         DTCM_SIZE
+{
+	commontables.o (+RO-DATA)
+	ee_mfcc_f32_tables.o
+}
+}
+
+ITCM       ITCM_START                  ITCM_SIZE
+{
+itcm.bin        ITCM_START ALIGN 16         ITCM_SIZE
+{
+	* (InRoot$$Sections, .init_array*, .ARM*)
+	th_api.o (+RO)
+
+	transformfunctions.o
+	complexmathfunctions.o
+	basicmathfunctions.o
+	statisticsfunctions.o
+	mdf.o (.text.speex_echo_cancellation)
+	mdf.o (.text.mdf_adjust_prop)
+	preprocess.o (.text.preprocess_analysis)
+	preprocess.o (.text.update_noise_prob)
+	preprocess.o (.text.speex_preprocess_run)
+	*.o (.text.arm_nn*s8)
+}
+}
+;---------------------------------------------------------
+; Second load region (DDR)
+;---------------------------------------------------------
+LOAD_REGION_1       0x70000000                  0x02000000
+{
+;-----------------------------------------------------
+; 32 MiB of DDR space for neural network model.
+; If the activation buffersize required by the network
+; is bigger than the SRAM size available, it is accommodated here.
+;-----------------------------------------------------
+ddr.bin        0x70000000 ALIGN 16         0x02000000
+{
+
+	; nn model s default space
+	*.o (nn_model)
+
+	; activation buffers a.k.a tensor arena when memory mode dedicated sram
+	*.o (activation_buf_dram)
+
+
+	/* different test vectors */
+	abf_f32_expected.o
+	abf_f32_input_ch1.o
+	abf_f32_input_ch2.o
+	aec_f32_expected.o
+	aec_f32_input_echo.o
+	aec_f32_input_source.o
+	kws_expected.o
+	kws_input.o
+	mfcc_f32_all.o
+	}
+
+
+}
