@@ -2,7 +2,7 @@
 
 - How to build and run EEMBC Audiomark Applications on ARM Corstone-300/310 MPS3 FPGA, IoT kit, Cortex-M CMSDK or ARM Virtual Hardware.
   - The applications are intended to run on Cortex-M55/Cortex-M85 MCUs supporting Helium™ and Arm V7M-E/Arm V8.0M cores. FPU is required.
-  - Dedicated projects running the KWS on Ethos-U55 NPU will be added later. Please contact ARM for more details.
+  - There are dedicated projects for running the KWS on Ethos-U55 NPU.
   - ARM FPGA images and documentation can be found at https://developer.arm.com/downloads/-/download-fpga-images.
     - `AN552`: Arm® Corstone™ SSE-300 with Cortex®-M55 and Ethos™-U55 Example Subsystem for MPS3 (Partial Reconfiguration Design)
     - `AN555`: Arm® Corstone™ SSE-310 with Cortex®-M85 and Ethos™-U55 Example Subsystem for MPS3
@@ -19,26 +19,24 @@ See description about CMSIS Toolbox here: https://github.com/Open-CMSIS-Pack/cms
 If not installed, decompress cmsis-toolbox in your workspace and setup environment variables as described in the link above.
 CMSIS Toolbox v2.0.0 or above is required.
 
-```
+```shell
 tar -zxvf cmsis-toolbox-linux64.tar.gz
 PATH=$PATH:<your_cmsis_tool_path>/cmsis-toolbox-linux64/bin/
+
+# these are optional, overriding default variables
 export CMSIS_COMPILER_ROOT=<your_cmsis_tool_path>/cmsis-toolbox-linux64/etc/
 export CMSIS_PACK_ROOT=<your_cmsis_pack_storage_path>cmsis-pack
 ```
 
-If not already installed, download **Arm Compiler 6.18** or later and report the tool path in : `<your_cmsis_tool_path>/cmsis-toolbox-linux64/etc/AC6.6.18.0.cmake`
+
+If not already installed, download **Arm Compiler 6.18** or later.
 Support for other toolchains like CLANG, GCC or IAR will be added later.
 
+Following the CMSIS Toolbox installation steps, compiler and version has to be registred by defining an according environment variable e.g.
 
-```makefile
- ############### EDIT BELOW ###############
-# Set base directory of toolchain
-set(TOOLCHAIN_ROOT "<arm_compiler_root_path>/bin/")
-set(EXT)
-
-############ DO NOT EDIT BELOW ###########
+```shell
+export AC6_TOOLCHAIN_6_21_0=<path_to_ac6_21_compiler>/bin/
 ```
-
 
 ### Initialize the new pack repository
 
@@ -98,6 +96,13 @@ audiomark/platform/cmsis/testabf/testabf.Release+VHT-Corstone-310.cprj - info cs
 ...
 ```
 
+This also generate projects for running Audiomark application and KWS unit-test with `ARM Ethos-U55` acceleration.
+
+```
+audiomark/platform/cmsis/audiomark_app/audiomark_app.Release+Ethos-MPS3-Corstone-300.cprj
+audiomark/platform/cmsis/audiomark_app/audiomark_app.Release+Ethos-MPS3-Corstone-310.cprj
+```
+
 
 #### Building the cprj files
 
@@ -109,7 +114,7 @@ cbuild audiomark_app.Release+MPS3-Corstone-300.cprj
 ```
 or
 ```
-cbuild --context audiomark_app.Release+MPS3-Corstone-300 audiomark.csolution.yml  --update-rte -v --toolchain AC6@6.20
+cbuild --context audiomark_app.Release+MPS3-Corstone-300 audiomark.csolution.yml  --update-rte -v --toolchain AC6@21
 ```
 
 This will generate an object in `audiomark/platform/cmsis/out/audiomark_app/MPS3-Corstone-300/Release/audiomark_app.axf`
@@ -117,7 +122,7 @@ This will generate an object in `audiomark/platform/cmsis/out/audiomark_app/MPS3
 
 Expected output:
 ```
->> cbuild --context audiomark_app.Release+MPS3-Corstone-300 audiomark.csolution.yml  --update-rte -v --toolchain AC6@6.20
+>> cbuild --context audiomark_app.Release+MPS3-Corstone-300 audiomark.csolution.yml  --update-rte -v --toolchain AC6@21
 info cbuild: Build Invocation 2.1.0 (C) 2023 Arm Ltd. and Contributors
 info csolution: config files for each component:
   ARM::Device:Definition@1.2.0:
@@ -169,6 +174,88 @@ For Corstone-310 FPGA, similar steps can be followed by importing **audiomark_ap
 For Arm V7M-E/ Arm V8.0M MPS2+ FPGA, similar steps can be followed by importing **audiomark_app/audiomark_app.Release+MPS2-IOTKit-CM33.cprj**, **audiomark_app/audiomark_app.Release+MPS2-CMSDK_CM7_SP.cprj**, **audiomark_app/audiomark_app.Release+MPS2-CMSDK_CM4_FP.cprj** and / or different unit tests
 
 For Virtual Hardware audiomark components, import projects having `VHT` prefix like **testaec/testaec.Release+VHT-Corstone-300.cprj**.
+
+## Arm Ethos-U55 KWS acceleration
+
+Audiomark KWS can be significantly accelerated by offloading the neural network processing to the Arm Ethos-U NPU engine.
+For the DS-CNN model reference is converted back to TensorFlow Lite (TFL) format and processed by VELA which is the tool used to compile a TFL neural network model into an optimised version that can run on an embedded system containing an Arm Ethos-U NPU.
+Converted binary models are packed in cpp files that are located in `ports/arm/` folder. These is one file for each Ethos-U55 variant based on number of MACs.
+ - ds_cnn_s_quantized_U55_32_vela.tflite.cpp
+ - ds_cnn_s_quantized_U55_64_vela.tflite.cpp
+ - ds_cnn_s_quantized_U55_128_vela.tflite.cpp
+ - ds_cnn_s_quantized_U55_256_vela.tflite.cpp
+
+ARM Corstone-300 FPGA implements Ethos-U55-128 while Corstone-310 implements Ethos-U55-256.
+Bit exactness is not affected by Ethos-U offloading.
+
+- *Note* : `ds_cnn_s_quantized.tflite.cpp` is the MCU only variant that can be substituted to original Audiomark model.
+
+Building process is similar to ARM Cortex-M only builds.
+
+```shell
+# Cortsone-300 FPGA build
+cbuild --context audiomark_app.Release+Ethos-MPS3-Corstone-300 audiomark.csolution.yml  --update-rte  --toolchain AC6@6.21
+# cortsone-310 FPGA build
+cbuild --context audiomark_app.Release+Ethos-MPS3-Corstone-310 audiomark.csolution.yml  --update-rte  --toolchain AC6@6.21
+```
+
+Binaries can be run on AVH, but as for Cortex-M only variants, results will be different from FPGA or physical target because not cycle-accurate.
+
+
+```
+>> VHT_Corstone_SSE-300_Ethos-U55 audiomark_app.axf -f model_config_sse300.txt -C mps3_board.uart0.out_file=-
+telnetterminal0: Listening for serial connection on port 5000
+telnetterminal1: Listening for serial connection on port 5001
+telnetterminal2: Listening for serial connection on port 5002
+telnetterminal5: Listening for serial connection on port 5003
+
+    Ethos-U rev 136b7d75 --- Apr 12 2023 13:44:01
+    (C) COPYRIGHT 2019-2023 Arm Limited
+    ALL RIGHTS RESERVED
+
+Warning: Failed to write bytes at address range [0x00080000..0x002B2B07] when loading image "/projects/iot/pj03124_ecps/fabkle01/git/forks/tmp/audiomark/platform/cmsis/out/audiomark_app/Ethos-MPS3-Corstone-300/Release/audiomark_app.axf".
+Initializing
+Memory alloc summary:
+ bmf = 14948
+ aec = 68100
+ anr = 45250
+ kws = 8308
+INFO - Ethos-U device initialised
+INFO - Ethos-U version info:
+INFO - 	Arch:       v1.1.0
+INFO - 	Driver:     v0.16.0
+INFO - 	MACs/cc:    128
+INFO - 	Cmd stream: v0
+Added ethos-u support to op resolver
+INFO - Creating allocator using tensor arena at 0x31000000
+INFO - Allocating tensors
+INFO - Model INPUT tensors:
+INFO - 	tensor type is INT8
+INFO - 	tensor occupies 490 bytes with dimensions
+INFO - 		0:   1
+INFO - 		1: 490
+INFO - Quant dimension: 0
+INFO - Scale[0] = 1.084193
+INFO - ZeroPoint[0] = 100
+INFO - Model OUTPUT tensors:
+INFO - 	tensor type is INT8
+INFO - 	tensor occupies 12 bytes with dimensions
+INFO - 		0:   1
+INFO - 		1:  12
+INFO - Quant dimension: 0
+INFO - Scale[0] = 0.003906
+INFO - ZeroPoint[0] = -128
+INFO - Activation buffer (a.k.a tensor arena) size used: 22548
+INFO - Number of operators: 1
+INFO - 	Operator 0: ethos-u
+Computing run speed
+[warning ][main@0][2463 ns] TA0 is not enabled!
+[warning ][main@0][2463 ns] TA1 is not enabled!
+Measuring
+Total runtime    : 10.974 seconds
+Total iterations : 10 iterations
+Score            : 607.506470 AudioMarks
+```
 
 
 ## Important Notes

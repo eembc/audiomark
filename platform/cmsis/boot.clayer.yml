@@ -2,75 +2,98 @@ layer:
   # name: boot
   description: Boot code for Virtual Hardware
 
+
+  linker:
+    - script: ./linker/SSE-300-MPS3/fvp_sse300_mps3_ns.sct
+      for-context:
+        - +MPS3-Corstone-300
+
+    - script: ./linker/SSE-300-MPS3/EthosU_fvp_sse300_mps3_ns.sct
+      for-context:
+        - +Ethos-MPS3-Corstone-300
+
+    - regions: ./linker/SSE-300-MPS3/region_defs.h
+      for-context:
+        - +MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-300
+
+    - script: ./linker/SSE-310-MPS3/fvp_sse310_mps3_ns.sct
+      for-context:
+        - +MPS3-Corstone-310
+        - +Ethos-MPS3-Corstone-310
+
+    - regions: ./linker/SSE-310-MPS3/region_defs.h
+      for-context: 
+        - +MPS3-Corstone-310
+        - +Ethos-MPS3-Corstone-310
+
   components:
+
     - component: Device:Startup&C Startup
       not-for-context:
-        - +VHT-Corstone-300
-        - +VHT-Corstone-310
         - +MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
         - +MPS3-Corstone-310
 
     - component: ARM::Device:Definition
       for-context:
-        - +VHT-Corstone-300
-        - +VHT-Corstone-310
         - +MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
         - +MPS3-Corstone-310
 
     - component: ARM::Device:Startup&Baremetal
       for-context:
-        - +VHT-Corstone-300
-        - +VHT-Corstone-310
         - +MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
         - +MPS3-Corstone-310
 
     - component: ARM::Native Driver:Timeout
       for-context:
-        - +VHT-Corstone-300
-        - +VHT-Corstone-310
         - +MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
         - +MPS3-Corstone-310
 
     - component: ARM::Native Driver:SysCounter
       for-context:
-        - +VHT-Corstone-300
-        - +VHT-Corstone-310
         - +MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
         - +MPS3-Corstone-310
 
     - component: ARM::Native Driver:SysTimer
       for-context:
-        - +VHT-Corstone-300
-        - +VHT-Corstone-310
         - +MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
         - +MPS3-Corstone-310
 
     - component: ARM::MCU Driver HAL:DMA350
       for-context:
-        - +VHT-Corstone-310
         - +MPS3-Corstone-310
+        - +Ethos-MPS3-Corstone-310
 
     - component: ARM::Native Driver:DMA350
       for-context:
-        - +VHT-Corstone-310
         - +MPS3-Corstone-310
-
-    - component: DMA350
-      for-context:
-        - +VHT-Corstone-310
+        - +Ethos-MPS3-Corstone-310
 
     - component: ARM::Native Driver:DMA350 Remap
       for-context:
-        - +VHT-Corstone-310
         - +MPS3-Corstone-310
+        - +Ethos-MPS3-Corstone-310
 
     - component: ARM::Native Driver:DMA350 Remap:SSE-310
       for-context:
-        - +VHT-Corstone-310
         - +MPS3-Corstone-310
+        - +Ethos-MPS3-Corstone-310
 
     - component: DMA350 Remap
       for-context:
-        - +VHT-Corstone-310
         - +MPS3-Corstone-310
+        - +Ethos-MPS3-Corstone-310
+
 

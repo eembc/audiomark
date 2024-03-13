@@ -5,13 +5,29 @@ layer:
 
   groups:
     - group: Libspeex
+      add-path:
+        - ../../lib/speexdsp/include
+        - ../../lib/speexdsp/
+        - ../../lib/speexdsp/include/speex/
+        - ../../lib/speexdsp/libspeexdsp
+
       files:
         - file: ../../lib/speexdsp/libspeexdsp/buffer.c
         - file: ../../lib/speexdsp/libspeexdsp/fftwrap.c
         - file: ../../lib/speexdsp/libspeexdsp/filterbank.c
         - file: ../../lib/speexdsp/libspeexdsp/jitter.c
         - file: ../../lib/speexdsp/libspeexdsp/kiss_fft.c
+          not-for-context:
+            - +Ethos-MPS3-Corstone-300
+            - +Ethos-MPS3-Corstone-310
+            - +MPS3-Corstone-300
+            - +MPS3-Corstone-310
         - file: ../../lib/speexdsp/libspeexdsp/kiss_fftr.c
+          not-for-context:
+            - +Ethos-MPS3-Corstone-300
+            - +Ethos-MPS3-Corstone-310
+            - +MPS3-Corstone-300
+            - +MPS3-Corstone-310
         - file: ../../lib/speexdsp/libspeexdsp/mdf.c
         - file: ../../lib/speexdsp/libspeexdsp/preprocess.c
         - file: ../../lib/speexdsp/libspeexdsp/resample.c
@@ -19,7 +35,8 @@ layer:
         - file: ../../lib/speexdsp/libspeexdsp/smallft.c
 
       misc:
-        - C:
+        - for-compiler: AC6
+          C:
           - -DUSE_CMSIS_DSP
           - -DFLOATING_POINT
           # speex boosted routines
@@ -58,9 +75,6 @@ layer:
           - -DOVERRIDE_MDF_NORM_LEARN_RATE_CALC
           - -DOVERRIDE_MDF_CONVERG_LEARN_RATE_CALC
           - -DOVERRIDE_MDF_VEC_SCALE
-          #- -DOVERRIDE_ANR_VEC_CONV_FROM_INT16
           - -DEXPORT=/**/
 
-  add-path:
-    - ../../lib/speexdsp/include
-    - ../../lib/speexdsp/
+

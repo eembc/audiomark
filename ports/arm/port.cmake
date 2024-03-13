@@ -8,7 +8,7 @@ include_directories(${PORT_DIR}/libs/CMSIS-NN/Include)
 add_definitions(-DUSE_CMSIS_DSP)
 
 # This is to make sure we include function decor for GCC/CLANG in CMSIS
-# This might screw up arm-*-gcc toolchains though? If you see issues in
+# This might cause issues with arm-*-gcc toolchains though? If you see issues in
 # arm_math_types.h it is probably related to this.
 add_definitions(-D__GNUC_PYTHON__)
 
@@ -19,7 +19,7 @@ set(PORT_SOURCE
     ${PORT_DIR}/libs/CMSIS-DSP/Source/CommonTables/CommonTables.c
     ${PORT_DIR}/libs/CMSIS-DSP/Source/ComplexMathFunctions/ComplexMathFunctions.c
     ${PORT_DIR}/libs/CMSIS-DSP/Source/FastMathFunctions/FastMathFunctions.c
-    ${PORT_DIR}/libs/CMSIS-DSP/Source/MatrixFunctions/MatrixFunctions.c	
+    ${PORT_DIR}/libs/CMSIS-DSP/Source/MatrixFunctions/MatrixFunctions.c
     ${PORT_DIR}/libs/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c
     ${PORT_DIR}/libs/CMSIS-DSP/Source/SupportFunctions/arm_float_to_q15.c
     ${PORT_DIR}/libs/CMSIS-DSP/Source/SupportFunctions/arm_q15_to_float.c
