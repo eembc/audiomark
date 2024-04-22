@@ -265,7 +265,7 @@ VISIB_ATTR void weighted_spectral_mul_conj(const spx_float_t * w, const spx_floa
         mve_pred16_t    tpred = vctp32q(blockSize);
 
         float32x4_t     vecW = vldrwq_gather_shifted_offset_z_f32(w, str, tpred);
-        str = vaddq_x(str, 2, tpred);
+        str = vaddq_x_n_u32(str, 2, tpred);
         vecW = vmulq_x(vecW, p, tpred);
 
         float32x4_t     vecX = vld1q_z(X, tpred);
@@ -462,7 +462,7 @@ VISIB_ATTR int mdf_preemph_with_stride_int(const spx_int16_t * in, spx_word16_t 
 
     } else {
         spx_word16_t    state = (spx_word16_t) * mem;
-        uint32x4_t      idx = vmulq(vidupq_n_u32(0, 1), stride);
+        uint32x4_t      idx = vmulq_n_u32(vidupq_n_u32(0, 1), stride);
         float32x4_t     vecIn;
         float32x4_t     stateVec;
         const spx_int16_t *inN = in + 3 * stride;
@@ -484,7 +484,7 @@ VISIB_ATTR int mdf_preemph_with_stride_int(const spx_int16_t * in, spx_word16_t 
 
             vst1q_p(out, vout, tpred);
 
-            idx = vaddq(idx, (uint32_t) (stride * 4));
+            idx = vaddq_n_u32(idx, (uint32_t) (stride * 4));
             out += 4;
             len -= 4;
         } while (len > 0);
@@ -597,7 +597,7 @@ VISIB_ATTR int mdf_deemph(const spx_int16_t * micin, spx_word16_t * input,
     spx_word16_t    memL = *mem;
     int32_t         saturated = 0;
     uint32x4_t      offset = vmulq_n_u32(vidupq_n_u32(0, 1), stride);
-    uint32x4_t      vMicMax = vdupq_n_s32(0);
+    uint32x4_t      vMicMax = vdupq_n_u32(0);
     int16x8_t       vdst = vdupq_n_s16(0);
 
     /* Compute error signal (for the output with de-emphasis) */

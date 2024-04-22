@@ -57,7 +57,7 @@
 
 /* DMA Bufs */
 #ifdef __FVP_PY
-#define NS_DMABUF_ALIAS               (0x90000000) 
+#define NS_DMABUF_ALIAS               (0x90000000)
 #define TOTAL_NS_DMABUF_SIZE          (32000)
 #endif
 #endif /* __REGION_LIMITS_H__ */

@@ -185,7 +185,7 @@ VISIB_ATTR void update_noise_estimate(SpeexPreprocessState * st, spx_word16_t be
 {
     int             N = st->ps_size;
     int             i;
-    int32_t const  *pupdate_prob = st->update_prob;
+    int32_t const  *pupdate_prob = (int32_t const *)st->update_prob;
     float32_t      *pnoise = st->noise;
     float32_t const *pps = st->ps;
 
@@ -196,7 +196,7 @@ VISIB_ATTR void update_noise_estimate(SpeexPreprocessState * st, spx_word16_t be
         float32x4_t     noise = vld1q(pnoise);
         float32x4_t     ps = vld1q(pps);
         /* setup predicate based on update_prob & noise conditions  */
-        mve_pred16_t    p0 = vcmpeqq(prob, 0);
+        mve_pred16_t    p0 = vcmpeqq_n_s32(prob, 0);
         mve_pred16_t    p1 = vcmpltq(ps, noise);
 
         /* select between max(0, noise*(1-beta) + ps*beta) */
@@ -408,7 +408,7 @@ __STATIC_FORCEINLINE float32x4_t vec_hypergeom_gain_f32(float32x4_t xx)
     float32x4_t     outsmall = vmulq(vsubq(vdupq_n_f32(1), frac), tabItem0) + vmulq(frac, tabItem1);
 
     outsmall = vmulq(outsmall, invSqrt);
-    outsmall = vpselq(outbig, outsmall, vcmphiq(ind, 19));
+    outsmall = vpselq(outbig, outsmall, vcmphiq_n_u32(ind, 19));
 
     return outsmall;
 }
@@ -694,7 +694,7 @@ VISIB_ATTR void update_noise_prob(SpeexPreprocessState * st)
 
     float32_t       c = QCONST16(.4f, 15);
     float32_t      *pSMin = st->Smin;
-    int            *pProb = st->update_prob;
+    int32_t        *pProb = (int32_t *)st->update_prob;
 
     pS = st->S;
 

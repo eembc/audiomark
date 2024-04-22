@@ -104,3 +104,7 @@ int stdout_putchar (int ch) {
   while (ptrUSART->GetTxCount() != 1);
   return (ch);
 }
+
+int stderr_putchar (int ch) {
+  return stdout_putchar(ch);
+}

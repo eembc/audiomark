@@ -395,13 +395,23 @@ void *spx_fft_init(int size)
    speex_assert(table->scratchOut != NULL);
 
 #ifdef FIXED_POINT
+   speex_assert(size == 512);
+#ifdef REDUCED_FFT_TABSZ
+   speex_assert(arm_rfft_init_512_q15(&table->forward, 0, 1) == ARM_MATH_SUCCESS);
+   speex_assert(arm_rfft_init_512_q15(&table->backward, 1, 1) == ARM_MATH_SUCCESS);
+#else
    speex_assert(arm_rfft_init_q15(&table->forward, (uint32_t)size, 0, 1) == ARM_MATH_SUCCESS);
    speex_assert(arm_rfft_init_q15(&table->backward, (uint32_t)size, 1, 1) == ARM_MATH_SUCCESS);
-
+#endif
    /* output format scale */
    table->shift = 31 - __CLZ(size);
 #else
-   speex_assert(arm_rfft_fast_init_f32(&table->inst, size) == ARM_MATH_SUCCESS);
+   speex_assert(size == 512);
+#ifdef REDUCED_FFT_TABSZ
+      speex_assert(arm_rfft_fast_init_512_f32(&table->inst) == ARM_MATH_SUCCESS);
+#else
+      speex_assert(arm_rfft_fast_init_f32(&table->inst, 512) == ARM_MATH_SUCCESS);
+#endif
 #endif
    table->N = size;
    return table;

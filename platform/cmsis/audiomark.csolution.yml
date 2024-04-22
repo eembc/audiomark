@@ -25,71 +25,53 @@ solution:
 
   define:
     - OS_SUPPORT_CUSTOM
+    # For CMSIS DSP >= 1.15, ARM_DSP_CONFIG_TABLES is no longer available
+    # Specific FFT init. routines are needed to save const. data size
+    # https://github.com/ARM-software/CMSIS-DSP/?tab=readme-ov-file#code-size
+    # Extra compilation flag is needed to discriminate Host builds as Audiomark embedded DSP Library 1.12 which
+    # does not support these custom init. routines and should fallback to classic init.
+    - REDUCED_FFT_TABSZ
 
   packs:
-    - pack: ARM::CMSIS-DSP@1.14.2
+    - pack: ARM::CMSIS-DSP@1.15.0
     - pack: ARM::CMSIS-NN@4.1.0
-    - pack: ARM::CMSIS@5.9.0
-    - pack: ARM::V2M_MPS3_SSE_300_BSP@1.3.0
-    - pack: ARM::V2M_MPS3_SSE_310_BSP@1.1.0
-    - pack: Keil::ARM_Compiler@1.7.2
+    - pack: ARM::CMSIS@6.0.0
+    - pack: ARM::V2M_MPS3_SSE_300_BSP@1.5.0
+    - pack: ARM::V2M_MPS3_SSE_310_BSP@1.4.0
+    - pack: ARM::SSE_315_BSP@1.0.0
+    - pack: ARM::CMSIS-Compiler@2.0.0
     - pack: ARM::DMA350@1.0.0
-    - pack: GorgonMeducer::perf_counter@1.9.11
+    - pack: GorgonMeducer::perf_counter@2.3.0
     - pack: Keil::V2M-MPS2_IOTKit_BSP@1.5.0
     - pack: Keil::V2M-MPS2_CMx_BSP@1.8.0
 
 
     - pack: ARM::ml-embedded-eval-kit-uc-api@22.8.0-Beta
-      for-context:
-        - +Ethos-MPS3-Corstone-300
-        - +Ethos-MPS3-Corstone-310
-        - +MPS3-Corstone-300
-        - +MPS3-Corstone-310
-
     - pack: tensorflow::tensorflow-lite-micro@1.22.8
-      for-context:
-        - +Ethos-MPS3-Corstone-300
-        - +Ethos-MPS3-Corstone-310
-        - +MPS3-Corstone-300
-        - +MPS3-Corstone-310
 
     - pack: Arm::ethos-u-core-driver@1.22.8
       for-context:
         - +Ethos-MPS3-Corstone-300
         - +Ethos-MPS3-Corstone-310
+        - +Ethos-Corstone-315
 
     - pack: tensorflow::flatbuffers@1.22.8
-      for-context:
-        - +Ethos-MPS3-Corstone-300
-        - +Ethos-MPS3-Corstone-310
-        - +MPS3-Corstone-300
-        - +MPS3-Corstone-310
-
     - pack: tensorflow::gemmlowp@1.22.8
-      for-context:
-        - +Ethos-MPS3-Corstone-300
-        - +Ethos-MPS3-Corstone-310
-        - +MPS3-Corstone-300
-        - +MPS3-Corstone-310
-
     - pack: tensorflow::kissfft@1.22.8
-      for-context:
-        - +Ethos-MPS3-Corstone-300
-        - +Ethos-MPS3-Corstone-310
-        - +MPS3-Corstone-300
-        - +MPS3-Corstone-310
-
     - pack: tensorflow::ruy@1.22.8
-      for-context:
-        - +Ethos-MPS3-Corstone-300
-        - +Ethos-MPS3-Corstone-310
-        - +MPS3-Corstone-300
-        - +MPS3-Corstone-310
 
   target-types:
 
+    - type: Corstone-315
+      device: ARM::SSE-315-FVP
+
+    - type: Ethos-Corstone-315
+      device: ARM::SSE-315-FVP
+      define:
+        - ETHOSU65
+
     - type: MPS3-Corstone-310
-      device: ARM::SSE-310-MPS3
+      device: ARM::SSE-310-MPS3_AN555
 
     - type: MPS3-Corstone-300
       device: ARM::SSE-300-MPS3
@@ -100,7 +82,7 @@ solution:
         - ETHOSU55
 
     - type: Ethos-MPS3-Corstone-310
-      device: ARM::SSE-310-MPS3
+      device: ARM::SSE-310-MPS3_AN555
       define:
         - ETHOSU55
 
@@ -123,13 +105,33 @@ solution:
   build-types:
     - type: Release
       optimize: speed
-      debug: off
+      debug: on
 
   projects:
 
     - project: ./testanr/testanr.cproject.yml
+      not-for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +Ethos-Corstone-315
+
     - project: ./testaec/testaec.cproject.yml
+      not-for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +Ethos-Corstone-315
+
     - project: ./testabf/testabf.cproject.yml
+      not-for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +Ethos-Corstone-315
+
     - project: ./testkws/testkws.cproject.yml
     - project: ./testmfcc/testmfcc.cproject.yml
+      not-for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +Ethos-Corstone-315
+
     - project: ./audiomark_app/audiomark_app.cproject.yml
