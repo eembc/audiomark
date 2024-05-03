@@ -1,8 +1,8 @@
-layer:  
+layer:
   # name: AudioMark Core
   description: AudioMark Core
 
-   
+
   groups:
     - group: AudioMarkCore
       files:
@@ -16,14 +16,20 @@ layer:
         - file: ../../src/ee_nn_tables.c
         - file: ../../ports/arm/th_api.c
 
+      define:
+        - FLOATING_POINT
+
       add-path:
+      - ../../src/
       - ../../lib/speexdsp/include/speex/
       - ../../lib/speexdsp/include
       - ../../lib/speexdsp/
       - ../../lib/speexdsp/libspeexdsp
 
-  add-path:
-    - ../../src/
-    - ../../ports/arm
-    - ../../ports/arm/include
-
+  components:
+    - component: ARM::CMSIS:CORE
+    - component: ARM::CMSIS:NN
+    - component: ARM::CMSIS:DSP&Source
+      define:
+        - ARM_MATH_LOOPUNROLL
+    - component: perf_counter:Core&SourceNoWrapper

@@ -143,8 +143,8 @@ void filterbank_compute_bank32(FilterBank * bank, spx_word32_t * ps, spx_word32_
 void filterbank_compute_psd16(FilterBank * bank, spx_word16_t * mel, spx_word16_t * ps)
 {
 
-    float32_t const *pbank_left = (float32_t const *) bank->bank_left;
-    float32_t const *pbank_right = (float32_t const *) bank->bank_right;
+    uint32_t const *pbank_left = (uint32_t const *) bank->bank_left;
+    uint32_t const *pbank_right = (uint32_t const *) bank->bank_right;
     float32_t const *pfilter_left = (float32_t const *) bank->filter_left;
     float32_t const *pfilter_right = (float32_t const *) bank->filter_right;
     int             i;

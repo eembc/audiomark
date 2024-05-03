@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cmsis-csolution.build",
+			"solution": "${command:cmsis-csolution.getSolutionPath}",
+			"rebuild": false,
+			"problemMatcher": [],
+			"label": "cmsis-csolution.build: Build"
+		},
+		{
+			"type": "virtual-hardware.run",
+			"program": "${command:virtual-hardware.getBinaryFile}",
+			"model": "${command:virtual-hardware.getModel}",
+			"config": "${workspaceFolder}/model_config_sse300.txt",
+			"problemMatcher": [],
+			"label": "virtual-hardware.run: Run Program c300"
+		},
+		
+	]
+}

@@ -42,7 +42,7 @@ uint32_t GetCurrentTimeTicks() {
 #ifdef ARMCM7
     DWT->LAR = 0xC5ACCE55;
 #endif
-    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    //CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 
     // Reset and DWT cycle counter.
     DWT->CYCCNT = 0;

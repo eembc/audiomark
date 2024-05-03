@@ -31,9 +31,9 @@ LOAD_REGION_0       0x00000000                  0x00080000
 ;-----------------------------------------------------
 itcm.bin        0x00000000                  0x00080000
 {
-*.o (RESET, +First)
+        *.o (RESET, +First)
         * (InRoot$$Sections, .init_array*, .ARM*)
-.ANY (+RO)
+        .ANY (+RO)
         /* different test vectors */
         th_api.o
         abf_f32_expected.o
@@ -87,32 +87,3 @@ isram.bin       0x31000000  UNINIT ALIGN 16 0x00200000
 }
 }
 
-;---------------------------------------------------------
-; Second load region (DDR)
-;---------------------------------------------------------
-LOAD_REGION_1       0x70000000                  0x02000000
-{
-;-----------------------------------------------------
-; 32 MiB of DDR space for neural network model,
-; input vectors and labels. If the activation buffer
-; size required by the network is bigger than the
-; SRAM size available, it is accommodated here.
-;-----------------------------------------------------
-ddr.bin        0x70000000 ALIGN 16         0x02000000
-{
-
-; activation buffers a.k.a tensor arena when memory mode dedicated sram
-*.o (activation_buf_dram)
-}
-
-;-----------------------------------------------------
-; First 256kiB of BRAM (FPGA SRAM) used for RO data.
-; Note: Total BRAM size available is 1MiB.
-;-----------------------------------------------------
-;{
-; RO data (incl. unwinding tables for debugging)
-;.ANY (+RO-DATA)
- ;sth_api.o (+RO-DATA)
-;}
-
-}

@@ -102,37 +102,4 @@ itcm.bin        ITCM_START ALIGN 16         ITCM_SIZE
 	*.o (.text.arm_nn*s8)
 }
 }
-;---------------------------------------------------------
-; Second load region (DDR)
-;---------------------------------------------------------
-LOAD_REGION_1       0x70000000                  0x02000000
-{
-;-----------------------------------------------------
-; 32 MiB of DDR space for neural network model.
-; If the activation buffersize required by the network
-; is bigger than the SRAM size available, it is accommodated here.
-;-----------------------------------------------------
-ddr.bin        0x70000000 ALIGN 16         0x02000000
-{
 
-	; nn model s default space
-	*.o (nn_model)
-
-	; activation buffers a.k.a tensor arena when memory mode dedicated sram
-	*.o (activation_buf_dram)
-
-
-	/* different test vectors */
-	abf_f32_expected.o
-	abf_f32_input_ch1.o
-	abf_f32_input_ch2.o
-	aec_f32_expected.o
-	aec_f32_input_echo.o
-	aec_f32_input_source.o
-	kws_expected.o
-	kws_input.o
-	mfcc_f32_all.o
-	}
-
-
-}

@@ -16,65 +16,51 @@ layer:
         - file: ../../lib/speexdsp/libspeexdsp/fftwrap.c
         - file: ../../lib/speexdsp/libspeexdsp/filterbank.c
         - file: ../../lib/speexdsp/libspeexdsp/jitter.c
-        - file: ../../lib/speexdsp/libspeexdsp/kiss_fft.c
-          not-for-context:
-            - +Ethos-MPS3-Corstone-300
-            - +Ethos-MPS3-Corstone-310
-            - +MPS3-Corstone-300
-            - +MPS3-Corstone-310
-        - file: ../../lib/speexdsp/libspeexdsp/kiss_fftr.c
-          not-for-context:
-            - +Ethos-MPS3-Corstone-300
-            - +Ethos-MPS3-Corstone-310
-            - +MPS3-Corstone-300
-            - +MPS3-Corstone-310
         - file: ../../lib/speexdsp/libspeexdsp/mdf.c
         - file: ../../lib/speexdsp/libspeexdsp/preprocess.c
         - file: ../../lib/speexdsp/libspeexdsp/resample.c
         - file: ../../lib/speexdsp/libspeexdsp/scal.c
         - file: ../../lib/speexdsp/libspeexdsp/smallft.c
 
-      misc:
-        - for-compiler: AC6
-          C:
-          - -DUSE_CMSIS_DSP
-          - -DFLOATING_POINT
+      define:
+        - USE_CMSIS_DSP
+        - FLOATING_POINT
           # speex boosted routines
           # FilterBank
-          - -DOVERRIDE_FB_COMPUTE_BANK32
-          - -DOVERRIDE_FB_COMPUTE_PSD16
+        - OVERRIDE_FB_COMPUTE_BANK32
+        - OVERRIDE_FB_COMPUTE_PSD16
           # ANR
-          - -DOVERRIDE_ANR_VEC_MUL
-          - -DOVERRIDE_ANR_UPDATE_NOISE_ESTIMATE
-          - -DOVERRIDE_ANR_APOSTERIORI_SNR
-          - -DOVERRIDE_ANR_POWER_SPECTRUM
-          - -DOVERRIDE_ANR_COMPUTE_GAIN_FLOOR
-          - -DOVERRIDE_ANR_UPDATE_ZETA
-          - -DOVERRIDE_ANR_UPDATE_GAINS_CRITICAL_BANDS
-          - -DOVERRIDE_ANR_UPDATE_GAINS_LINEAR
-          - -DOVERRIDE_ANR_APPLY_SPEC_GAIN
-          - -DOVERRIDE_ANR_OLA
-          - -DOVERRIDE_ANR_UPDATE_NOISE_PROB
+        - OVERRIDE_ANR_VEC_MUL
+        - OVERRIDE_ANR_UPDATE_NOISE_ESTIMATE
+        - OVERRIDE_ANR_APOSTERIORI_SNR
+        - OVERRIDE_ANR_POWER_SPECTRUM
+        - OVERRIDE_ANR_COMPUTE_GAIN_FLOOR
+        - OVERRIDE_ANR_UPDATE_ZETA
+        - OVERRIDE_ANR_UPDATE_GAINS_CRITICAL_BANDS
+        - OVERRIDE_ANR_UPDATE_GAINS_LINEAR
+        - OVERRIDE_ANR_APPLY_SPEC_GAIN
+        - OVERRIDE_ANR_OLA
+        - OVERRIDE_ANR_UPDATE_NOISE_PROB
           # MDF
-          - -DOVERRIDE_MDF_DC_NOTCH
-          - -DOVERRIDE_MDF_INNER_PROD
-          - -DOVERRIDE_MDF_POWER_SPECTRUM
-          - -DOVERRIDE_MDF_POWER_SPECTRUM_ACCUM
-          - -DOVERRIDE_MDF_SPECTRAL_MUL_ACCUM
-          - -DOVERRIDE_MDF_WEIGHT_SPECT_MUL_CONJ
-          - -DOVERRIDE_MDF_ADJUST_PROP
-          - -DOVERRIDE_MDF_PREEMPH_FLT
-          - -DOVERRIDE_MDF_STRIDED_PREEMPH_FLT
-          - -DOVERRIDE_MDF_VEC_SUB
-          - -DOVERRIDE_MDF_VEC_SUB16
-          - -DOVERRIDE_MDF_VEC_ADD
-          - -DOVERRIDE_MDF_SMOOTHED_ADD
-          - -DOVERRIDE_MDF_DEEMPH
-          - -DOVERRIDE_MDF_SMOOTH_FE_NRG
-          - -DOVERRIDE_MDF_FILTERED_SPEC_AD_XCORR
-          - -DOVERRIDE_MDF_NORM_LEARN_RATE_CALC
-          - -DOVERRIDE_MDF_CONVERG_LEARN_RATE_CALC
-          - -DOVERRIDE_MDF_VEC_SCALE
-          - -DEXPORT=/**/
-
+        - OVERRIDE_MDF_DC_NOTCH
+        - OVERRIDE_MDF_INNER_PROD
+        - OVERRIDE_MDF_POWER_SPECTRUM
+        - OVERRIDE_MDF_POWER_SPECTRUM_ACCUM
+        - OVERRIDE_MDF_SPECTRAL_MUL_ACCUM
+        - OVERRIDE_MDF_WEIGHT_SPECT_MUL_CONJ
+        - OVERRIDE_MDF_ADJUST_PROP
+        - OVERRIDE_MDF_PREEMPH_FLT
+        - OVERRIDE_MDF_STRIDED_PREEMPH_FLT
+        - OVERRIDE_MDF_VEC_SUB
+        - OVERRIDE_MDF_VEC_SUB16
+        - OVERRIDE_MDF_VEC_ADD
+        - OVERRIDE_MDF_SMOOTHED_ADD
+        - OVERRIDE_MDF_DEEMPH
+        - OVERRIDE_MDF_SMOOTH_FE_NRG
+        - OVERRIDE_MDF_FILTERED_SPEC_AD_XCORR
+        - OVERRIDE_MDF_NORM_LEARN_RATE_CALC
+        - OVERRIDE_MDF_CONVERG_LEARN_RATE_CALC
+        - OVERRIDE_MDF_VEC_SCALE
+        #- OVERRIDE_ANR_VEC_CONV_FROM_INT16
+        - EXPORT: /**/
 

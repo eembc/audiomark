@@ -1,0 +1,22 @@
+{
+    "cmake.configureOnOpen": true,
+    "cmsis-csolution.actions": [
+        {
+            "path": "audiomark.csolution.yml",
+            "target": "MPS3-Corstone-300",
+            "projects": [
+                {
+                    "path": "audiomark_app/audiomark_app.cproject.yml",
+                    "config": {
+                        "run": "cmsis-csolution.build: Build",
+                        "debug": "Arm Debugger"
+                    }
+                }
+            ],
+            "config": {
+                "run": "virtual-hardware.run: Run Program",
+                "debug": "Arm Debugger"
+            }
+        }
+    ]
+}

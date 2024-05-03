@@ -21,7 +21,7 @@
 ; </h>
  *----------------------------------------------------------------------------*/
 #define __RAM_BASE      0x20000000
-#define __RAM_SIZE      0x00080000
+#define __RAM_SIZE      0x00100000
 
 /*--------------------- Stack / Heap Configuration ---------------------------
 ; <h> Stack / Heap Configuration
@@ -61,16 +61,16 @@ LR_ROM __RO_BASE __RO_SIZE  {                       ; load region size_region
    .ANY (+RO)
    .ANY (+XO)
     /* different test vectors */
-    th_api.o
-    abf_f32_expected.o
-    abf_f32_input_ch1.o
-    abf_f32_input_ch2.o
-    aec_f32_expected.o
-    aec_f32_input_echo.o
-    aec_f32_input_source.o
-    kws_expected.o
-    kws_input.o
-    mfcc_f32_all.o
+
+    abf_f32_expected.o (+RO)
+    abf_f32_input_ch1.o (+RO)
+    abf_f32_input_ch2.o (+RO)
+    aec_f32_expected.o (+RO)
+    aec_f32_input_echo.o (+RO)
+    aec_f32_input_source.o (+RO)
+    kws_expected.o (+RO)
+    kws_input.o (+RO)
+    mfcc_f32_all.o (+RO)
   }
 
   RW_RAM __RW_BASE __RW_SIZE  {                     ; RW data

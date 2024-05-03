@@ -11,11 +11,16 @@
 
 #define restrict __restrict__
 
+/* temporary GCC + MVE workaround */
+#if defined(__ARM_FEATURE_MVE) && __ARM_FEATURE_MVE
+#include <arm_mve.h>
+#endif
+
 extern "C" {
 
 #include "ee_audiomark.h"
 #include "ee_api.h"
-#include "dsp/none.h"
+#include "ee_mfcc_f32.h"
 #include "ee_nn.h"
 }
 
@@ -28,7 +33,6 @@ extern "C" {
 #include CMSIS_device_header /* Gives us IRQ num, base addresses. */
 #include "arm_ethosu_npu_init.hpp"      /* Board initialisation */
 #include "log_macros.h"
-#include "cachel1_armv7.h"
 
 #define NN_NUM_OUTPUT_BYTES         (OUT_DIM)
 
@@ -89,6 +93,5 @@ int classify_on_ethosu(const input_tensor_t in_data, output_tensor_t out_data) {
     return EE_STATUS_OK;
 
 }
-
 
 }

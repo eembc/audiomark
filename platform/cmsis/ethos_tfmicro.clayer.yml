@@ -2,13 +2,6 @@ layer:
   # name: tfmicro
   description: Tensorflow micro components and MLEK API
 
-  define:
-    - TF_INTERPRETER
-
-  misc:
-    - for-compiler: AC6
-      CPP:
-        - "-include \"RTE_Components.h\""
 
   components:
     - component: ARM::ML Eval Kit:Common:Log
@@ -21,15 +14,22 @@ layer:
       for-context:
         - +Ethos-MPS3-Corstone-300
         - +Ethos-MPS3-Corstone-310
+
+    - component: Arm::Machine Learning:NPU Support:Ethos-U Driver&Generic U65
+      for-context:
+        - +Ethos-Corstone-315
+
     - component: tensorflow::Machine Learning:TensorFlow:Kernel&Ethos-U
       for-context:
         - +Ethos-MPS3-Corstone-300
         - +Ethos-MPS3-Corstone-310
+        - +Ethos-Corstone-315
 
     - component: tensorflow::Machine Learning:TensorFlow:Kernel&CMSIS-NN
-      for-context:
-        - +MPS3-Corstone-300
-        - +MPS3-Corstone-310
+      not-for-context:
+        - +Ethos-MPS3-Corstone-300
+        - +Ethos-MPS3-Corstone-310
+        - +Ethos-Corstone-315
 
     - component: tensorflow::Data Exchange:Serialization:flatbuffers
     - component: tensorflow::Data Processing:Math:gemmlowp fixed-point
@@ -39,20 +39,15 @@ layer:
 
   groups:
     - group: AudioMark-TensorflowInterpreter
-      for-context: 
-      - +Ethos-MPS3-Corstone-300
-      - +Ethos-MPS3-Corstone-310
-      - +MPS3-Corstone-300
-      - +MPS3-Corstone-310
       define:
-        - ACTIVATION_BUF_SZ: 0x00200000
+        - ACTIVATION_BUF_SZ: 0x8000
       files:
-      
 
         - file: ./arm_ethosu_npu_init.cpp
-          not-for-context: 
-          - +MPS3-Corstone-300
-          - +MPS3-Corstone-310
+          for-context:
+          - +Ethos-MPS3-Corstone-300
+          - +Ethos-MPS3-Corstone-310
+          - +Ethos-Corstone-315
 
         - file: ../../ports/arm/ds_cnn_model.cpp
 
@@ -60,22 +55,30 @@ layer:
           for-context: +Ethos-MPS3-Corstone-300
 
         - file: ../../ports/arm/ds_cnn_s_quantized_U55_256_vela.tflite.cpp
-          for-context: +Ethos-MPS3-Corstone-310
+          for-context:
+          - +Ethos-MPS3-Corstone-310
+
+        - file: ../../ports/arm/ds_cnn_s_quantized_U65_256_vela.tflite.cpp
+          for-context:
+          - +Ethos-Corstone-315
 
         - file: ../../ports/arm/run_ethosu.cpp
           for-context:
           - +Ethos-MPS3-Corstone-300
           - +Ethos-MPS3-Corstone-310
+          - +Ethos-Corstone-315
 
         - file: ../../ports/arm/ds_cnn_s_quantized.tflite.cpp
-          for-context: 
-          - +MPS3-Corstone-300
-          - +MPS3-Corstone-310
+          not-for-context:
+          - +Ethos-MPS3-Corstone-300
+          - +Ethos-MPS3-Corstone-310
+          - +Ethos-Corstone-315
 
         - file: ../../ports/arm/run_cmsis_nn.cpp
-          for-context:
-          - +MPS3-Corstone-300
-          - +MPS3-Corstone-310
+          not-for-context:
+          - +Ethos-MPS3-Corstone-300
+          - +Ethos-MPS3-Corstone-310
+          - +Ethos-Corstone-315
 
       add-path:
         - .

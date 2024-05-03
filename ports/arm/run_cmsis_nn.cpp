@@ -11,11 +11,16 @@
 
 #define restrict __restrict__
 
+/* temporary GCC + MVE workaround */
+#if defined(__ARM_FEATURE_MVE) && __ARM_FEATURE_MVE
+#include <arm_mve.h>
+#endif
+
 extern "C" {
 
 #include "ee_audiomark.h"
 #include "ee_api.h"
-#include "dsp/none.h"
+#include "ee_mfcc_f32.h"
 #include "ee_nn.h"
 }
 
