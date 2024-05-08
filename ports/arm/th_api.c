@@ -1,4 +1,5 @@
 /**
+ * Copyright (C) 2024 SPEC Embedded Group
  * Copyright (C) 2022-2023 EEMBC
  * Copyright (C) 2022-2024 Arm Limited
  *
@@ -79,7 +80,7 @@ th_memcpy(void *restrict dst, const void *restrict src, size_t n)
 }
 
 void *
-th_memmove(void *restrict dst, const void *restrict src, size_t n)
+th_memmove(void * dst, const void * src, size_t n)
 {
     return memmove(dst, src, n);
 }
