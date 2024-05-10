@@ -31,22 +31,23 @@ export CMSIS_PACK_ROOT=<your_cmsis_pack_storage_path>cmsis-pack
 
 
 If not already installed, download **Arm Compiler 6.18** or later. It is recommended to use up to date Arm Compiler 6 releases.
-Other toolchains like CLANG-17 or GCC-13 and above are supported. IAR support will be added later.
+Support for other toolchains like CLANG-17 or GCC-13 and above are experimental. IAR support will be added later.
 
 Following the CMSIS Toolbox installation steps, compiler and version must be registered  by defining an according environment variable e.g.
 
 ```shell
 export AC6_TOOLCHAIN_6_22_0=<path_to_ac6_22_compiler>/bin/
-export GCC_TOOLCHAIN_13_2_1=<path_to_gcc_13_compiler>//bin/
+export GCC_TOOLCHAIN_13_2_1=<path_to_gcc_13_compiler>/bin/
 export CLANG_TOOLCHAIN_17_0_1=<path_to_llvm17_compiler>/bin/
 ```
 
 ### Initialize the new pack repository
 
+If you did not have a local CMSIS-PACK repository, create a directory and then execute the following command in that directory:
 ```
 cpackget init https://www.keil.com/pack/index.pidx
 ```
-
+The CMSIS_PACK_ROOT variable should also point to this directory.
 
 ### Build the project
 
