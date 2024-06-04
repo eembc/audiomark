@@ -1,4 +1,5 @@
 /**
+ * Copyright (C) 2024 SPEC Embedded Group
  * Copyright (C) 2022 EEMBC
  *
  * All EEMBC Benchmark Software are products of EEMBC and are provided under the
@@ -25,7 +26,7 @@ void *th_memcpy(void *restrict dst, const void *restrict src, size_t n);
 
 void *th_memset(void *b, int c, size_t len);
 
-void *th_memmove(void *restrict dst, const void *restrict src, size_t n);
+void *th_memmove(void * dst, const void * src, size_t n);
 
 void th_nn_init(void);
 
