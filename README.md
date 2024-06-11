@@ -22,13 +22,13 @@ functionality. The file `ee_api.h` describes the functions that the system
 integrator must implement. The components were derived from several sources:
 
 * The beaformer and direction of arrival algorithms (BF+DOA) were written and tested by Arm and Infineon.
-* The acoustic echo canceller (AEC) and audio noise  reduction (ANR) elements are implemented by the SpeeX libspeexdsp library. These functions utilize the SpeeX API, which is a combination of macros and functions that perform fixed math operations, and an FFT wrapper for transformation.
+* The acoustic echo canceller (AEC) and audio noise  reduction (ANR) elements are implemented by the SpeeX libspeexdsp library. These functions utilize the SpeeX API, which is a combination of macros and functions that perform floating-point/fixed math operations, and an FFT wrapper for transformation. In AudioMark, only the single precision floating-point version of the library is used.
 * The neural net was derived from the [Arm Model Zoo DS CNN KWS](https://github.com/ARM-software/ML-zoo/tree/master/models/keyword_spotting/ds_cnn_small/model_package_tf/model_archive/TFLite/tflite_int8).
 
 This flexibility to utilize whatever hardware is available means the benchmark 
 scales across a wide variety of MCUs and SoCs.
 
-All of the components are implemented in 32-bit floating point, with the 
+When possible, the components are implemented in 32-bit floating point, with the 
 exception of the neural net, which is signed 8-bit integer. The data that flows 
 in between components is signed 16-bit integer.
 
@@ -95,10 +95,25 @@ there are far fewer function calls to consider with the EEMBC layer.
 
 With all of these options, it is possible to accidentally (or intentionally)
 create a port that runs faster at the expense of quality, thus skewing
-comparisons. However, for a score to be considered valid, it must pass the
-unit tests. These tests permit at most 50 dB of SNR, a failure of a unit
-test means the optimizations have gone too far to be considered a fair
-comparison.
+comparisons. However, for a score to be considered valid, it must pass the 
+unit tests. There are five unit tests in total:
+
+- Digital Signal Processing (DSP) tests
+  - test_abf (tests/test_abf_f32.c)
+  - test_anr (tests/test_anr_f32.c)
+  - test_aec (tests/test_aec_f32.c)
+  - test_mfcc (tests/test_mfcc_f32.c)
+- Neural-network (NN) test
+  - test_kws (tests/test_kws.c)  
+
+The DSP unit tests permit at most 50 dB of SNR (Signal-to-Noise 
+ratio), a failure of a unit test means the optimizations have gone too far 
+to be considered a fair comparison. The KWS unit test use a 35dB ratio for
+the comparison but only when a valid data is present.
+
+Note: The actual test codes use Noise-to-Signal ratio instead of 
+Signal-to-Noise. SNR has the disadvantage that its value becoming infinity when the results 
+are bit-exact match to reference data (i.e. noise level is 0).
 
 ## EEMBC port layer
 
@@ -434,11 +449,11 @@ illustrates this by separating all of the Arm-specific code into `th_api.c`.
 
 3. Only functions and files starting with `th_*` may be altered. In the case of the `th_api`, this is required. The one exception to this is the SpeeX DSP library code, where the user may modify the `wrapfft.c` to install the optimal FFT, change the override macros and provide their own associated functionality, or modify the primitive DSP math macros. All of the EEMBC provided `ee_` functions ultimately perform DSP computation through a subset of functions declared in the `ee_api.h` header, and implemented however the system integrator choses (the example puts all of the implementation reference code in the `th_api.c` file).
 
-4. For a score to be considered valid, it must pass the AEC, ANR, ABF, and KWS regression tests found in the `tests/` directory. The AEC, ANR, and ABF tests utilize a SNR ratio check of -50 dB over 62.5 ms frames of data. The KWS expects the softmax output to match the Top-1 prediction for each inference, and not the actual probability. This allows for flexibility in optimizing the API functions which may not be bit-exact, but still achieve roughly the same fidelity.
+4. For a score to be considered valid, it must pass the AEC, ANR, ABF, MFCC and KWS regression tests found in the `tests/` directory. The AEC, ANR, MFCC and ABF tests utilize a SNR ratio check of -50 dB over 62.5 ms frames of data. The KWS expects the softmax output to match the Top-1 prediction for each inference, and not the actual probability. This allows for flexibility in optimizing the API functions which may not be bit-exact, but still achieve roughly the same fidelity.
 
 5. All processing must be carried out on the platform locally and not sent to the cloud. The definition of a device includes single chip silicon, and multi-die modules, and multi-chip platforms. External memories are allowed.
 
-6. The AudioMark score shall be computed as "iterations per second * 1000 * 1.5". AudioMark/MHz is simply AudioMark divided by the highest core frequency in MHz. For example, if the benchmark is running on Core A at 100 Mhz and Core A uses a DSP peripheral running at 300 MHz, the highest frequency is used in the computation; in this case, 300 MHz. See footnote #1 below.
+6. The AudioMark score shall be computed as "iterations per second * 1000 / 1.5". AudioMark/MHz is simply AudioMark divided by the highest core frequency in MHz. For example, if the benchmark is running on Core A at 100 Mhz and Core A uses a DSP peripheral running at 300 MHz, the highest frequency is used in the computation; in this case, 300 MHz. See footnote #1 below.
 
 
 7. The benchmark score shall be obtained with the serial computation of the following components--ABF, AEC, ANR, KWS--with execution proceeding from one component to another, on completion. The benchmark shall not be altered or implemented in any way that causes any of the components to execute in parallel.
@@ -454,15 +469,15 @@ illustrates this by separating all of the Arm-specific code into `th_api.c`.
 
 **Footnote #1: Explanation of scoring equation**
 
-First, the 1000 factor is introduced to scale the score into a preferred integer range, this is a common EEMBC technique to avoid comparing small fractional numbers. Second, notice that the benchmark assumes a pipeline operating on 16 kHz audio input, and a platform that is operating efficiently would score 1.0 (with no scalar): it is running exactly at the speed needed, no faster, no slower. A platform with half the performance would measure 0.5 iterations per second. However, the benchmark input dataset is actually 24000 samples worth of data not 16000, so if one iteration completes in one second, the benchmark has in reality performed better than the 16 kHz design goal. To adjust for this, the score is multiplied by 1.5. (Note: The benchmark could reduce the number of samples to one second (or 16k samples), however, the lead-in silence is needed to stabilize the ANR, and the keyword utterance spills over the one-second mark of the sample.)
+First, the 1000 factor is introduced to scale the score into a preferred integer range, this is a common EEMBC technique to avoid comparing small fractional numbers. Second, a scaling ratio is added, which was originally intended to compensate for the ratio between the sampling rate and the number of samples being processed in each iteration. The benchmark assumes a pipeline operating on 16 kHz audio input, and the idea is that a platform that is operating efficiently would score 1.0 (with no scalar): it is running exactly at the speed needed, no faster, no slower. A platform with half the performance would measure 0.5 iterations per second. However, the benchmark input dataset is actually 24000 samples worth of data not 16000, so if one iteration completes in one second, the benchmark has in reality performed better than the 16 kHz design goal. To adjust for this, the score should have been multiplied by 1.5. (Note: The benchmark could reduce the number of samples to one second (or 16k samples), however, the lead-in silence is needed to stabilize the ANR, and the keyword utterance spills over the one-second mark of the sample.). However, due to an error a divisor of 1.5 was used in the released code. To avoid confusion for people that are already using AudioMark in their projects, we have decided to keep the current code.
 
 # Submitting scores
 
-1. A score must be submitted to the website before it can be used in any external publication such as: academic journals, technical papers, and marketing assets. An unsubmitted score may only be discussed internally or with a 3rd party under NDA, but not presented to the public in any way. Note: the score may be submitted but not go live (i.e., visible on the web) until a certain date agreed to between the submitter and EEMBC. This is to account for product launch schedules.
+1. A score must be submitted to the website before it can be used in any external publication such as: academic journals, technical papers, and marketing assets. An unsubmitted score may only be discussed internally or with a 3rd party under NDA (Non-Disclosure Agreement), but not presented to the public in any way. Note: the score may be submitted but not go live (i.e., visible on the web) until a certain date agreed to between the submitter and EEMBC. This is to account for product launch schedules.
 
 2. A submitted score shall be from hardware that is available for purchase to any member of the general public. Scores for hardware that is yet to be announced must be marked "preliminary". This score may be superseded by a new score on the released product, or cleared by request to EEMBC after the product is launched.
 
-3. A score collected from simulation cannot be submitted. The measured score must come from actual silicon. This includes CPU, MCU, MPU, SoC, and FPGA prototype.
+3. A score collected from simulation cannot be submitted. The measured score must come from actual silicon. This includes CPU, MCU, MPU, SoC, and FPGA prototypes.
 
 # Credits
 
