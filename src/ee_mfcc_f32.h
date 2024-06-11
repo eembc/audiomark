@@ -41,8 +41,8 @@ extern const ee_f32_t ee_mfcc_filter_coefs_f32[EE_NUM_MFCC_FILTER_COEFS];
  * two values come from the trained model:
  * https://github.com/ARM-software/ML-zoo/tree/master/models/keyword_spotting/ds_cnn_small/tflite_int8
  */
-#define MFCC_SCALE        (1.0f / 1.084193468093872)
-#define MFCC_OFFSET       ((float)100)
+#define MFCC_SCALE        (1.0f / 1.084193468093872f)
+#define MFCC_OFFSET       (100.f)
 #define NUM_MFCC_FEATURES 10
 // frame_len_padded = pow(2,ceil((log(FRAME_LEN)/log(2)))); == 1024
 #define PADDED_FRAME_LEN 1024

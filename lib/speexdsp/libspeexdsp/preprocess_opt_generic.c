@@ -88,13 +88,13 @@ static void compute_gain_floor(int noise_suppress, int effective_echo_suppress, 
     float           echo_floor;
     float           noise_floor;
 
-    noise_floor = exp(.2302585f * noise_suppress);
-    echo_floor = exp(.2302585f * effective_echo_suppress);
+    noise_floor = expf(.2302585f * noise_suppress);
+    echo_floor = expf(.2302585f * effective_echo_suppress);
 
     /* Compute the gain floor based on different floors for the background noise and residual echo */
     for (i = 0; i < len; i++)
         gain_floor[i] =
-            FRAC_SCALING * sqrt(noise_floor * PSHR32(noise[i], NOISE_SHIFT) + echo_floor * echo[i]) / sqrt(1 + PSHR32(noise[i], NOISE_SHIFT) + echo[i]);
+            FRAC_SCALING * sqrtf(noise_floor * PSHR32(noise[i], NOISE_SHIFT) + echo_floor * echo[i]) / sqrtf(1.0f + PSHR32(noise[i], NOISE_SHIFT) + echo[i]);
 }
 
 #endif
@@ -196,14 +196,14 @@ static inline spx_word32_t hypergeom_gain(spx_word32_t xx)
         2.69551f, 2.78647f, 2.87458f, 2.96015f, 3.04333f, 3.12431f, 3.20326f
     };
     x = EXPIN_SCALING_1 * xx;
-    integer = floor(2 * x);
+    integer = floorf(2 * x);
     ind = (int) integer;
     if (ind < 0)
         return FRAC_SCALING;
     if (ind > 19)
-        return FRAC_SCALING * (1 + .1296 / x);
-    frac = 2 * x - integer;
-    return FRAC_SCALING * ((1 - frac) * table[ind] + frac * table[ind + 1]) / sqrt(x + .0001f);
+        return FRAC_SCALING * (1.0f + .1296f / x);
+    frac = 2.0f * x - integer;
+    return FRAC_SCALING * ((1.0f - frac) * table[ind] + frac * table[ind + 1]) / sqrtf(x + .0001f);
 }
 #endif
 
@@ -257,7 +257,7 @@ static void update_gains_critical_bands(SpeexPreprocessState * st, spx_word16_t 
             EXTRACT16(PSHR32(MULT16_16(PDIV32_16(SHL32(EXTEND32(q), 8), (Q15_ONE - q)), tmp), 8));
         st->gain2[i] = DIV32_16(SHL32(EXTEND32(32767), SNR_SHIFT), ADD16(256, tmp));
 #else
-        st->gain2[i] = 1 / (1.f + (q / (1.f - q)) * (1 + st->prior[i]) * exp(-theta));
+        st->gain2[i] = 1.0f / (1.f + (q / (1.f - q)) * (1.0f + st->prior[i]) * expf(-theta));
 #endif
     }
 }

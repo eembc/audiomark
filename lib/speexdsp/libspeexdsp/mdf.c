@@ -181,9 +181,9 @@ static inline void filter_dc_notch16(const spx_int16_t *in, spx_word16_t radius,
    int i;
    spx_word16_t den2;
 #ifdef FIXED_POINT
-   den2 = MULT16_16_Q15(radius,radius) + MULT16_16_Q15(QCONST16(.7,15),MULT16_16_Q15(32767-radius,32767-radius));
+   den2 = MULT16_16_Q15(radius,radius) + MULT16_16_Q15(QCONST16(.7f,15),MULT16_16_Q15(32767-radius,32767-radius));
 #else
-   den2 = radius*radius + .7*(1-radius)*(1-radius);
+   den2 = radius*radius + .7f*(1.0f-radius)*(1.0f-radius);
 #endif
    /*printf ("%d %d %d %d %d %d\n", num[0], num[1], num[2], den[0], den[1], den[2]);*/
    for (i=0;i<len;i++)
@@ -193,7 +193,7 @@ static inline void filter_dc_notch16(const spx_int16_t *in, spx_word16_t radius,
 #ifdef FIXED_POINT
       mem[0] = mem[1] + SHL32(SHL32(-EXTEND32(vin),15) + MULT16_32_Q15(radius,vout),1);
 #else
-      mem[0] = mem[1] + 2*(-vin + radius*vout);
+      mem[0] = mem[1] + 2.0f*(-vin + radius*vout);
 #endif
       mem[1] = SHL32(EXTEND32(vin),15) - MULT16_32_Q15(den2,vout);
       out[i] = SATURATE32(PSHR32(MULT16_32_Q15(radius,vout),15),32767);
@@ -485,7 +485,7 @@ EXPORT SpeexEchoState *speex_echo_state_init_mc(int frame_size, int filter_lengt
    }
 #else
    for (i=0;i<N;i++)
-      st->window[i] = .5-.5*cos(2*M_PI*i/N);
+      st->window[i] = .5f-.5f*cosf(2*M_PI*i/N);
 #endif
    for (i=0;i<=st->frame_size;i++)
       st->power_1[i] = FLOAT_ONE;
@@ -494,8 +494,8 @@ EXPORT SpeexEchoState *speex_echo_state_init_mc(int frame_size, int filter_lengt
    {
       spx_word32_t sum = 0;
       /* Ratio of ~10 between adaptation rate of first and last block */
-      spx_word16_t decay = SHR32(spx_exp(NEG16(DIV32_16(QCONST16(2.4,11),M))),1);
-      st->prop[0] = QCONST16(.7, 15);
+      spx_word16_t decay = SHR32(spx_exp(NEG16(DIV32_16(QCONST16(2.4f,11),M))),1);
+      st->prop[0] = QCONST16(.7f, 15);
       sum = EXTEND32(st->prop[0]);
       for (i=1;i<M;i++)
       {
@@ -511,13 +511,13 @@ EXPORT SpeexEchoState *speex_echo_state_init_mc(int frame_size, int filter_lengt
    st->memX = (spx_word16_t*)speex_alloc(K*sizeof(spx_word16_t));
    st->memD = (spx_word16_t*)speex_alloc(C*sizeof(spx_word16_t));
    st->memE = (spx_word16_t*)speex_alloc(C*sizeof(spx_word16_t));
-   st->preemph = QCONST16(.9,15);
+   st->preemph = QCONST16(.9f,15);
    if (st->sampling_rate<12000)
-      st->notch_radius = QCONST16(.9, 15);
+      st->notch_radius = QCONST16(.9f, 15);
    else if (st->sampling_rate<24000)
-      st->notch_radius = QCONST16(.982, 15);
+      st->notch_radius = QCONST16(.982f, 15);
    else
-      st->notch_radius = QCONST16(.992, 15);
+      st->notch_radius = QCONST16(.992f, 15);
 
    st->notch_mem = (spx_mem_t*)speex_alloc(2*C*sizeof(spx_mem_t));
    st->adapted = 0;
@@ -724,8 +724,8 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
    ss=DIV32_16(11469,M);
    ss_1 = SUB16(32767,ss);
 #else
-   ss=.35/M;
-   ss_1 = 1-ss;
+   ss=.35f/M;
+   ss_1 = 1.0f-ss;
 #endif
 
    for (chan = 0; chan < C; chan++)
@@ -1103,7 +1103,7 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
    /* Do some sanity check */
    if (!(Syy>=0 && Sxx>=0 && See >= 0)
 #ifndef FIXED_POINT
-       || !(Sff < N*1e9 && Syy < N*1e9 && Sxx < N*1e9)
+       || !(Sff < N*1e9f && Syy < N*1e9f && Sxx < N*1e9f)
 #endif
       )
    {
@@ -1142,7 +1142,7 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
 #ifndef OVERRIDE_MDF_SMOOTH_FE_NRG
    /* Smooth far end energy estimate over time */
    for (j=0;j<=st->frame_size;j++)
-      st->power[j] = MULT16_32_Q15(ss_1,st->power[j]) + 1 + MULT16_32_Q15(ss,st->Xf[j]);
+      st->power[j] = MULT16_32_Q15(ss_1,st->power[j]) + Q0CONST(1) + MULT16_32_Q15(ss,st->Xf[j]);
 #else
    smooth_fe_nrg(st->power, ss_1, st->Xf, ss, st->power, st->frame_size + 1);
 #endif
@@ -1211,12 +1211,12 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
       tmp32 = SHR32(See,1);
    RER = FLOAT_EXTRACT16(FLOAT_SHL(FLOAT_DIV32(tmp32,See),15));
 #else
-   RER = (.0001*Sxx + 3.*MULT16_32_Q15(st->leak_estimate,Syy)) / See;
+   RER = (.0001f*Sxx + 3.0f*MULT16_32_Q15(st->leak_estimate,Syy)) / See;
    /* Check for y in e (lower bound on RER) */
-   if (RER < Sey*Sey/(1+See*Syy))
-      RER = Sey*Sey/(1+See*Syy);
-   if (RER > .5)
-      RER = .5;
+   if (RER < Sey*Sey/(1.0f+See*Syy))
+      RER = Sey*Sey/(1.0f+See*Syy);
+   if (RER > .5f)
+      RER = .5f;
 #endif
 
    /* We consider that the filter has had minimal adaptation if the following is true*/
@@ -1239,12 +1239,12 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
          if (r>SHR32(e,1))
             r = SHR32(e,1);
 #else
-         if (r>.5*e)
-            r = .5*e;
+         if (r>.5f*e)
+            r = .5f*e;
 #endif
-         r = MULT16_32_Q15(QCONST16(.7,15),r) + MULT16_32_Q15(QCONST16(.3,15),(spx_word32_t)(MULT16_32_Q15(RER,e)));
+         r = MULT16_32_Q15(QCONST16(.7f,15),r) + MULT16_32_Q15(QCONST16(.3f,15),(spx_word32_t)(MULT16_32_Q15(RER,e)));
          /*st->power_1[i] = adapt_rate*r/(e*(1+st->power[i]));*/
-         st->power_1[i] = FLOAT_SHL(FLOAT_DIV32_FLOAT(r,FLOAT_MUL32U(e,st->power[i]+10)),WEIGHT_SHIFT+16);
+         st->power_1[i] = FLOAT_SHL(FLOAT_DIV32_FLOAT(r,FLOAT_MUL32U(e,st->power[i]+Q0CONST(10))),WEIGHT_SHIFT+16);
       }
 #else
       mdf_nominal_learning_rate_calc(st->Rf, st->power, st->Yf, st->power_1, st->leak_estimate, RER, st->frame_size + 1);
@@ -1260,14 +1260,14 @@ EXPORT void speex_echo_cancellation(SpeexEchoState *st, const spx_int16_t *in, c
          if (tmp32 > SHR32(See,2))
             tmp32 = SHR32(See,2);
 #else
-         if (tmp32 > .25*See)
-            tmp32 = .25*See;
+         if (tmp32 > .25f*See)
+            tmp32 = .25f*See;
 #endif
          adapt_rate = FLOAT_EXTRACT16(FLOAT_SHL(FLOAT_DIV32(tmp32, See),15));
       }
 #ifndef OVERRIDE_MDF_CONVERG_LEARN_RATE_CALC
       for (i=0;i<=st->frame_size;i++)
-         st->power_1[i] = FLOAT_SHL(FLOAT_DIV32(EXTEND32(adapt_rate),ADD32(st->power[i],10)),WEIGHT_SHIFT+1);
+         st->power_1[i] = FLOAT_SHL(FLOAT_DIV32(EXTEND32(adapt_rate),ADD32(st->power[i],Q0CONST(10))),WEIGHT_SHIFT+1);
 #else
        mdf_non_adapt_learning_rate_calc(st->power, st->power_1, adapt_rate, st->frame_size + 1);
 #endif
@@ -1328,7 +1328,7 @@ void speex_echo_get_residual(SpeexEchoState *st, spx_word32_t *residual_echo, in
    else
       leak2 = SHL16(st->leak_estimate, 1);
 #else
-   if (st->leak_estimate>.5)
+   if (st->leak_estimate>.5f)
       leak2 = 1;
    else
       leak2 = 2*st->leak_estimate;
@@ -1362,11 +1362,11 @@ EXPORT int speex_echo_ctl(SpeexEchoState *st, int request, void *ptr)
          st->beta_max = (.5f*st->frame_size)/st->sampling_rate;
 #endif
          if (st->sampling_rate<12000)
-            st->notch_radius = QCONST16(.9, 15);
+            st->notch_radius = QCONST16(.9f, 15);
          else if (st->sampling_rate<24000)
-            st->notch_radius = QCONST16(.982, 15);
+            st->notch_radius = QCONST16(.982f, 15);
          else
-            st->notch_radius = QCONST16(.992, 15);
+            st->notch_radius = QCONST16(.992f, 15);
          break;
       case SPEEX_ECHO_GET_SAMPLING_RATE:
          (*(int*)ptr) = st->sampling_rate;

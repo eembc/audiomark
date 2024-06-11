@@ -53,7 +53,7 @@ The algorithm implemented here is described in:
 #include <stdlib.h>
 
 #ifndef M_PI
-#define M_PI           3.14159265358979323846  /* pi */
+#define M_PI           3.14159265358979323846f  /* pi */
 #endif
 
 #define ALLPASS_ORDER 20
