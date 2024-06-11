@@ -23,12 +23,8 @@
 #define NCLASSES 12
 
 /* Noise to signal ratio */
-#define NSRM50DB 0.003162f
-#define NSRM40DB 0.01f
 #define NSRM35DB 0.017783f
-#define NSRM30DB 0.03162f
 
-#define USE_NSRM35DB 1
 //#define DEBUG_EXACT_BITS
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
@@ -133,34 +129,11 @@ main(int argc, char *argv[])
 #endif
             }
             ratio = (float)B / (float)A; /* Noise to signal ratio */
-#ifdef USE_NSRM50DB
-            if (ratio > NSRM50DB)
-            {
-                err = true;
-                printf("KWS FAIL: Inference #%d exceeded -50 dB SNR\n", i);
-            }
-#endif
-#ifdef USE_NSRM40DB
-            if (ratio > NSRM40DB)
-            {
-                err = true;
-                printf("KWS FAIL: Inference #%d exceeded -40 dB SNR\n", i);
-            }
-#endif
-#ifdef USE_NSRM35DB
             if (ratio > NSRM35DB)
             {
                 err = true;
                 printf("KWS FAIL: Inference #%d exceeded -35 dB SNR\n", i);
             }
-#endif
-#ifdef USE_NSRM30DB
-            if (ratio > NSRM30DB)
-            {
-                err = true;
-                printf("KWS FAIL: Inference #%d exceeded -30 dB SNR\n", i);
-            }
-#endif
 
         }
     }
