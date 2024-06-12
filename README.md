@@ -479,6 +479,23 @@ First, the 1000 factor is introduced to scale the score into a preferred integer
 
 3. A score collected from simulation cannot be submitted. The measured score must come from actual silicon. This includes CPU, MCU, MPU, SoC, and FPGA prototypes.
 
+# Revision history
+
+- v1.0.0 First release (4 Feb 2023)
+- v1.0.1 (6 Feb 2023)
+  - Fixes a potential bug where a multiply may goes out of bound
+- v1.0.2 (6 Sept 2023)
+  - Fix an issue in the KWS NN model. The reference C model was converted from the KWS NN TensorFlow Lite model, and there is a small lost of accuracy in the conversion process. After the code update, the reference C model fully match the original model.
+- v1.0.3 (June 2024)
+  - Fix incorrect use of restrict keyword https://github.com/eembc/audiomark/issues/61
+  - KWS unit test switched from bit exact checking to Noise to Signal ratio checking.
+  - Most of the double precision floating-point operations in SpeexLib library code replaced by single precision.
+  - Changes in unit test to clarify the use of Noise-to-Signal ratio instead of Signal-to-Noise (SNR) ratio
+  - Documentation update: Score calculation formula uses 1/1.5 scaling rather than 1*1.5.
+  - Documentation update: Clarify that only float version of SpeexDSP is supported.
+  - Documentation update: KWS unit test description (changed to use Noise-to-Signal ratio)
+  - Other minor documentation improvements.
+
 # Credits
 
 This benchmark would not have been possible without the commitment and contributions of the working group members, and the assistance from various domain experts, including (sorted by given name):
