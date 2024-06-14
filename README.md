@@ -21,11 +21,11 @@ The benchmark API facilitates hardware acceleration for key DSP and NN
 functionality. The file `ee_api.h` describes the functions that the system 
 integrator must implement. The components were derived from several sources:
 
-* The beaformer and direction of arrival algorithms (BF+DOA) were written and tested by Arm and Infineon.
-* The acoustic echo canceller (AEC) and audio noise  reduction (ANR) elements are implemented by the SpeeX libspeexdsp library. These functions utilize the SpeeX API, which is a combination of macros and functions that perform floating-point/fixed math operations, and an FFT wrapper for transformation. In AudioMark, only the single precision floating-point version of the library is used.
+* The beamformer and direction of arrival algorithms (BF+DOA) were written and tested by Arm and Infineon.
+* The acoustic echo canceller (AEC) and audio noise reduction (ANR) elements are implemented by the SpeeX libspeexdsp library. These functions utilize the SpeeX API, which is a combination of macros and functions that perform floating-point/fixed math operations, and an FFT wrapper for transformation. In AudioMark, only the single precision floating-point version of the library is used.
 * The neural net was derived from the [Arm Model Zoo DS CNN KWS](https://github.com/ARM-software/ML-zoo/tree/master/models/keyword_spotting/ds_cnn_small/model_package_tf/model_archive/TFLite/tflite_int8).
 
-This flexibility to utilize whatever hardware is available means the benchmark 
+This DS-CNN model was chosen for its flexibility of utilizing available hardware. It means the benchmark 
 scales across a wide variety of MCUs and SoCs.
 
 When possible, the components are implemented in 32-bit floating point, with the 
@@ -220,7 +220,7 @@ optimization through C with intrinsic or even assembly to reach peak
 performance.
 
 As a first example, the AEC power_spectrum routine, which is essentially 
-computing the squared magnitude of a complex signal, could use the CMSIS DSP 
+computing the squared magnitude of a complex signal, could use the CMSIS-DSP 
 `arm_cmplx_mag_squared_f32` function and for this defining the 
 `OVERRIDE_MDF_POWER_SPECTRUM` would deactivate original definition and use the 
 optimized variant that will be placed in the 
@@ -486,7 +486,7 @@ First, the 1000 factor is introduced to scale the score into a preferred integer
   - Fixes a potential bug where a multiply may goes out of bound
 - v1.0.2 (6 Sept 2023)
   - Fix an issue in the KWS NN model. The reference C model was converted from the KWS NN TensorFlow Lite model, and there is a small lost of accuracy in the conversion process. After the code update, the reference C model fully match the original model.
-- v1.0.3 (June 2024)
+- v1.0.3 (14 June 2024)
   - Fix incorrect use of restrict keyword https://github.com/eembc/audiomark/issues/61
   - KWS unit test switched from bit exact checking to Noise to Signal ratio checking.
   - Most of the double precision floating-point operations in SpeexLib library code replaced by single precision.
