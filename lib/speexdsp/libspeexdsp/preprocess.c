@@ -359,14 +359,14 @@ static inline spx_word32_t hypergeom_gain(spx_word32_t xx)
       1.94811f, 2.07038f, 2.18638f, 2.29688f, 2.40255f, 2.50391f, 2.60144f,
       2.69551f, 2.78647f, 2.87458f, 2.96015f, 3.04333f, 3.12431f, 3.20326f};
       x = EXPIN_SCALING_1*xx;
-      integer = floor(2*x);
+      integer = floorf(2*x);
       ind = (int)integer;
       if (ind<0)
          return FRAC_SCALING;
       if (ind>19)
-         return FRAC_SCALING*(1+.1296/x);
-      frac = 2*x-integer;
-      return FRAC_SCALING*((1-frac)*table[ind] + frac*table[ind+1])/sqrt(x+.0001f);
+         return FRAC_SCALING*(1.0f+.1296f/x);
+      frac = 2.0f*x-integer;
+      return FRAC_SCALING*((1.0f-frac)*table[ind] + frac*table[ind+1])/sqrtf(x+.0001f);
 }
 #endif
 
@@ -384,12 +384,12 @@ static void compute_gain_floor(int noise_suppress, int effective_echo_suppress, 
    float echo_floor;
    float noise_floor;
 
-   noise_floor = exp(.2302585f*noise_suppress);
-   echo_floor = exp(.2302585f*effective_echo_suppress);
+   noise_floor = expf(.2302585f*noise_suppress);
+   echo_floor = expf(.2302585f*effective_echo_suppress);
 
    /* Compute the gain floor based on different floors for the background noise and residual echo */
    for (i=0;i<len;i++)
-      gain_floor[i] = FRAC_SCALING*sqrt(noise_floor*PSHR32(noise[i],NOISE_SHIFT) + echo_floor*echo[i])/sqrt(1+PSHR32(noise[i],NOISE_SHIFT) + echo[i]);
+      gain_floor[i] = FRAC_SCALING*sqrtf(noise_floor*PSHR32(noise[i],NOISE_SHIFT) + echo_floor*echo[i])/sqrtf(1.0f+PSHR32(noise[i],NOISE_SHIFT) + echo[i]);
 }
 #endif
 
@@ -586,27 +586,27 @@ static void speex_compute_agc(SpeexPreprocessState *st, spx_word16_t Pframe, spx
    {
       loudness += 2.f*N*st->ps[i]* st->loudness_weight[i];
    }
-   loudness=sqrt(loudness);
+   loudness=sqrtf(loudness);
       /*if (loudness < 2*pow(st->loudness, 1.0/LOUDNESS_EXP) &&
    loudness*2 > pow(st->loudness, 1.0/LOUDNESS_EXP))*/
    if (Pframe>.3f)
    {
       /*rate=2.0f*Pframe*Pframe/(1+st->nb_loudness_adapt);*/
-      rate = .03*Pframe*Pframe;
-      st->loudness = (1-rate)*st->loudness + (rate)*pow(AMP_SCALE*loudness, LOUDNESS_EXP);
-      st->loudness_accum = (1-rate)*st->loudness_accum + rate;
+      rate = .03f*Pframe*Pframe;
+      st->loudness = (1.0f-rate)*st->loudness + (rate)*powf(AMP_SCALE*loudness, LOUDNESS_EXP);
+      st->loudness_accum = (1.0f-rate)*st->loudness_accum + rate;
       if (st->init_max < st->max_gain && st->nb_adapt > 20)
          st->init_max *= 1.f + .1f*Pframe*Pframe;
    }
    /*printf ("%f %f %f %f\n", Pframe, loudness, pow(st->loudness, 1.0f/LOUDNESS_EXP), st->loudness2);*/
 
-   target_gain = AMP_SCALE*st->agc_level*pow(st->loudness/(1e-4+st->loudness_accum), -1.0f/LOUDNESS_EXP);
+   target_gain = AMP_SCALE*st->agc_level*powf(st->loudness/(1e-4f+st->loudness_accum), -1.0f/LOUDNESS_EXP);
 
-   if ((Pframe>.5  && st->nb_adapt > 20) || target_gain < st->agc_gain)
+   if ((Pframe>.5f  && st->nb_adapt > 20) || target_gain < st->agc_gain)
    {
       if (target_gain > st->max_increase_step*st->agc_gain)
          target_gain = st->max_increase_step*st->agc_gain;
-      if (target_gain < st->max_decrease_step*st->agc_gain && loudness < 10*st->prev_loudness)
+      if (target_gain < st->max_decrease_step*st->agc_gain && loudness < 10.f*st->prev_loudness)
          target_gain = st->max_decrease_step*st->agc_gain;
       if (target_gain > st->max_gain)
          target_gain = st->max_gain;
@@ -774,7 +774,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
       st->nb_adapt = 20000;
    st->min_count++;
 
-   beta = MAX16(QCONST16(.03,15),DIV32_16(Q15_ONE,st->nb_adapt));
+   beta = MAX16(QCONST16(.03f,15),DIV32_16(Q15_ONE,st->nb_adapt));
    beta_1 = Q15_ONE-beta;
    M = st->nbands;
    /* Deal with residual echo if provided */
@@ -911,7 +911,7 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
 /*Q8*/tmp = EXTRACT16(PSHR32(MULT16_16(PDIV32_16(SHL32(EXTEND32(q),8),(Q15_ONE-q)),tmp),8));
       st->gain2[i]=DIV32_16(SHL32(EXTEND32(32767),SNR_SHIFT), ADD16(256,tmp));
 #else
-      st->gain2[i]=1/(1.f + (q/(1.f-q))*(1+st->prior[i])*exp(-theta));
+      st->gain2[i]=1.f/(1.f + (q/(1.f-q))*(1.f+st->prior[i])*expf(-theta));
 #endif
    }
 
@@ -1025,8 +1025,8 @@ EXPORT int speex_preprocess_run(SpeexPreprocessState *st, spx_int16_t *x)
    {
       float max_sample=0;
       for (i=0;i<2*N;i++)
-         if (fabs(st->frame[i])>max_sample)
-            max_sample = fabs(st->frame[i]);
+         if (fabsf(st->frame[i])>max_sample)
+            max_sample = fabsf(st->frame[i]);
       if (max_sample>28000.f)
       {
          float damp = 28000.f/max_sample;

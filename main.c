@@ -103,7 +103,7 @@ main(void)
         {
             break;
         }
-    } while (dt < 1e6);
+    } while (dt < 1e6f);
 
     if (err)
     {
@@ -112,7 +112,7 @@ main(void)
     }
 
     // Must run for 10 sec. or at least 10 iterations
-    float scale = 11e6 / dt;
+    float scale = 11e6f / dt;
     iterations  = (uint32_t)((float)iterations * scale);
     iterations  = iterations < 10 ? 10 : iterations;
 
@@ -132,7 +132,7 @@ main(void)
      * the pipeline runs. x 1000 to make it a bigger number.
      */
     float sec   = (float)dt / 1.0e6f;
-    float score = (float)iterations / sec * 1000.f * (1 / 1.5f);
+    float score = (float)iterations / sec * 1000.f * (1.0f / 1.5f);
 
     printf("Total runtime    : %.3f seconds\n", sec);
     printf("Total iterations : %d iterations\n", iterations);

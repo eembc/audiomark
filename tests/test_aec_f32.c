@@ -1,4 +1,5 @@
 /**
+ * Copyright (C) 2024 SPEC Embedded Group
  * Copyright (C) 2022 EEMBC
  *
  * All EEMBC Benchmark Software are products of EEMBC and are provided under the
@@ -19,7 +20,8 @@
 #define NSAMPLES      256U
 #define NFRAMEBYTES   512U
 
-#define SNRM50DB 0.003162f
+/* Noise to signal ratio */
+#define NSRM50DB 0.003162f
 
 extern const int16_t p_input[TEST_NBUFFERS][NSAMPLES];
 extern const int16_t p_echo[TEST_NBUFFERS][NSAMPLES];
@@ -118,10 +120,10 @@ main(int argc, char *argv[])
         }
 
         ratio = (float)B / (float)A;
-        if (ratio > SNRM50DB)
+        if (ratio > NSRM50DB)
         {
             err = true;
-            printf("AEC FAIL: Frame #%d exceeded -50 dB SNR\n", i);
+            printf("AEC FAIL: Frame #%d exceeded -50 dB Noise-to-Signal ratio\n", i);
         }
     }
 

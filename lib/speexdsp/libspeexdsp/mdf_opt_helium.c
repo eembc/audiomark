@@ -733,8 +733,8 @@ VISIB_ATTR void mdf_nominal_learning_rate_calc(spx_word32_t * pRf, spx_word32_t 
                                          spx_word32_t * pYf, spx_float_t * power_1, spx_word16_t leak_estimate, spx_word16_t RER, uint16_t len)
 {
     int             blockSize = len >> 2;
-    float32_t       cst_0_7 = QCONST16(.7, 15);
-    float32_t       cst_0_3 = QCONST16(.3, 15);
+    float32_t       cst_0_7 = QCONST16(.7f, 15);
+    float32_t       cst_0_3 = QCONST16(.3f, 15);
 
     do {
         float32x4_t     vecYf = vld1q(pYf);
@@ -771,10 +771,10 @@ VISIB_ATTR void mdf_nominal_learning_rate_calc(spx_word32_t * pRf, spx_word32_t 
         r = MULT16_32_Q15(leak_estimate, SHL32(*pYf++, 3));
         e = SHL32(*pRf++, 3) + 1;
 
-        if (r > .5 * e)
-            r = .5 * e;
+        if (r > .5f * e)
+            r = .5f * e;
 
-        r = MULT16_32_Q15(QCONST16(.7, 15), r) + MULT16_32_Q15(QCONST16(.3, 15), (spx_word32_t) (MULT16_32_Q15(RER, e)));
+        r = MULT16_32_Q15(QCONST16(.7f, 15), r) + MULT16_32_Q15(QCONST16(.3f, 15), (spx_word32_t) (MULT16_32_Q15(RER, e)));
         /*st->power_1[i] = adapt_rate*r/(e*(1+st->power[i])); */
         *power_1++ = FLOAT_SHL(FLOAT_DIV32_FLOAT(r, FLOAT_MUL32U(e, *power++ + 10)), WEIGHT_SHIFT + 16);
     }
@@ -804,7 +804,7 @@ VISIB_ATTR void mdf_non_adapt_learning_rate_calc(spx_word32_t * power, spx_float
 
     /* tail */
     for (int i = 0; i <= (len & 3); i++) {
-        *power_1++ = FLOAT_SHL(FLOAT_DIV32(EXTEND32(adapt_rate), ADD32(*power++, 10)), WEIGHT_SHIFT + 1);
+        *power_1++ = FLOAT_SHL(FLOAT_DIV32(EXTEND32(adapt_rate), ADD32(*power++, Q0CONST(10))), WEIGHT_SHIFT + 1);
     }
 }
 

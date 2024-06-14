@@ -39,11 +39,11 @@
 
 #ifndef FIXED_POINT
 
-#define spx_sqrt sqrt
-#define spx_acos acos
-#define spx_exp exp
-#define spx_cos_norm(x) (cos((.5f*M_PI)*(x)))
-#define spx_atan atan
+#define spx_sqrt sqrtf
+#define spx_acos acosf
+#define spx_exp expf
+#define spx_cos_norm(x) (cosf((.5f*M_PI)*(x)))
+#define spx_atan atanf
 
 /** Generate a pseudo-random number */
 static inline spx_word16_t speex_rand(spx_word16_t std, spx_int32_t *seed)

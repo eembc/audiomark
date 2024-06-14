@@ -1,4 +1,5 @@
 /**
+ * Copyright (C) 2024 SPEC Embedded Group
  * Copyright (C) 2022 EEMBC
  *
  * All EEMBC Benchmark Software are products of EEMBC and are provided under the
@@ -12,6 +13,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "ee_types.h"
 #include "ee_audiomark.h"
 
@@ -19,6 +21,12 @@
 #define NINFERS  73
 #define NSAMPLES 256
 #define NCLASSES 12
+
+/* Noise to signal ratio */
+#define NSRM35DB 0.017783f
+
+//#define DEBUG_EXACT_BITS
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 extern const int16_t p_input[NBUFFERS][NSAMPLES];
 extern const int8_t  p_expected[NINFERS][NCLASSES];
@@ -49,6 +57,10 @@ main(int argc, char *argv[])
     uint32_t     *p_req         = &memreq;
     void         *memory        = NULL;
     void         *inst          = NULL;
+    uint32_t     A              = 0;
+    uint32_t     B              = 0;
+    float        ratio          = 0.0f;
+    int          i, j;
 
     int inferences = 0;
 
@@ -69,10 +81,29 @@ main(int argc, char *argv[])
 
     ee_kws_f32(NODE_RESET, (void **)&inst, NULL, NULL);
 
-    for (int i = 0; i < NBUFFERS; ++i)
+    for (i = 0; i < NBUFFERS; ++i)
     {
         memcpy(aec_output, p_input[i], 512 /* 256 samples @ 2bytes@ */);
         ee_kws_f32(NODE_RUN, (void **)&inst, xdais, &new_inference);
+
+        /* printf("inferences=%d, i=%d, idx_check=%d\n", inferences, i, idx_check); */
+
+        /* check both classes are noises */
+        A = B = -127;
+        p_check = p_expected[idx_check];
+        for (j = 0; j < NCLASSES; ++j)
+            {  A = MAX(A, classes[j]); /* Look for max value in the calculated result */
+               B = MAX(B, p_check[j]); /* Look for max value in the expected result */
+            }
+        if ( (A < 0)  && (B < 0)) {
+          if (new_inference) {
+            ++inferences;
+            ++idx_check;
+          }
+          continue; /* Both are less than 0, considered as noise and skip */
+        }
+        A = 0; /* sum of abs(signals) */
+        B = 0; /* sum of abs(errors) */
 
         if (new_inference)
         {
@@ -82,6 +113,10 @@ main(int argc, char *argv[])
 
             for (int j = 0; j < NCLASSES; ++j)
             {
+            A += abs(128 + ((int32_t) classes[j])); /* Shift to eliminate noises */
+            B += abs(((int32_t) classes[j]) - ((int32_t)p_check[j]));
+
+#ifdef DEBUG_EXACT_BITS
                 if (classes[j] != p_check[j])
                 {
                     err = 1;
@@ -91,7 +126,15 @@ main(int argc, char *argv[])
                            classes[j],
                            p_check[j]);
                 }
+#endif
             }
+            ratio = (float)B / (float)A; /* Noise to signal ratio */
+            if (ratio > NSRM35DB)
+            {
+                err = true;
+                printf("KWS FAIL: Inference #%d exceeded -35 dB SNR\n", i);
+            }
+
         }
     }
 
@@ -104,7 +147,7 @@ main(int argc, char *argv[])
     if (inferences != NINFERS)
     {
         err = 1;
-        printf("KWS expected %d inferences but got %d\n", inferences, NINFERS);
+        printf("KWS expected %d inferences but got %d\n", NINFERS, inferences);
     }
 
     if (err)

@@ -149,6 +149,7 @@ typedef float spx_word32_t;
 #define VERY_LARGE16 1e15f
 #define Q15_ONE ((spx_word16_t)1.f)
 
+#define Q0CONST(x) ((float)(x))
 #define QCONST16(x,bits) (x)
 #define QCONST32(x,bits) (x)
 
@@ -203,7 +204,7 @@ typedef float spx_word32_t;
 #define PDIV32(a,b)     (((spx_word32_t)(a))/(spx_word32_t)(b))
 
 #define WORD2INT(x) ((x) < -32767.5f ? -32768 : \
-                    ((x) > 32766.5f ? 32767 : (spx_int16_t)floor(.5 + (x))))
+                    ((x) > 32766.5f ? 32767 : (spx_int16_t)floorf(.5f + (x))))
 #endif
 
 

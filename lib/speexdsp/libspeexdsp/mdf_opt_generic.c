@@ -45,9 +45,9 @@ static void filter_dc_notch16(const spx_int16_t * in, spx_word16_t radius, spx_w
     int             i;
     spx_word16_t    den2;
 #ifdef FIXED_POINT
-    den2 = MULT16_16_Q15(radius, radius) + MULT16_16_Q15(QCONST16(.7, 15), MULT16_16_Q15(32767 - radius, 32767 - radius));
+    den2 = MULT16_16_Q15(radius, radius) + MULT16_16_Q15(QCONST16(.7f, 15), MULT16_16_Q15(32767 - radius, 32767 - radius));
 #else
-    den2 = radius * radius + .7 * (1 - radius) * (1 - radius);
+    den2 = radius * radius + .7f * (1.0f - radius) * (1.0f - radius);
 #endif
     /*printf ("%d %d %d %d %d %d\n", num[0], num[1], num[2], den[0], den[1], den[2]); */
     for (i = 0; i < len; i++) {
@@ -56,7 +56,7 @@ static void filter_dc_notch16(const spx_int16_t * in, spx_word16_t radius, spx_w
 #ifdef FIXED_POINT
         mem[0] = mem[1] + SHL32(SHL32(-EXTEND32(vin), 15) + MULT16_32_Q15(radius, vout), 1);
 #else
-        mem[0] = mem[1] + 2 * (-vin + radius * vout);
+        mem[0] = mem[1] + 2.0f * (-vin + radius * vout);
 #endif
         mem[1] = SHL32(EXTEND32(vin), 15) - MULT16_32_Q15(den2, vout);
         out[i] = SATURATE32(PSHR32(MULT16_32_Q15(radius, vout), 15), 32767);
@@ -415,7 +415,7 @@ static void smooth_fe_nrg(spx_word32_t * in1, spx_word16_t c1, spx_word32_t * in
     int             j;
 
     for (j = 0; j <= frame_size; j++)
-        pDst[j] = MULT16_32_Q15(c1, in1[j]) + 1 + MULT16_32_Q15(c2, in2[j]);
+        pDst[j] = MULT16_32_Q15(c1, in1[j]) + Q0CONST(1) + MULT16_32_Q15(c2, in2[j]);
 }
 #endif
 
@@ -458,12 +458,12 @@ static void mdf_nominal_learning_rate_calc(spx_word32_t * pRf, spx_word32_t * po
         if (r > SHR32(e, 1))
             r = SHR32(e, 1);
 #else
-        if (r > .5 * e)
-            r = .5 * e;
+        if (r > .5f * e)
+            r = .5f * e;
 #endif
-        r = MULT16_32_Q15(QCONST16(.7, 15), r) + MULT16_32_Q15(QCONST16(.3, 15), (spx_word32_t) (MULT16_32_Q15(RER, e)));
+        r = MULT16_32_Q15(QCONST16(.7f, 15), r) + MULT16_32_Q15(QCONST16(.3f, 15), (spx_word32_t) (MULT16_32_Q15(RER, e)));
         /*st->power_1[i] = adapt_rate*r/(e*(1+st->power[i])); */
-        power_1[i] = FLOAT_SHL(FLOAT_DIV32_FLOAT(r, FLOAT_MUL32U(e, power[i] + 10)), WEIGHT_SHIFT + 16);
+        power_1[i] = FLOAT_SHL(FLOAT_DIV32_FLOAT(r, FLOAT_MUL32U(e, power[i] + 10.f)), WEIGHT_SHIFT + 16);
     }
 }
 
@@ -475,7 +475,7 @@ static void mdf_non_adapt_learning_rate_calc(spx_word32_t * power, spx_float_t *
     int             i;
 
     for (i = 0; i < frame_size; i++)
-        power_1[i] = FLOAT_SHL(FLOAT_DIV32(EXTEND32(adapt_rate), ADD32(power[i], 10)), WEIGHT_SHIFT + 1);
+        power_1[i] = FLOAT_SHL(FLOAT_DIV32(EXTEND32(adapt_rate), ADD32(power[i], Q0CONST(10))), WEIGHT_SHIFT + 1);
 }
 
 #endif
