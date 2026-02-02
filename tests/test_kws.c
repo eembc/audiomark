@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2025 SPEC Embedded Group
+ * Copyright (C) 2025-2026 SPEC Embedded Group
  * Copyright (C) 2022 EEMBC
  *
  * All EEMBC Benchmark Software are products of EEMBC and are provided under the
@@ -179,7 +179,7 @@ main(int argc, char *argv[])
     }
 
     /*
-     * Jensen Shannnon Divergences checks
+     * Jensen Shannon Divergences checks
      */
     mean_jsd /= (float32_t) inferences;
     float32_t jsd_violation_ratio = (float32_t) jsd_violation_cnt / (float32_t) inferences;
