@@ -11,6 +11,52 @@
  * effective EEMBC Benchmark License Agreement, you must discontinue use.
  */
 
+
+/* 
+Update in this release: 
+The result checking code in the KWS unit test was modified from
+using Signal-to-Noise Ratio (SNR) to Jensen-Shannon Divergence (JSD).
+The previous KWS unit test uses a -35db SNR check, which is considered
+too restrictive. It was found that the KWS test fails with some of the 
+custom NN accelerators used in certain SoCs, despite that real world 
+inference results are the same. The failure can be caused by various 
+factors such as optimizations and different precision in the inference 
+implementations.
+
+Given that the AudioMark's run rule states the following:
+  "The KWS expects the softmax output to match the Top-1 prediction 
+  for each inference, and not the actual probability. This allows 
+  for flexibility in optimizing the API functions which may not be 
+  bit-exact, but still achieve roughly the same fidelity."
+It is therefore appropriate to switch to a different method. Following 
+investigations, JSD is selected.
+
+In this version, the SNR checking is replaced with JSD based criteria that:
+
+- Compares probability distributions instead of absolute error magnitudes
+- Provides flexibility for different accelerator implementations
+- Maintains accuracy standards through statistical divergence metrics
+- Better accommodates quantization variations while ensuring correct inference
+
+New Validation Thresholds:
+
+- ROW_JSD_THRESH = 0.015f (per-row JSD tolerance)
+- MEAN_JSD_THRESH = 0.0025f (mean across all rows)
+- MAX_JSD_THRESH = 0.05f (max tolerable JSD)
+- MAX_TOL_JSD_RATIO = 0.01f (allows up to 1% of frames to exceed ROW_JSD_THRESH)
+
+Implementation Details
+
+- Added ee_kws_ut_jensenshannon_divergence_f32() function to compute JSD 
+  between two probability distributions
+- Added ee_kws_ut_normalize_q8_proba_f32() function to normalize int8 
+  quantized values to probabilities
+- Converts inference outputs and expected results to probability distributions
+- Provides detailed error reporting with JSD violation counts and statistics
+
+This implementation aligns with the SPEC Embedded Group view on 
+more flexible KWS validation criteria.
+*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
