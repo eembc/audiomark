@@ -63,6 +63,12 @@ ee_reset_audio(void)
     progress_count      = 0;
 }
 
+void __attribute__((weak)) th_cleanup(void)
+{ /* Placeholder function for cleanup.
+  Declared as weak so that it be replaced by vendor specific code. */ 
+    return;
+}
+
 static int
 ee_copy_audio(int16_t *pt, int16_t debug)
 {
