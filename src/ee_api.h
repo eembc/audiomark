@@ -36,6 +36,8 @@ void th_nn_init(void);
 
 ee_status_t th_nn_classify(const int8_t p_input[490], int8_t p_output[12]);
 
+void th_cleanup(void);
+
 /* This borrows _heavily_ from Arm CMSIS/DSP see their copyright. */
 
 void th_int16_to_f32(const int16_t *p_src, ee_f32_t *p_dst, uint32_t len);

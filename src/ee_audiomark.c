@@ -199,6 +199,7 @@ ee_audiomark_release(void)
     if (p_aec_inst) { th_free(p_aec_inst, COMPONENT_AEC); p_aec_inst = NULL; }
     if (p_anr_inst) { th_free(p_anr_inst, COMPONENT_ANR); p_anr_inst = NULL; }
     if (p_kws_inst) { th_free(p_kws_inst, COMPONENT_KWS); p_kws_inst = NULL; }
+	th_cleanup();
 }
 
 #define CHECK(X)         \
