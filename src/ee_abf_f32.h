@@ -65,7 +65,7 @@ typedef struct abf_f32_fastdata_working_t
     ee_f32_t BF[NFFT * COMPLEX + 2];
     ee_f32_t X0[NFFT * COMPLEX + 2];
     ee_f32_t Y0[NFFT * COMPLEX + 2];
-    ee_f32_t CY0[NFFTD2 * COMPLEX + 2];
+    ee_f32_t CY0[NFFT * COMPLEX + 2];
     ee_f32_t XY[NFFTD2 * COMPLEX];
     ee_f32_t PHATNORM[NFFTD2 * COMPLEX];
     ee_f32_t allDerot[LAGSTEP];
