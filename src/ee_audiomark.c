@@ -210,6 +210,7 @@ ee_audiomark_release(void)
 int
 ee_audiomark_run(void)
 {
+    int32_t sum;
     ee_reset_audio();
     while (!read_all_audio_data)
     {
@@ -220,8 +221,14 @@ ee_audiomark_run(void)
         // linear feedback of the loudspeaker to the MICs
         for (int i = 0; i < BYTES_PER_AUDIO_FRAME / 2; i++)
         {
-            left_capture[i]  = left_capture[i] + audio_input[i];
-            right_capture[i] = right_capture[i] + audio_input[i];
+            sum  = left_capture[i] + audio_input[i];
+            if (sum > 32767) sum = 32767; /* Saturation if overflow */
+            if (sum < -32768) sum = -32768; /* Saturation if overflow */
+            left_capture[i] = sum;
+            sum = right_capture[i] + audio_input[i];
+            if (sum > 32767) sum = 32767; /* Saturation if overflow */
+            if (sum < -32768) sum = -32768;	/* Saturation if overflow */
+            right_capture[i] = sum;
         }
 
         CHECK(ee_abf_f32(NODE_RUN, (void **)&p_bmf_inst, xdais_bmf, NULL));
