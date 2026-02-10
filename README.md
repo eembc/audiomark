@@ -1,5 +1,7 @@
 # Introduction
 
+***This is a development branch. Do not use for production.***
+
 AudioMark™ is a benchmark which models a sophisticated, real-world audio 
 pipeline that uses a neural net for keyword spotting. EEMBC developed this 
 benchmark in response to the massive proliferation of products utilizing an 
@@ -44,6 +46,13 @@ build environments, EEMBC instead provides a simpler self-hosted `main.c` and
 an implementation using Arm's *platform-agnostic* CMSIS functions to quickly 
 examine the functionality of the benchmark on an OS that supports `cmake`. 
 Ideally the target platform would use its own DSP and neural-net acceleration APIs.
+
+The following "ports" directories are available:
+
+| Directory | Descriptions |
+|---|---|
+| ports/barebones | Suitable For Linux and macOS environments. See [steps](#linux-and-macos) described below  |
+| ports/arm | For Arm Cortex-M processor systems using the [CMSIS-Toolbox](https://github.com/Open-CMSIS-Pack/cmsis-toolbox).<br> See this [README](platform/cmsis/README.md) for details. |
 
 ## Linux and macOS
 
@@ -108,8 +117,8 @@ unit tests. There are five unit tests in total:
 
 The DSP unit tests permit at most 50 dB of SNR (Signal-to-Noise 
 ratio), a failure of a unit test means the optimizations have gone too far 
-to be considered a fair comparison. The KWS unit test use a 35dB ratio for
-the comparison but only when a valid data is present.
+to be considered a fair comparison. The KWS unit test uses Jensen-Shannon 
+divergence for the comparison.
 
 Note: The actual test codes use Noise-to-Signal ratio instead of 
 Signal-to-Noise. SNR has the disadvantage that its value becoming infinity when the results 
@@ -495,6 +504,13 @@ First, the 1000 factor is introduced to scale the score into a preferred integer
   - Documentation update: Clarify that only float version of SpeexDSP is supported.
   - Documentation update: KWS unit test description (changed to use Noise-to-Signal ratio)
   - Other minor documentation improvements.
+- v1.04 (Jan-2026)
+  - KWS unit test change to use Jensen-Shannon divergence for the comparison to address https://github.com/eembc/audiomark/issues/77.
+    This method is less strict than the previous SNR based unit test.
+    Unlike previous version, this method also check the result during noise / transition / silence interval.
+  - Improvements on README.md
+  - Adding GitHub action for CI.
+  - TODO: TO BE UPDATED
 
 # Credits
 
@@ -515,6 +531,10 @@ This benchmark would not have been possible without the commitment and contribut
 * Rita Chattopadhyay, Intel
 * Ruud Derwig, Synopsys
 
+Other contributors that are not in the working group (sorted by given name):
+
+* TODO: TO BE UPDATED
+
 # Copyright and license
 
-Copyright (C) EEMBC, All rights reserved. Please refer to LICENSE.md.
+Copyright (C) SPEC Embedded Group (www.spec.org/eg), All rights reserved. Please refer to LICENSE.md.

@@ -180,6 +180,7 @@ ee_audiomark_initialize(void)
     if (!p_bmf_inst || !p_aec_inst || !p_anr_inst || !p_kws_inst)
     {
         printf("Out of heap memory\n");
+        ee_audiomark_release();
         return 1;
     }
 
@@ -194,11 +195,10 @@ ee_audiomark_initialize(void)
 void
 ee_audiomark_release(void)
 {
-    th_free(p_bmf_inst, COMPONENT_BMF);
-    th_free(p_aec_inst, COMPONENT_AEC);
-    th_free(p_anr_inst, COMPONENT_ANR);
-    th_free(p_kws_inst, COMPONENT_KWS);
-    // TODO: De-init NN allocs?
+    if (p_bmf_inst) { th_free(p_bmf_inst, COMPONENT_BMF); p_bmf_inst = NULL; }
+    if (p_aec_inst) { th_free(p_aec_inst, COMPONENT_AEC); p_aec_inst = NULL; }
+    if (p_anr_inst) { th_free(p_anr_inst, COMPONENT_ANR); p_anr_inst = NULL; }
+    if (p_kws_inst) { th_free(p_kws_inst, COMPONENT_KWS); p_kws_inst = NULL; }
 }
 
 #define CHECK(X)         \

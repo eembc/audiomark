@@ -6,6 +6,10 @@ project(audiomark
 
 set(CMAKE_C_FLAGS "-O2")
 
+# Windows command line limit workaround
+set(CMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS ON)
+set(CMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES ON)
+
 include_directories(lib/speexdsp)
 include_directories(lib/speexdsp/include)
 include_directories(lib/speexdsp/include/speex)

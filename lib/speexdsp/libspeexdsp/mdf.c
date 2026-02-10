@@ -417,6 +417,8 @@ EXPORT SpeexEchoState *speex_echo_state_init_mc(int frame_size, int filter_lengt
 {
    int i,N,M, C, K;
    SpeexEchoState *st = (SpeexEchoState *)speex_alloc(sizeof(SpeexEchoState));
+   if (!st)
+      return NULL;
 
    st->K = nb_speakers;
    st->C = nb_mic;
@@ -476,8 +478,25 @@ EXPORT SpeexEchoState *speex_echo_state_init_mc(int frame_size, int filter_lengt
    st->window = (spx_word16_t*)speex_alloc(N*sizeof(spx_word16_t));
    st->prop = (spx_word16_t*)speex_alloc(M*sizeof(spx_word16_t));
    st->wtmp = (spx_word16_t*)speex_alloc(N*sizeof(spx_word16_t));
+   if (!st->fft_table || !st->e || !st->x || !st->input || !st->y || !st->last_y ||
+       !st->Yf || !st->Rf || !st->Xf || !st->Yh || !st->Eh || !st->X || !st->Y ||
+       !st->E || !st->W || !st->PHI || !st->power || !st->power_1 ||
+       !st->window || !st->prop || !st->wtmp
+#ifdef TWO_PATH
+       || !st->foreground
+#endif
+      )
+   {
+      speex_echo_state_destroy(st);
+      return NULL;
+   }
 #ifdef FIXED_POINT
    st->wtmp2 = (spx_word16_t*)speex_alloc(N*sizeof(spx_word16_t));
+   if (!st->wtmp2)
+   {
+      speex_echo_state_destroy(st);
+      return NULL;
+   }
    for (i=0;i<N>>1;i++)
    {
       st->window[i] = (16383-SHL16(spx_cos(DIV32_16(MULT16_16(25736,i<<1),N)),1));
@@ -520,6 +539,11 @@ EXPORT SpeexEchoState *speex_echo_state_init_mc(int frame_size, int filter_lengt
       st->notch_radius = QCONST16(.992f, 15);
 
    st->notch_mem = (spx_mem_t*)speex_alloc(2*C*sizeof(spx_mem_t));
+   if (!st->memX || !st->memD || !st->memE || !st->notch_mem)
+   {
+      speex_echo_state_destroy(st);
+      return NULL;
+   }
    st->adapted = 0;
    st->Pey = st->Pyy = FLOAT_ONE;
 
@@ -529,6 +553,11 @@ EXPORT SpeexEchoState *speex_echo_state_init_mc(int frame_size, int filter_lengt
 #endif
 
    st->play_buf = (spx_int16_t*)speex_alloc(K*(PLAYBACK_DELAY+1)*st->frame_size*sizeof(spx_int16_t));
+   if (!st->play_buf)
+   {
+      speex_echo_state_destroy(st);
+      return NULL;
+   }
    st->play_buf_pos = PLAYBACK_DELAY*st->frame_size;
    st->play_buf_started = 0;
 
@@ -597,7 +626,8 @@ EXPORT void speex_echo_state_reset(SpeexEchoState *st)
 /** Destroys an echo canceller state */
 EXPORT void speex_echo_state_destroy(SpeexEchoState *st)
 {
-   spx_fft_destroy(st->fft_table);
+   if (st->fft_table)
+      spx_fft_destroy(st->fft_table);
 
    speex_free(st->e);
    speex_free(st->x);
