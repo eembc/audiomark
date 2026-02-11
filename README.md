@@ -504,12 +504,34 @@ First, the 1000 factor is introduced to scale the score into a preferred integer
   - Documentation update: Clarify that only float version of SpeexDSP is supported.
   - Documentation update: KWS unit test description (changed to use Noise-to-Signal ratio)
   - Other minor documentation improvements.
-- v1.04 (Jan-2026)
-  - KWS unit test change to use Jensen-Shannon divergence for the comparison to address https://github.com/eembc/audiomark/issues/77.
-    This method is less strict than the previous SNR based unit test.
-    Unlike previous version, this method also check the result during noise / transition / silence interval.
-  - Improvements on README.md
+- v1.04 (Feb-2026)
+  - Enhancement: KWS unit test relaxation
+    - The test is changed to use Jensen-Shannon divergence for the comparison 
+	  to address https://github.com/eembc/audiomark/issues/77.
+    - This method is less strict than the previous SNR based unit test.
+    - Unlike previous version, this method also check the result during noise / transition / silence interval.
+	- Also see https://github.com/eembc/audiomark/pull/80
+  - Bug fix: Memory Leak: Neural Network Allocation Not Freed
+    - Github issue: https://github.com/eembc/audiomark/issues/81
+	- Specific to Arm port, but needs updates in AudioMark to add support for custom cleanup function.
+	- Also see https://github.com/eembc/audiomark/pull/84
+	- Also see https://github.com/eembc/audiomark/commit/40e8f2d3c711adec8b9b1811992ec3891707ee8d
+  - Bug fix: Unchecked Memory Allocations in speex_echo_state_init_mc
+    - Github issue: https://github.com/eembc/audiomark/issues/82
+	- Also see https://github.com/eembc/audiomark/pull/87
+  - Bug fix: Signed Integer Overflow in Audio Feedback Simulation
+    - Github issue: https://github.com/eembc/audiomark/issues/83
+    - Also see https://github.com/eembc/audiomark/commit/a4f05427b9b5229eb91267babb3f39d529465e8c
+  - Enhancement: Potential Integer Overflow and Fragile Arithmetic in multiply_frac
+    - Github issue: https://github.com/eembc/audiomark/issues/88
+	- Also see: https://github.com/eembc/audiomark/pull/89
+  - Bug fix: Fix CY0 buffer overflow in beamformer working struct
+    - Github pull request: https://github.com/eembc/audiomark/pull/91
+  - Enhancement: Implement Core AudioMark Improvements
+    - Git hub pull request: https://github.com/eembc/audiomark/pull/90
   - Adding GitHub action for CI.
+    - Github pull request: https://github.com/eembc/audiomark/pull/79
+  - Improvements on README.md
   - TODO: TO BE UPDATED
 
 # Credits
