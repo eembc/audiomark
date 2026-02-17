@@ -374,10 +374,9 @@ ee_abf_f32(int32_t command, void **pp_inst, void *p_data, void *p_params)
              * padding is not outside of a memory region.
              */
             uint32_t size = (3 * 4) // See note above
+                            + sizeof(abf_f32_instance_t)
                             + sizeof(abf_f32_fastdata_static_t)
-                            + sizeof(abf_f32_fastdata_working_t)
-                            + sizeof(ee_f32_t *) + sizeof(ee_f32_t *)
-                            + 4; /* TODO : justify this */
+                            + sizeof(abf_f32_fastdata_working_t);
             *(uint32_t *)(*pp_inst) = size;
             break;
         }
