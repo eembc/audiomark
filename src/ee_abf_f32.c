@@ -211,13 +211,6 @@ beamformer_f32_run(abf_f32_instance_t *p_inst,
         pf32_1   = p_inst->w->XY;
         pf32_out = p_inst->w->PHATNORM;
         th_cmplx_mag_f32(pf32_1, pf32_out, NFFTD2);
-        for (i = 0; i < NFFTD2; i++)
-        {
-            if (pf32_out[i] < 1e-12f)
-            {
-                pf32_out[i] = 1e-12f;
-            }
-        }
 
         /*  XY = XY ./ PHATNORM;
          */
@@ -226,6 +219,10 @@ beamformer_f32_run(abf_f32_instance_t *p_inst,
         for (i = 0; i < NFFTD2; i++)
         {
             ftmp = *pf32_1++;
+            if (ftmp == 0)
+            {
+                ftmp = 1;
+            }
             *pf32_2++ /= ftmp; // real part
             *pf32_2++ /= ftmp; // imaginary part
         }
