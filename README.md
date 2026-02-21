@@ -166,7 +166,7 @@ FFTs.
 * th_vlog_f32
 * th_mat_vec_mult_f32
 
-Throughtout the EEMBC code, these functions perform the heavy-lifting.
+Throughout the EEMBC code, these functions perform the heavy-lifting.
 
 ### Neural-net functions
 
