@@ -527,6 +527,8 @@ First, the 1000 factor is introduced to scale the score into a preferred integer
 	  - Also see: https://github.com/eembc/audiomark/pull/89
   - Bug fix: Fix CY0 buffer overflow in beamformer working struct
     - Github pull request: https://github.com/eembc/audiomark/pull/91
+  - Bug fix: Fix GCC-PHAT normalization pointer desync in beamformer
+    - Github pull request: https://github.com/eembc/audiomark/pull/92    
   - Bug fix: Fix ABF NODE_MEMREQ instance header underallocation
     - Also see https://github.com/eembc/audiomark/pull/94
   - Bug fix: Fix KWS NODE_MEMREQ instance header underallocation
