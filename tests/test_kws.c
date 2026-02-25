@@ -130,6 +130,12 @@ static void ee_kws_ut_normalize_q8_proba_f32(const int8_t *row, float32_t *out_p
         out_prob[i] = (float32_t) (row[i] + 128) * inv;
 }
 
+void __attribute__((weak)) th_cleanup(void)
+{ /* Placeholder function for cleanup.
+  Declared as weak so that it be replaced by vendor specific code. */ 
+    return;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -242,6 +248,12 @@ main(int argc, char *argv[])
         err = 1;
         printf("KWS / mean error beyond limit (mean JSD = %f)\n", mean_jsd);
     }
+
+    /* Clean up */
+    if (memory) {
+        free(memory);
+    }
+    th_cleanup();
 
     if (err)
     {
