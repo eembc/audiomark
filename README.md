@@ -524,14 +524,23 @@ First, the 1000 factor is introduced to scale the score into a preferred integer
     - Also see https://github.com/eembc/audiomark/commit/a4f05427b9b5229eb91267babb3f39d529465e8c
   - Enhancement: Potential Integer Overflow and Fragile Arithmetic in multiply_frac
     - Github issue: https://github.com/eembc/audiomark/issues/88
-	- Also see: https://github.com/eembc/audiomark/pull/89
+	  - Also see: https://github.com/eembc/audiomark/pull/89
   - Bug fix: Fix CY0 buffer overflow in beamformer working struct
     - Github pull request: https://github.com/eembc/audiomark/pull/91
+  - Bug fix: Fix ABF NODE_MEMREQ instance header underallocation
+    - Also see https://github.com/eembc/audiomark/pull/94
+  - Bug fix: Fix KWS NODE_MEMREQ instance header underallocation
+    - Also see https://github.com/eembc/audiomark/pull/95
+  - Bug fix: Memory Leak in tests/test_kws
+    - Github issue: https://github.com/eembc/audiomark/issues/93
+    - Also see : https://github.com/eembc/audiomark/commit/31bb6e960a41d0781bb2ce6e0fef08ae995c44ad
+  - Enhancement: Fix Typo From Throughtout to Throughout in README.md
+    - Also see https://github.com/eembc/audiomark/pull/97
   - Enhancement: Implement Core AudioMark Improvements
     - Git hub pull request: https://github.com/eembc/audiomark/pull/90
-  - Adding GitHub action for CI.
+  - Enhancement: Adding GitHub action for CI.
     - Github pull request: https://github.com/eembc/audiomark/pull/79
-  - Improvements on README.md
+  - Enhancement: Improvements on README.md
   - TODO: TO BE UPDATED
 
 # Credits
