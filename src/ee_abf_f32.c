@@ -221,7 +221,7 @@ beamformer_f32_run(abf_f32_instance_t *p_inst,
             ftmp = *pf32_1++;
             if (ftmp == 0)
             {
-                continue;
+                ftmp = 1;
             }
             *pf32_2++ /= ftmp; // real part
             *pf32_2++ /= ftmp; // imaginary part
