@@ -564,8 +564,14 @@ This benchmark would not have been possible without the commitment and contribut
 * Rita Chattopadhyay, Intel
 * Ruud Derwig, Synopsys
 
-Other contributors that are not in the working group (sorted by given name):
+Other contributors that are not in the working group (sorted by GitHub account name):
 
+* https://github.com/Amit-Matth (Amit Matth)
+* https://github.com/ankitkumarrain (Ankit kumar)
+* https://github.com/goyalpalak18
+* https://github.com/JayeshEngibrains (Jayesh Joshi)
+* https://github.com/lossio (Rodolfo Lossio)
+* https://github.com/yoursanonymous (Vinayak Sharma)
 * TODO: TO BE UPDATED
 
 # Copyright and license
