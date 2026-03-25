@@ -1,5 +1,7 @@
 /**
+ * Copyright (C) 2024 SPEC Embedded Group
  * Copyright (C) 2022 EEMBC
+ * Copyright (C) 2022 Arm Limited
  *
  * All EEMBC Benchmark Software are products of EEMBC and are provided under the
  * terms of the EEMBC Benchmark License Agreements. The EEMBC Benchmark Software
@@ -10,21 +12,21 @@
  * effective EEMBC Benchmark License Agreement, you must discontinue use.
  */
 
-#ifndef __TH_TYPES_H
-#define __TH_TYPES_H
+#include "ee_audiomark.h"
+#include "ee_api.h"
+#include "s_riscv_audiomark.h"
 
-#define TH_FLOAT32_TYPE float
+void
+s_riscv_cmplx_conj_f32(const ee_f32_t *p_a, ee_f32_t *p_c, uint32_t len)
+{
+    if (!p_a || !p_c || len == 0)
+    {
+        return;
+    }
 
-#ifndef TH_MATRIX_INSTANCE_FLOAT32_TYPE
-#warning "Please define a float32 matrix instance type"
-#endif
-
-#ifndef TH_RFFT_INSTANCE_FLOAT32_TYPE
-#warning "Please define a float32 real FFT instance type"
-#endif
-
-#ifndef TH_CFFT_INSTANCE_FLOAT32_TYPE
-#warning "Please define a float32 complex FFT instance type"
-#endif
-
-#endif /* __TH_TYPES_H */
+    for (uint32_t i = 0; i < len; i++)
+    {
+        p_c[2 * i]     = p_a[2 * i];      // real stays same
+        p_c[2 * i + 1] = -p_a[2 * i + 1]; // imag flipped
+    }
+}
