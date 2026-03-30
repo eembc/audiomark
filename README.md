@@ -1,7 +1,5 @@
 # Introduction
 
-***This is a development branch. Do not use for production.***
-
 AudioMark™ is a benchmark which models a sophisticated, real-world audio 
 pipeline that uses a neural net for keyword spotting. EEMBC developed this 
 benchmark in response to the massive proliferation of products utilizing an 
@@ -504,7 +502,7 @@ First, the 1000 factor is introduced to scale the score into a preferred integer
   - Documentation update: Clarify that only float version of SpeexDSP is supported.
   - Documentation update: KWS unit test description (changed to use Noise-to-Signal ratio)
   - Other minor documentation improvements.
-- v1.04 (Feb-2026)
+- v1.0.4 (March-2026)
   - Enhancement: KWS unit test relaxation
     - The test is changed to use Jensen-Shannon divergence for the comparison 
 	  to address https://github.com/eembc/audiomark/issues/77.
@@ -543,7 +541,6 @@ First, the 1000 factor is introduced to scale the score into a preferred integer
   - Enhancement: Adding GitHub action for CI.
     - Github pull request: https://github.com/eembc/audiomark/pull/79
   - Enhancement: Improvements on README.md
-  - TODO: TO BE UPDATED
 
 # Credits
 
@@ -572,7 +569,6 @@ Other contributors that are not in the working group (sorted by GitHub account n
 * https://github.com/JayeshEngibrains (Jayesh Joshi)
 * https://github.com/lossio (Rodolfo Lossio)
 * https://github.com/yoursanonymous (Vinayak Sharma)
-* TODO: TO BE UPDATED
 
 # Copyright and license
 
