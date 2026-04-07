@@ -45,6 +45,13 @@ an implementation using Arm's *platform-agnostic* CMSIS functions to quickly
 examine the functionality of the benchmark on an OS that supports `cmake`. 
 Ideally the target platform would use its own DSP and neural-net acceleration APIs.
 
+The following "ports" directories are available:
+
+| Directory | Descriptions |
+|---|---|
+| ports/barebones | Suitable For Linux and macOS environments. See [steps](#linux-and-macos) described below  |
+| ports/arm | For Arm Cortex-M processor systems using the [CMSIS-Toolbox](https://github.com/Open-CMSIS-Pack/cmsis-toolbox).<br> See this [README](platform/cmsis/README.md) for details. |
+
 ## Linux and macOS
 
 To build the self-hosted example, from the root directory type":
@@ -108,8 +115,8 @@ unit tests. There are five unit tests in total:
 
 The DSP unit tests permit at most 50 dB of SNR (Signal-to-Noise 
 ratio), a failure of a unit test means the optimizations have gone too far 
-to be considered a fair comparison. The KWS unit test use a 35dB ratio for
-the comparison but only when a valid data is present.
+to be considered a fair comparison. The KWS unit test uses Jensen-Shannon 
+divergence for the comparison.
 
 Note: The actual test codes use Noise-to-Signal ratio instead of 
 Signal-to-Noise. SNR has the disadvantage that its value becoming infinity when the results 
@@ -166,7 +173,7 @@ FFTs.
 * th_vlog_f32
 * th_mat_vec_mult_f32
 
-Throughtout the EEMBC code, these functions perform the heavy-lifting.
+Throughout the EEMBC code, these functions perform the heavy-lifting.
 
 ### Neural-net functions
 
@@ -495,6 +502,45 @@ First, the 1000 factor is introduced to scale the score into a preferred integer
   - Documentation update: Clarify that only float version of SpeexDSP is supported.
   - Documentation update: KWS unit test description (changed to use Noise-to-Signal ratio)
   - Other minor documentation improvements.
+- v1.0.4 (March-2026)
+  - Enhancement: KWS unit test relaxation
+    - The test is changed to use Jensen-Shannon divergence for the comparison 
+	  to address https://github.com/eembc/audiomark/issues/77.
+    - This method is less strict than the previous SNR based unit test.
+    - Unlike previous version, this method also check the result during noise / transition / silence interval.
+	- Also see https://github.com/eembc/audiomark/pull/80
+  - Bug fix: Memory Leak: Neural Network Allocation Not Freed
+    - Github issue: https://github.com/eembc/audiomark/issues/81
+	- Specific to Arm port, but needs updates in AudioMark to add support for custom cleanup function.
+	- Also see https://github.com/eembc/audiomark/pull/84
+	- Also see https://github.com/eembc/audiomark/commit/40e8f2d3c711adec8b9b1811992ec3891707ee8d
+  - Bug fix: Unchecked Memory Allocations in speex_echo_state_init_mc
+    - Github issue: https://github.com/eembc/audiomark/issues/82
+	- Also see https://github.com/eembc/audiomark/pull/87
+  - Bug fix: Signed Integer Overflow in Audio Feedback Simulation
+    - Github issue: https://github.com/eembc/audiomark/issues/83
+    - Also see https://github.com/eembc/audiomark/commit/a4f05427b9b5229eb91267babb3f39d529465e8c
+  - Enhancement: Potential Integer Overflow and Fragile Arithmetic in multiply_frac
+    - Github issue: https://github.com/eembc/audiomark/issues/88
+	  - Also see: https://github.com/eembc/audiomark/pull/89
+  - Bug fix: Fix CY0 buffer overflow in beamformer working struct
+    - Github pull request: https://github.com/eembc/audiomark/pull/91
+  - Bug fix: Fix GCC-PHAT normalization pointer desync in beamformer
+    - Github pull request: https://github.com/eembc/audiomark/pull/92    
+  - Bug fix: Fix ABF NODE_MEMREQ instance header underallocation
+    - Also see https://github.com/eembc/audiomark/pull/94
+  - Bug fix: Fix KWS NODE_MEMREQ instance header underallocation
+    - Also see https://github.com/eembc/audiomark/pull/95
+  - Bug fix: Memory Leak in tests/test_kws
+    - Github issue: https://github.com/eembc/audiomark/issues/93
+    - Also see : https://github.com/eembc/audiomark/commit/31bb6e960a41d0781bb2ce6e0fef08ae995c44ad
+  - Enhancement: Fix Typo From Throughtout to Throughout in README.md
+    - Also see https://github.com/eembc/audiomark/pull/97
+  - Enhancement: Implement Core AudioMark Improvements
+    - Git hub pull request: https://github.com/eembc/audiomark/pull/90
+  - Enhancement: Adding GitHub action for CI.
+    - Github pull request: https://github.com/eembc/audiomark/pull/79
+  - Enhancement: Improvements on README.md
 
 # Credits
 
@@ -515,6 +561,15 @@ This benchmark would not have been possible without the commitment and contribut
 * Rita Chattopadhyay, Intel
 * Ruud Derwig, Synopsys
 
+Other contributors that are not in the working group (sorted by GitHub account name):
+
+* https://github.com/Amit-Matth (Amit Matth)
+* https://github.com/ankitkumarrain (Ankit kumar)
+* https://github.com/goyalpalak18
+* https://github.com/JayeshEngibrains (Jayesh Joshi)
+* https://github.com/lossio (Rodolfo Lossio)
+* https://github.com/yoursanonymous (Vinayak Sharma)
+
 # Copyright and license
 
-Copyright (C) EEMBC, All rights reserved. Please refer to LICENSE.md.
+Copyright (C) SPEC Embedded Group (www.spec.org/eg), All rights reserved. Please refer to LICENSE.md.

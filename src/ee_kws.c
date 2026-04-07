@@ -158,8 +158,7 @@ ee_kws_f32(int32_t command, void **pp_inst, void *p_data, void *p_params)
              * padding is not outside of a memory region.
              */
             uint32_t size = (3 * 4) // See note above
-                            + sizeof(mfcc_instance_t)
-                            + 8; /* TODO : justift this */
+                            + sizeof(kws_instance_t);
             *(uint32_t *)(*pp_inst) = size;
             break;
         }

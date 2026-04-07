@@ -434,6 +434,16 @@ th_nn_init(void) {
 #endif
 }
 
+void
+th_cleanup(void) {
+#if !defined(TF_INTERPRETER)
+    if (ctx.buf != NULL) {
+        free(ctx.buf);
+        ctx.buf = NULL;
+    }
+#endif
+}
+
 ee_status_t
 th_nn_classify(const input_tensor_t in_data, output_tensor_t out_data) {
 

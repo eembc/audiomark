@@ -63,6 +63,12 @@ ee_reset_audio(void)
     progress_count      = 0;
 }
 
+void __attribute__((weak)) th_cleanup(void)
+{ /* Placeholder function for cleanup.
+  Declared as weak so that it be replaced by vendor specific code. */ 
+    return;
+}
+
 static int
 ee_copy_audio(int16_t *pt, int16_t debug)
 {
@@ -180,6 +186,7 @@ ee_audiomark_initialize(void)
     if (!p_bmf_inst || !p_aec_inst || !p_anr_inst || !p_kws_inst)
     {
         printf("Out of heap memory\n");
+        ee_audiomark_release();
         return 1;
     }
 
@@ -194,11 +201,11 @@ ee_audiomark_initialize(void)
 void
 ee_audiomark_release(void)
 {
-    th_free(p_bmf_inst, COMPONENT_BMF);
-    th_free(p_aec_inst, COMPONENT_AEC);
-    th_free(p_anr_inst, COMPONENT_ANR);
-    th_free(p_kws_inst, COMPONENT_KWS);
-    // TODO: De-init NN allocs?
+    if (p_bmf_inst) { th_free(p_bmf_inst, COMPONENT_BMF); p_bmf_inst = NULL; }
+    if (p_aec_inst) { th_free(p_aec_inst, COMPONENT_AEC); p_aec_inst = NULL; }
+    if (p_anr_inst) { th_free(p_anr_inst, COMPONENT_ANR); p_anr_inst = NULL; }
+    if (p_kws_inst) { th_free(p_kws_inst, COMPONENT_KWS); p_kws_inst = NULL; }
+	th_cleanup();
 }
 
 #define CHECK(X)         \
@@ -210,6 +217,7 @@ ee_audiomark_release(void)
 int
 ee_audiomark_run(void)
 {
+    int32_t sum;
     ee_reset_audio();
     while (!read_all_audio_data)
     {
@@ -220,8 +228,14 @@ ee_audiomark_run(void)
         // linear feedback of the loudspeaker to the MICs
         for (int i = 0; i < BYTES_PER_AUDIO_FRAME / 2; i++)
         {
-            left_capture[i]  = left_capture[i] + audio_input[i];
-            right_capture[i] = right_capture[i] + audio_input[i];
+            sum  = left_capture[i] + audio_input[i];
+            if (sum > 32767) sum = 32767; /* Saturation if overflow */
+            if (sum < -32768) sum = -32768; /* Saturation if overflow */
+            left_capture[i] = sum;
+            sum = right_capture[i] + audio_input[i];
+            if (sum > 32767) sum = 32767; /* Saturation if overflow */
+            if (sum < -32768) sum = -32768;	/* Saturation if overflow */
+            right_capture[i] = sum;
         }
 
         CHECK(ee_abf_f32(NODE_RUN, (void **)&p_bmf_inst, xdais_bmf, NULL));

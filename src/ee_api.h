@@ -16,13 +16,17 @@
 
 #include "ee_types.h"
 
-// TODO: remove all of these and retore only those that fail
+#ifdef _MSC_VER
+#define __EE_RESTRICT __restrict
+#else
+#define __EE_RESTRICT restrict
+#endif
 
 void *th_malloc(size_t size, int req);
 
 void th_free(void *mem, int req);
 
-void *th_memcpy(void *restrict dst, const void *restrict src, size_t n);
+void *th_memcpy(void *__EE_RESTRICT dst, const void *__EE_RESTRICT src, size_t n);
 
 void *th_memset(void *b, int c, size_t len);
 
@@ -31,6 +35,8 @@ void *th_memmove(void * dst, const void * src, size_t n);
 void th_nn_init(void);
 
 ee_status_t th_nn_classify(const int8_t p_input[490], int8_t p_output[12]);
+
+void th_cleanup(void);
 
 /* This borrows _heavily_ from Arm CMSIS/DSP see their copyright. */
 
