@@ -15,15 +15,6 @@ project:
         - file: ../../../src/ee_audiomark.c
         - file: ../../../main.c
         - file: ../platform_init.c
-        # temporary CMSIS-NN 4.1.0 fix for non-Helium builds
-        - file: ../missing_from_packs/arm_s8_to_s16_unordered_with_offset.c
-          not-for-context:
-          - +Ethos-MPS3-Corstone-300
-          - +Ethos-MPS3-Corstone-310
-          - +MPS3-Corstone-300
-          - +MPS3-Corstone-310
-          - +Corstone-315
-          - +Ethos-Corstone-315
 
   define:
     - TF_INTERPRETER

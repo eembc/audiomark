@@ -45,7 +45,7 @@
 /* We want all buffers/sections to be aligned to 16 byte.  */
 #define ALIGNMENT_REQ aligned(BYTE_ALIGNMENT)
 
-#define MODEL_SECTION section("nn_model")
+#define MODEL_SECTION section(".nn_model")
 
 /* Label section name */
 #define LABEL_SECTION section("labels")

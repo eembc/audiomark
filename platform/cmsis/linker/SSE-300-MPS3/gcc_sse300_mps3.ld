@@ -336,25 +336,26 @@ SECTIONS
 	PROVIDE( __end__ = __bss_end );
 	PROVIDE( __bss_size = __bss_end - __bss_start );
 
+	/* Reserve the fixed stack slot first so the heap cannot overlap it. */
+	PROVIDE(__stack = ORIGIN(DTCM) + LENGTH(DTCM) - __STACKSEAL_SIZE);
+	PROVIDE(__stack_limit = __stack - STACK_SIZE);
+
 	/* Make the rest of memory available for heap storage */
 	PROVIDE (__heap_start = __end);
 #ifdef HEAP_SIZE
-	PROVIDE (__heap_end = __heap_start + HEAP_SIZE);
-
+	PROVIDE (__heap_end = MIN(__heap_start + HEAP_SIZE, __stack_limit));
+	PROVIDE (__heap_size = __heap_end - __heap_start);
 #else
-	PROVIDE (__heap_end = __stack - STACK_SIZE);
-	PROVIDE (HEAP_SIZE = __heap_end - __heap_start);
+	PROVIDE (__heap_end = __stack_limit);
+	PROVIDE (__heap_size = __heap_end - __heap_start);
 #endif
 PROVIDE (__HeapLimit = __heap_end);
 
 	.heap (NOLOAD) : {
-		. += HEAP_SIZE;
+		. += __heap_size;
 	} >DTCM :ram
 
 	/* Define a stack region to make sure it fits in memory */
-	PROVIDE(__stack = ORIGIN(DTCM) + LENGTH(DTCM) - __STACKSEAL_SIZE);
-	PROVIDE(__stack_limit = __stack - STACK_SIZE);
-
   PROVIDE(__StackTop = __stack);
   PROVIDE(__StackLimit = __stack_limit);
 	.stack (__stack_limit) (NOLOAD) : {
@@ -389,6 +390,7 @@ PROVIDE (__HeapLimit = __heap_end);
 
         /* nn model's default space */
         * (nn_model)
+        * (.nn_model)
 
         /* labels */
         * (labels)

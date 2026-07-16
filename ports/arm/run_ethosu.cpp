@@ -7,7 +7,7 @@
  * are proprietary intellectual properties of EEMBC and its Members and is
  * protected under all applicable laws, including all applicable copyright laws.
  *
-  */
+ */
 
 #define restrict __restrict__
 
@@ -16,82 +16,85 @@
 #include <arm_mve.h>
 #endif
 
-extern "C" {
-
 #include "ee_audiomark.h"
 #include "ee_api.h"
 #include "ee_mfcc_f32.h"
 #include "ee_nn.h"
-}
 
 #include "include/BufAttributes.hpp" /* Buffer attributes to be applied */
 #include "AudioUtils.hpp"
 #include "include/ds_cnn_model.hpp"
 
+#include <cstring>
+
 /* Platform dependent files */
 #include "RTE_Components.h"  /* Provides definition for CMSIS_device_header */
 #include CMSIS_device_header /* Gives us IRQ num, base addresses. */
-#include "arm_ethosu_npu_init.hpp"      /* Board initialisation */
+#include "arm_ethosu_npu_init.hpp" /* Board initialisation */
 #include "log_macros.h"
 
-#define NN_NUM_OUTPUT_BYTES         (OUT_DIM)
+#define NN_NUM_OUTPUT_BYTES (OUT_DIM)
 
 typedef int8_t input_tensor_t[MFCC_FIFO_BYTES];
 typedef int8_t output_tensor_t[NN_NUM_OUTPUT_BYTES];
 
-extern "C" {
-
 /* Tensor arena buffer */
 static uint8_t tensorArena[ACTIVATION_BUF_SZ] ACTIVATION_BUF_ATTRIBUTE;
 
-/* Optional getter function for the model pointer and its size. */
-extern uint8_t *GetModelPointer();
-
-extern size_t GetModelLen();
-
-
 static DSCNNModel ds_cnn_model;
 
+extern "C"
+{
 
-void ethosu_nn_init(void) {
+    /* Optional getter function for the model pointer and its size. */
+    extern uint8_t *GetModelPointer();
 
-    int status = ethosu_npu_init();
-    if (status != 0) {
-        printf_err("Failed to initialise NPU\n");
-        return;
+    extern size_t GetModelLen();
+
+    void ethosu_nn_init(void)
+    {
+
+        int status = ethosu_npu_init();
+        if (status != 0)
+        {
+            printf_err("Failed to initialise NPU\n");
+            return;
+        }
+
+        arm::app::fwk::iface::MemoryRegion tensorArenaRegion(
+            tensorArena, sizeof(tensorArena));
+        arm::app::fwk::iface::MemoryRegion modelRegion(GetModelPointer(),
+                                                       GetModelLen());
+
+        if (!ds_cnn_model.Init(tensorArenaRegion, modelRegion))
+        {
+            printf_err("Failed to initialise model\n");
+            return;
+        }
     }
 
-    if (!ds_cnn_model.Init(tensorArena,
-                           sizeof(tensorArena),
-                           GetModelPointer(),
-                           GetModelLen())) {
-        printf_err("Failed to initialise model\n");
-        return;
+    int classify_on_ethosu(const input_tensor_t in_data,
+                           output_tensor_t      out_data)
+    {
+
+        auto           inputTensor = ds_cnn_model.GetInputTensor(0);
+        uint8_t *const input_to_nn = inputTensor->GetData<uint8_t>();
+        std::memcpy(input_to_nn, in_data, MFCC_FIFO_BYTES);
+
+        SCB_CleanDCache_by_Addr(input_to_nn, MFCC_FIFO_BYTES);
+
+        if (!ds_cnn_model.RunInference())
+        {
+            return EE_STATUS_ERROR;
+        }
+
+        auto           outputTensor = ds_cnn_model.GetOutputTensor(0);
+        uint8_t *const output_of_nn = outputTensor->GetData<uint8_t>();
+
+        SCB_InvalidateDCache_by_Addr(output_of_nn, NN_NUM_OUTPUT_BYTES);
+
+        std::memcpy(out_data, output_of_nn, NN_NUM_OUTPUT_BYTES);
+
+        return EE_STATUS_OK;
     }
-}
-
-int classify_on_ethosu(const input_tensor_t in_data, output_tensor_t out_data) {
-
-
-    TfLiteTensor *inputTensor = ds_cnn_model.GetInputTensor(0);
-    uint8_t *const input_to_nn = tflite::GetTensorData<uint8_t>(inputTensor);
-    memcpy(input_to_nn, in_data, MFCC_FIFO_BYTES);
-
-    SCB_CleanDCache_by_Addr(input_to_nn, MFCC_FIFO_BYTES);
-
-    if (!ds_cnn_model.RunInference()) {
-        return EE_STATUS_ERROR;
-    }
-
-    TfLiteTensor *outputTensor = ds_cnn_model.GetOutputTensor(0);
-    uint8_t *const output_of_nn = tflite::GetTensorData<uint8_t>(outputTensor);
-
-    SCB_InvalidateDCache_by_Addr(output_of_nn, NN_NUM_OUTPUT_BYTES);
-
-    memcpy(out_data, output_of_nn, NN_NUM_OUTPUT_BYTES);
-
-    return EE_STATUS_OK;
-
-}
-
 }

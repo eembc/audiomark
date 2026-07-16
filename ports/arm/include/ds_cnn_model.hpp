@@ -1,6 +1,6 @@
 /*
- * SPDX-FileCopyrightText: Copyright 2021-2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-FileCopyrightText: Copyright 2021-2024 Arm Limited and/or its affiliates
+ * <open-source-office@arm.com> SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 #ifndef DSCNN_MODEL_HPP
 #define DSCNN_MODEL_HPP
 
-#include "Model.hpp"
+#include "TflmModel.hpp"
 
-
-class DSCNNModel : public arm::app::Model {
+class DSCNNModel : public arm::app::fwk::tflm::TflmModel
+{
 
 protected:
     /** @brief   Gets the reference to op resolver interface class. */
@@ -35,8 +35,6 @@ private:
 
     /* A mutable op resolver instance. */
     tflite::MicroMutableOpResolver<ms_maxOpCnt> m_opResolver;
-
 };
-
 
 #endif /* DSCNN_MODEL_HPP */

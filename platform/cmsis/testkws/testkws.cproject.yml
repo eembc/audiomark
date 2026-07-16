@@ -17,14 +17,6 @@ project:
         - file: ../../../tests/data/kws_input.c
         - file: ../../../tests/data/kws_expected.c
         - file: ../platform_init.c
-        - file: ../missing_from_packs/arm_s8_to_s16_unordered_with_offset.c
-          not-for-context:
-          - +Ethos-MPS3-Corstone-300
-          - +Ethos-MPS3-Corstone-310
-          - +MPS3-Corstone-300
-          - +MPS3-Corstone-310
-          - +Corstone-315
-          - +Ethos-Corstone-315
 
   define:
     - TF_INTERPRETER

@@ -20,7 +20,8 @@
 #include "ee_types.h"
 
 #if defined(__cplusplus)
-extern "C" {
+extern "C"
+{
 #endif // defined(__cplusplus)
 
 #include "log_macros.h"
@@ -30,111 +31,118 @@ extern "C" {
 #include CMSIS_device_header /* Gives us IRQ num, base addresses. */
 
 #if defined(ETHOSU_ARCH)
-#include "ethosu_driver.h" /* Arm Ethos-U NPU driver header */
+#include "ethosu_driver.h"             /* Arm Ethos-U NPU driver header */
 #include "include/ethosu_mem_config.h" /* Arm Ethos-U NPU memory config */
 
 #if defined(ETHOS_U_CACHE_BUF_SZ) && (ETHOS_U_CACHE_BUF_SZ > 0)
-static uint8_t cache_arena[ETHOS_U_CACHE_BUF_SZ] CACHE_BUF_ATTRIBUTE;
+    static uint8_t cache_arena[ETHOS_U_CACHE_BUF_SZ] CACHE_BUF_ATTRIBUTE;
 #else  /* defined (ETHOS_U_CACHE_BUF_SZ) && (ETHOS_U_CACHE_BUF_SZ > 0) */
-static uint8_t* cache_arena = NULL;
+    static uint8_t *cache_arena = NULL;
 #endif /* defined (ETHOS_U_CACHE_BUF_SZ) && (ETHOS_U_CACHE_BUF_SZ > 0) */
 
-static uint8_t* get_cache_arena()
-{
-    return cache_arena;
-}
-
-static size_t get_cache_arena_size()
-{
-#if defined(ETHOS_U_CACHE_BUF_SZ) && (ETHOS_U_CACHE_BUF_SZ > 0)
-    return sizeof(cache_arena);
-#else  /* defined (ETHOS_U_CACHE_BUF_SZ) && (ETHOS_U_CACHE_BUF_SZ > 0) */
-    return 0;
-#endif /* defined (ETHOS_U_CACHE_BUF_SZ) && (ETHOS_U_CACHE_BUF_SZ > 0) */
-}
-
-struct ethosu_driver ethosu_drv; /* Default Ethos-U device driver */
-
-/** @brief   Defines the Ethos-U interrupt handler: just a wrapper around the default
- *           implementation. */
-static void arm_ethosu_npu_irq_handler(void)
-{
-    /* Call the default interrupt handler from the NPU driver */
-    ethosu_irq_handler(&ethosu_drv);
-}
-
-/** @brief  Initialises the NPU IRQ */
-static void arm_ethosu_npu_irq_init(void)
-{
-    #ifdef NPU0_APB_BASE_S
-    /* Corstone-310/315 */
-    const IRQn_Type ethosu_irqnum = (IRQn_Type)NPU0_IRQn;
-    #else
-    /* Corstone-300 */
-    const IRQn_Type ethosu_irqnum = (IRQn_Type)ETHOS_U55_IRQn;
-    #endif
-
-    /* Register the EthosU IRQ handler in our vector table.
-     * Note, this handler comes from the EthosU driver */
-    NVIC_SetVector(ethosu_irqnum, (uint32_t)arm_ethosu_npu_irq_handler);
-
-    /* Enable the IRQ */
-    NVIC_EnableIRQ(ethosu_irqnum);
-
-    debug("EthosU IRQ#: %u, Handler: 0x%p\n", ethosu_irqnum, arm_ethosu_npu_irq_handler);
-}
-
-/** @brief  Initialises the NPU */
-static int arm_ethosu_npu_init(void) {
-    int err = EE_STATUS_OK;
-
-    /* Initialise the IRQ */
-    arm_ethosu_npu_irq_init();
-
-    /* Initialise Ethos-U device */
-    #ifdef NPU0_APB_BASE_S
-    /* Corstone-310/315 */
-    const void* ethosu_base_address = (void*)(NPU0_APB_BASE_S);
-    #else
-    const void* ethosu_base_address = (void*)(ETHOS_U55_APB_BASE_S);
-    #endif
-
-    debug("Cache arena: 0x%p\n", get_cache_arena());
-
-    if (EE_STATUS_OK != (err = ethosu_init(&ethosu_drv,         /* Ethos-U driver device pointer */
-                                ethosu_base_address, /* Ethos-U NPU's base address. */
-                                get_cache_arena(),   /* Pointer to fast mem area - NULL for U55. */
-                                get_cache_arena_size(), /* Fast mem region size. */
-                                1,                      /* Security enable. */
-                                1)))                    /* Privilege enable. */
+    static uint8_t *get_cache_arena()
     {
-        printf_err("failed to initialise Ethos-U device\n");
-        return err;
+        return cache_arena;
     }
 
-    info("Ethos-U device initialised\n");
+    static size_t get_cache_arena_size()
+    {
+#if defined(ETHOS_U_CACHE_BUF_SZ) && (ETHOS_U_CACHE_BUF_SZ > 0)
+        return sizeof(cache_arena);
+#else  /* defined (ETHOS_U_CACHE_BUF_SZ) && (ETHOS_U_CACHE_BUF_SZ > 0) */
+        return 0;
+#endif /* defined (ETHOS_U_CACHE_BUF_SZ) && (ETHOS_U_CACHE_BUF_SZ > 0) */
+    }
 
-    /* Get Ethos-U version */
-    struct ethosu_driver_version driver_version;
-    struct ethosu_hw_info hw_info;
+    struct ethosu_driver ethosu_drv; /* Default Ethos-U device driver */
 
-    ethosu_get_driver_version(&driver_version);
-    ethosu_get_hw_info(&ethosu_drv, &hw_info);
+    /** @brief   Defines the Ethos-U interrupt handler: just a wrapper around
+     * the default implementation. */
+    static void arm_ethosu_npu_irq_handler(void)
+    {
+        /* Call the default interrupt handler from the NPU driver */
+        ethosu_irq_handler(&ethosu_drv);
+    }
 
-    info("Ethos-U version info:\n");
-    info("\tArch:       v%" PRIu32 ".%" PRIu32 ".%" PRIu32 "\n",
-         hw_info.version.arch_major_rev,
-         hw_info.version.arch_minor_rev,
-         hw_info.version.arch_patch_rev);
-    info("\tDriver:     v%" PRIu8 ".%" PRIu8 ".%" PRIu8 "\n",
-         driver_version.major,
-         driver_version.minor,
-         driver_version.patch);
-    info("\tMACs/cc:    %" PRIu32 "\n", (uint32_t)(1 << hw_info.cfg.macs_per_cc));
-    info("\tCmd stream: v%" PRIu32 "\n", hw_info.cfg.cmd_stream_version);
+    /** @brief  Initialises the NPU IRQ */
+    static void arm_ethosu_npu_irq_init(void)
+    {
+#ifdef NPU0_APB_BASE_S
+        /* Corstone-310/315 */
+        const IRQn_Type ethosu_irqnum = (IRQn_Type)NPU0_IRQn;
+#else
+        /* Corstone-300 */
+        const IRQn_Type ethosu_irqnum = (IRQn_Type)ETHOS_U55_IRQn;
+#endif
 
-    return EE_STATUS_OK;
-}
+        /* Register the EthosU IRQ handler in our vector table.
+         * Note, this handler comes from the EthosU driver */
+        NVIC_SetVector(ethosu_irqnum, (uint32_t)arm_ethosu_npu_irq_handler);
+
+        /* Enable the IRQ */
+        NVIC_EnableIRQ(ethosu_irqnum);
+
+        debug("EthosU IRQ#: %u, Handler: 0x%p\n",
+              ethosu_irqnum,
+              arm_ethosu_npu_irq_handler);
+    }
+
+    /** @brief  Initialises the NPU */
+    static int arm_ethosu_npu_init(void)
+    {
+        int err = EE_STATUS_OK;
+
+        /* Initialise the IRQ */
+        arm_ethosu_npu_irq_init();
+
+/* Initialise Ethos-U device */
+#ifdef NPU0_APB_BASE_S
+        /* Corstone-310/315 */
+        void *ethosu_base_address = (void *)(NPU0_APB_BASE_S);
+#else
+        void *ethosu_base_address = (void *)(ETHOS_U55_APB_BASE_S);
+#endif
+
+        debug("Cache arena: 0x%p\n", get_cache_arena());
+
+        if (EE_STATUS_OK
+            != (err = ethosu_init(
+                    &ethosu_drv,         /* Ethos-U driver device pointer */
+                    ethosu_base_address, /* Ethos-U NPU's base address. */
+                    get_cache_arena(),   /* Pointer to fast mem area - NULL for
+                                            U55. */
+                    get_cache_arena_size(), /* Fast mem region size. */
+                    1,                      /* Security enable. */
+                    1)))                    /* Privilege enable. */
+        {
+            printf_err("failed to initialise Ethos-U device\n");
+            return err;
+        }
+
+        info("Ethos-U device initialised\n");
+
+        /* Get Ethos-U version */
+        struct ethosu_driver_version driver_version;
+        struct ethosu_hw_info        hw_info;
+
+        ethosu_get_driver_version(&driver_version);
+        ethosu_get_hw_info(&ethosu_drv, &hw_info);
+
+        info("Ethos-U version info:\n");
+        info("\tArch:       v%" PRIu32 ".%" PRIu32 ".%" PRIu32 "\n",
+             hw_info.version.arch_major_rev,
+             hw_info.version.arch_minor_rev,
+             hw_info.version.arch_patch_rev);
+        info("\tDriver:     v%" PRIu8 ".%" PRIu8 ".%" PRIu8 "\n",
+             driver_version.major,
+             driver_version.minor,
+             driver_version.patch);
+        info("\tMACs/cc:    %" PRIu32 "\n",
+             (uint32_t)(1 << hw_info.cfg.macs_per_cc));
+        info("\tCmd stream: v%" PRIu32 "\n", hw_info.cfg.cmd_stream_version);
+
+        return EE_STATUS_OK;
+    }
 
 #endif /* if defined(ETHOSU_ARCH) */
 
@@ -142,7 +150,9 @@ static int arm_ethosu_npu_init(void) {
 }
 #endif // defined(__cplusplus)
 
-int ethosu_npu_init() {
+int
+ethosu_npu_init()
+{
 
     int status = EE_STATUS_ERROR;
 
@@ -151,5 +161,4 @@ int ethosu_npu_init() {
 #endif
 
     return status;
-
 }

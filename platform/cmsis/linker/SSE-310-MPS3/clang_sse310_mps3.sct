@@ -95,15 +95,94 @@ PHDRS
 SECTIONS
 {
 	.itcm : {
-    	/**(.text.arm_cfft_*)*/
-		* (.text.arm_*)
+		/* Keep only the hot AudioMark/DSP path in the limited 32 KiB ITCM.
+		 * A broad .text.arm_* rule pulls in too much CMSIS-DSP code with
+		 * newer toolchains and overflows this region.
+		 */
+		*(.text.ee_abf_f32)
+		*(.text.ee_aec_f32)
+		*(.text.ee_anr_f32)
+		*(.text.ee_mfcc_f32_compute)
+
+		*(.text.arm_*_f32)
+		*(.text.arm_float_to_q15)
+		*(.text.arm_q15_to_float)
+
+		*(.text.filterbank_compute_bank32)
+		*(.text.filterbank_compute_psd16)
+		*(.text.spx_fft)
+		*(.text.spx_ifft)
+		*(.text.mdf_adjust_prop)
+		*(.text.speex_echo_cancellation)
+		*(.text.preprocess_analysis)
+		*(.text.speex_preprocess_run)
+		*(.text.update_noise_prob)
+
+		*(.text.__hardfp_expf)
+		*(.text.__hardfp_logf)
+		*(.text.__hardfp_powf)
+		*(i.__hardfp_expf)
+		*(i.__hardfp_logf)
+		*(i.__hardfp_powf)
+
+		*(.text.th_absmax_f32)
+		*(.text.th_add_f32)
+		*(.text.th_add_mix_sat_s16)
+		*(.text.th_cfft_f32)
+		*(.text.th_cmplx_conj_f32)
+		*(.text.th_cmplx_dot_prod_f32)
+		*(.text.th_cmplx_mag_f32)
+		*(.text.th_cmplx_mult_cmplx_f32)
+		*(.text.th_dot_prod_f32)
+		*(.text.th_f32_to_int16)
+		*(.text.th_int16_to_f32)
+		*(.text.th_mat_vec_mult_f32)
+		*(.text.th_multiply_f32)
+		*(.text.th_offset_f32)
+		*(.text.th_rfft_f32)
+		*(.text.th_subtract_f32)
+		*(.text.th_vlog_f32)
         } >ITCM AT>ITCM :itcm
 
 	.dtcm : {
-    	/**(.text.arm_cfft_*)*/
-		* (.rodata.ee_mfcc_*)
-		* (.rodata.w_hanning_*)
-		*CommonTables* (.rodata*)
+		/* Hot read-only FFT, MFCC and libm constant tables. */
+		*(.rodata.armBitRevIndexTable_fixed_64)
+		*(.rodata.armBitRevIndexTable_fixed_128)
+		*(.rodata.armBitRevIndexTable_fixed_256)
+		*(.rodata.armBitRevIndexTable_fixed_512)
+
+		*(.rodata.rearranged_twiddle_stride1_64_f32)
+		*(.rodata.rearranged_twiddle_stride2_64_f32)
+		*(.rodata.rearranged_twiddle_stride3_64_f32)
+		*(.rodata.rearranged_twiddle_tab_stride1_arr_64_f32)
+		*(.rodata.rearranged_twiddle_tab_stride2_arr_64_f32)
+		*(.rodata.rearranged_twiddle_tab_stride3_arr_64_f32)
+
+		*(.rodata.rearranged_twiddle_stride1_256_f32)
+		*(.rodata.rearranged_twiddle_stride2_256_f32)
+		*(.rodata.rearranged_twiddle_stride3_256_f32)
+		*(.rodata.rearranged_twiddle_tab_stride1_arr_256_f32)
+		*(.rodata.rearranged_twiddle_tab_stride2_arr_256_f32)
+		*(.rodata.rearranged_twiddle_tab_stride3_arr_256_f32)
+
+		*(.rodata.twiddleCoef_64)
+		*(.rodata.twiddleCoef_128)
+		*(.rodata.twiddleCoef_256)
+		*(.rodata.twiddleCoef_512)
+		*(.rodata.twiddleCoef_rfft_128)
+		*(.rodata.twiddleCoef_rfft_512)
+		*(.rodata.twiddleCoef_rfft_1024)
+
+		*(.rodata.ee_mfcc_dct_coefs_f32)
+		*(.rodata.ee_mfcc_filter_coefs_f32)
+		*(.rodata.ee_mfcc_filter_len)
+		*(.rodata.ee_mfcc_filter_pos)
+		*(.rodata.ee_mfcc_window_coefs_f32)
+
+		*(.rodata.w_hanning_div2)
+		*(.rodata.vec_hypergeom_gain_f32.table)
+		*(.rodata.__logf_lut_f32)
+		*(.rodata.exp_tab)
         } >DTCM AT>DTCM :dtcm
 
 	.init : {
@@ -145,6 +224,7 @@ SECTIONS
 		. = ALIGN(8);
 
 		/* lists of constructors and destructors */
+		PROVIDE_HIDDEN ( __bothinit_array_start = . );
 		PROVIDE_HIDDEN ( __preinit_array_start = . );
 		KEEP (*(.preinit_array))
 		PROVIDE_HIDDEN ( __preinit_array_end = . );
@@ -153,6 +233,7 @@ SECTIONS
 		KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
 		KEEP (*(.init_array .ctors))
 		PROVIDE_HIDDEN ( __init_array_end = . );
+		PROVIDE_HIDDEN ( __bothinit_array_end = . );
 
 		PROVIDE_HIDDEN ( __fini_array_start = . );
 		KEEP (*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
@@ -351,6 +432,7 @@ SECTIONS
 
         /* nn model's default space */
         * (nn_model)
+        * (.nn_model)
 
         /* labels */
         * (labels)

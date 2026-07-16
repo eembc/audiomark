@@ -16,13 +16,12 @@
 #include <arm_mve.h>
 #endif
 
-extern "C" {
+#include <cstring>
 
 #include "ee_audiomark.h"
 #include "ee_api.h"
 #include "ee_mfcc_f32.h"
 #include "ee_nn.h"
-}
 
 #include "include/BufAttributes.hpp" /* Buffer attributes to be applied */
 #include "include/ds_cnn_model.hpp"
@@ -32,57 +31,57 @@ extern "C" {
 #include CMSIS_device_header /* Gives us IRQ num, base addresses. */
 #include "log_macros.h"
 
-#define NN_NUM_OUTPUT_BYTES         (OUT_DIM)
+#define NN_NUM_OUTPUT_BYTES (OUT_DIM)
 
 typedef int8_t input_tensor_t[MFCC_FIFO_BYTES];
 typedef int8_t output_tensor_t[NN_NUM_OUTPUT_BYTES];
 
-extern "C" {
-
 /* Tensor arena buffer */
 static uint8_t tensorArena[ACTIVATION_BUF_SZ] ACTIVATION_BUF_ATTRIBUTE;
 
-/* Optional getter function for the model pointer and its size. */
-extern uint8_t *GetModelPointer();
-
-extern size_t GetModelLen();
-
-
 static DSCNNModel ds_cnn_model;
 
+extern "C"
+{
 
-void cmsis_nn_init(void) {
+    /* Optional getter function for the model pointer and its size. */
+    extern uint8_t *GetModelPointer();
 
+    extern size_t GetModelLen();
 
-    if (!ds_cnn_model.Init(tensorArena,
-                           sizeof(tensorArena),
-                           GetModelPointer(),
-                           GetModelLen())) {
-        printf_err("Failed to initialise model\n");
-        return;
-    }
-}
+    void cmsis_nn_init(void)
+    {
 
-int classify_on_cmsis_nn(const input_tensor_t in_data, output_tensor_t out_data) {
+        arm::app::fwk::iface::MemoryRegion tensorArenaRegion(
+            tensorArena, sizeof(tensorArena));
+        arm::app::fwk::iface::MemoryRegion modelRegion(GetModelPointer(),
+                                                       GetModelLen());
 
-
-    TfLiteTensor *inputTensor = ds_cnn_model.GetInputTensor(0);
-    uint8_t *const input_to_nn = tflite::GetTensorData<uint8_t>(inputTensor);
-    memcpy(input_to_nn, in_data, MFCC_FIFO_BYTES);
-
-
-    if (!ds_cnn_model.RunInference()) {
-        return EE_STATUS_ERROR;
+        if (!ds_cnn_model.Init(tensorArenaRegion, modelRegion))
+        {
+            printf_err("Failed to initialise model\n");
+            return;
+        }
     }
 
-    TfLiteTensor *outputTensor = ds_cnn_model.GetOutputTensor(0);
-    uint8_t *const output_of_nn = tflite::GetTensorData<uint8_t>(outputTensor);
+    int classify_on_cmsis_nn(const input_tensor_t in_data,
+                             output_tensor_t      out_data)
+    {
 
+        auto           inputTensor = ds_cnn_model.GetInputTensor(0);
+        uint8_t *const input_to_nn = inputTensor->GetData<uint8_t>();
+        std::memcpy(input_to_nn, in_data, MFCC_FIFO_BYTES);
 
-    memcpy(out_data, output_of_nn, NN_NUM_OUTPUT_BYTES);
+        if (!ds_cnn_model.RunInference())
+        {
+            return EE_STATUS_ERROR;
+        }
 
-    return EE_STATUS_OK;
+        auto           outputTensor = ds_cnn_model.GetOutputTensor(0);
+        uint8_t *const output_of_nn = outputTensor->GetData<uint8_t>();
 
-}
+        std::memcpy(out_data, output_of_nn, NN_NUM_OUTPUT_BYTES);
 
+        return EE_STATUS_OK;
+    }
 }

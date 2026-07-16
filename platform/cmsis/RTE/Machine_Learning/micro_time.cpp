@@ -1,4 +1,4 @@
-/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2024 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,11 +17,20 @@ limitations under the License.
 
 // Set in micro/tools/make/targets/cortex_m_generic_makefile.inc.
 // Needed for the DWT and PMU counters.
-#ifdef CMSIS_DEVICE_ARM_CORTEX_M_XX_HEADER_FILE
-#include CMSIS_DEVICE_ARM_CORTEX_M_XX_HEADER_FILE
-#endif
+#include "RTE_Components.h"
+#include CMSIS_device_header
 
 namespace tflite {
+
+#if defined(PROJECT_GENERATION)
+
+// Stub functions for the project_generation target since these will be replaced
+// by the target-specific implementation in the overall infrastructure that the
+// TFLM project generation will be a part of.
+uint32_t ticks_per_second() { return 0; }
+uint32_t GetCurrentTimeTicks() { return 0; }
+
+#else
 
 uint32_t ticks_per_second() { return 0; }
 
@@ -42,7 +51,7 @@ uint32_t GetCurrentTimeTicks() {
 #ifdef ARMCM7
     DWT->LAR = 0xC5ACCE55;
 #endif
-    //CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DCB->DEMCR |= DCB_DEMCR_TRCENA_Msk;
 
     // Reset and DWT cycle counter.
     DWT->CYCCNT = 0;
@@ -65,5 +74,7 @@ uint32_t GetCurrentTimeTicks() {
   return 0;
 #endif
 }
+
+#endif  // defined(PROJECT_GENERATION)
 
 }  // namespace tflite
