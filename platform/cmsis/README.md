@@ -14,9 +14,6 @@
 
 ## CMSIS Build Tools Option
 
-If you only want to build the benchmarks with Keil MDK, without CMSIS Toolbox,
-skip this section and move directly [here](#keil-mdk-builds).
-
 See the CMSIS Toolbox installation documentation here: https://github.com/Open-CMSIS-Pack/cmsis-toolbox/blob/main/docs/installation.md
 
 
@@ -25,9 +22,17 @@ CMSIS Toolbox **v2.13.0** or above is required. This matches the version used
 by CI in [`vcpkg-configuration.json`](vcpkg-configuration.json):
 `arm:tools/open-cmsis-pack/cmsis-toolbox` = `2.13.0`.
 
-The CMSIS Toolbox build flow uses CMake. CMake **3.27** or above is required;
-some Ubuntu/WSL installations provide older versions such as 3.22 by default.
-Install a newer CMake if `cbuild` reports a `cmake_minimum_required` error.
+The CMSIS Toolbox build flow uses the CMake/Ninja generator flow. The CMSIS
+Toolbox manual setup instructions currently recommend CMake **3.31.5** or above
+and Ninja **1.12.0** or above. For this project, the requirement can be relaxed
+to CMake **3.27** or above and Ninja **1.11** or above. Some Linux
+installations provide older versions, which will fail during the generated
+CMSIS CMake project configuration step. This can be worked around by installing
+newer CMake and Ninja versions.
+
+All CMSIS build tools used by CI can also be installed from the local
+[`vcpkg-configuration.json`](vcpkg-configuration.json), including CMSIS
+Toolbox, CMake, Ninja, Arm Compiler and the Arm Virtual Hardware FVPs.
 
 ```shell
 tar -zxvf cmsis-toolbox-linux64.tar.gz
@@ -45,9 +50,8 @@ If not already installed, download **Arm Compiler 6.18** or later. It is
 recommended to use up to date Arm Compiler 6 releases. CI currently validates
 AC6 6.24, GCC 15.3.1 and LLVM Arm Toolchain for Embedded 22.1.
 
-Make sure the host also provides CMake **3.27** or above. Some Ubuntu/WSL
-installations ship older CMake versions, which will fail during the generated
-CMSIS CMake project configuration step.
+Make sure the host also provides CMake **3.27** or above and Ninja **1.11** or
+above.
 
 Toolchain downloads:
 
@@ -89,43 +93,6 @@ If you only want to inspect the pack list, you can still run:
 ```shell
 csolution list packs -s audiomark.csolution.yml -m
 ```
-
-
-#### Projects generation (optional)
-
-```
-csolution convert -s audiomark.csolution.yml -t AC6
-```
-
-This will generate several project files for each AudioMark application:
- * *audiomark_app* : the main audiomark application
- * *testabf* : the beamformer application
- * *testaec* : the echo canceller application
- * *testanr* : the noise suppressor application
- * *testkws* : the keyword spotting application
- * *testmfcc* : the MFCC unit test application
-
-For each target: Corstone-300/310 MPS3, Corstone-315 FVP, CM4, CM7 and CM33 MPS2.
-
-Expected output:
-
-```
-audiomark/platform/cmsis/testanr/testanr.Release+MPS3-Corstone-300.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/testanr/testanr.Release+MPS3-Corstone-310.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/testabf/testabf.Release+MPS3-Corstone-300.cprj - info csolution: file generated successfully
-audiomark/platform/cmsis/testabf/testabf.Release+MPS3-Corstone-310.cprj - info csolution: file generated successfully
-...
-<full list elided>
-...
-```
-
-This also generates projects for running the AudioMark application and KWS unit test with `Arm Ethos-U55` acceleration.
-
-```
-audiomark/platform/cmsis/audiomark_app/audiomark_app.Release+Ethos-MPS3-Corstone-300.cprj
-audiomark/platform/cmsis/audiomark_app/audiomark_app.Release+Ethos-MPS3-Corstone-310.cprj
-```
-
 
 #### Build
 
@@ -187,19 +154,6 @@ telnetterminal2: Listening for serial connection on port 5001
 **Note**
 - Virtual Hardware simulation _does not provide cycle accurate measurements_ hence final audiomark score will differ from the one measured on device.
 
-
-## Keil MDK Builds
-
-The AudioMark Corstone-300 FPGA main application can be built by importing the **audiomark_app/audiomark_app.Release+MPS3-Corstone-300.cprj** in uVision (Project=>Import)
-
-- The printf messages are output to MPS3 FPGA board 2nd UART port (settings `115200, 8,N,1`) by project default setting.
-- To change printf messages to Debug (printf) Viewer window using the tracing method through JTAG, please select ITM for STDOUT under Compiler => I/O in Manage Run-Time Environment menu.
-
-Various individual AudioMark component unit-test projects can be imported using the different cproject files provided in this folder (e.g. *testanr.Release+MPS3-Corstone-300.cprj* for the noise suppressor Corstone-300 unit test).
-
-For Corstone-310 FPGA, similar steps can be followed by importing **audiomark_app/audiomark_app.Release+MPS3-Corstone-310.cprj** and/or the different unit tests.
-
-For Arm V7M-E / Arm V8.0M MPS2+ FPGA, similar steps can be followed by importing **audiomark_app/audiomark_app.Release+MPS2-IOTKit-CM33.cprj**, **audiomark_app/audiomark_app.Release+MPS2-CMSDK_CM7_SP.cprj**, **audiomark_app/audiomark_app.Release+MPS2-CMSDK_CM4_FP.cprj** and/or the different unit tests.
 
 ## Arm Ethos-U KWS acceleration
 
