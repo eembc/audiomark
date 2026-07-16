@@ -6,6 +6,7 @@ layer:
   components:
     - component: ARM::ML Eval Kit:Common:Log
     - component: ARM::ML Eval Kit:Common:API
+    - component: ARM::ML Eval Kit:ML Framework:TFLM
     - component: ARM::ML Eval Kit:Common:Math
     - component: tensorflow::Machine Learning:TensorFlow:Kernel Utils
       define:

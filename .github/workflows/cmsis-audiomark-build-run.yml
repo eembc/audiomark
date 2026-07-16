@@ -1,0 +1,432 @@
+# SPDX-FileCopyrightText: Copyright 2026 Arm Limited and/or its affiliates <open-source-office@arm.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: CMSIS AudioMark Build and FVP
+
+on:
+  workflow_dispatch:
+    inputs:
+      toolchains:
+        description: Comma-separated toolchains to run, without spaces
+        required: false
+        default: AC6@6.24.0,GCC@15.3.1,CLANG@22.1.0
+      contexts:
+        description: Comma-separated csolution contexts to build, or all
+        required: false
+        default: all
+      run_fvp:
+        description: Run Corstone-300/310 unit tests on FVP
+        required: false
+        default: "true"
+      fvp_contexts:
+        description: Comma-separated FVP unit-test contexts to run, or all
+        required: false
+        default: all
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/cmsis-audiomark-build-run.yml"
+      - "platform/cmsis/**"
+      - "lib/speexdsp/**"
+      - "ports/arm/**"
+      - "src/**"
+      - "main.c"
+  push:
+    paths:
+      - ".github/workflows/cmsis-audiomark-build-run.yml"
+      - "platform/cmsis/**"
+      - "lib/speexdsp/**"
+      - "ports/arm/**"
+      - "src/**"
+      - "main.c"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  cmsis-build:
+    name: ${{ matrix.toolchain_label }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - key: ac6
+            toolchain: AC6
+            toolchain_label: AC6@6.24.0
+          - key: gcc
+            toolchain: GCC
+            toolchain_label: GCC@15.3.1
+          - key: clang
+            toolchain: CLANG
+            toolchain_label: CLANG@22.1.0
+
+    env:
+      SELECTED_TOOLCHAINS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.toolchains || 'AC6@6.24.0,GCC@15.3.1,CLANG@22.1.0' }}
+      SELECTED_CONTEXTS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.contexts || 'all' }}
+      RUN_FVP: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_fvp || 'true' }}
+      SELECTED_FVP_CONTEXTS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.fvp_contexts || 'all' }}
+      CMSIS_PACK_ROOT: /home/runner/.cache/arm/packs
+      BUILD_LOG_ROOT: ${{ github.workspace }}/platform/cmsis/build_logs/ci
+      FVP_LOG_ROOT: ${{ github.workspace }}/platform/cmsis/build_logs/ci-fvp
+      TOOLCHAIN_ROOT: /home/runner/.cache/arm/toolchains
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show CI revision and tool config
+        run: |
+          git rev-parse --short HEAD
+          cat platform/cmsis/vcpkg-configuration.json
+
+      - name: Check toolchain selection
+        id: select
+        run: |
+          if [[ ",${SELECTED_TOOLCHAINS}," == *",${{ matrix.toolchain_label }},"* ]]; then
+            echo "enabled=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "enabled=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Skip unselected toolchain
+        if: steps.select.outputs.enabled != 'true'
+        run: |
+          {
+            echo "## ${{ matrix.toolchain_label }}"
+            echo ""
+            echo "Skipped by workflow_dispatch toolchain filter."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Set up Python
+        if: steps.select.outputs.enabled == 'true'
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install Arm tools
+        if: steps.select.outputs.enabled == 'true'
+        uses: ARM-software/cmsis-actions/vcpkg@v1
+        with:
+          config: platform/cmsis/vcpkg-configuration.json
+
+      - name: Activate Arm Compiler license
+        if: steps.select.outputs.enabled == 'true' && matrix.toolchain == 'AC6'
+        uses: ARM-software/cmsis-actions/armlm@v1
+
+      - name: Cache external GCC and CLANG toolchains
+        if: steps.select.outputs.enabled == 'true' && matrix.toolchain != 'AC6'
+        uses: actions/cache@v4
+        with:
+          key: arm-external-toolchains-gcc-15-3-1-clang-22-1-0
+          path: /home/runner/.cache/arm/toolchains
+
+      - name: Install Arm GNU Toolchain 15.3.1
+        if: steps.select.outputs.enabled == 'true' && matrix.toolchain == 'GCC'
+        run: |
+          set -euo pipefail
+          root="${TOOLCHAIN_ROOT}/arm-gnu-toolchain-15.3.rel1-x86_64-arm-none-eabi"
+          if [[ ! -x "${root}/bin/arm-none-eabi-gcc" ]]; then
+            mkdir -p "${TOOLCHAIN_ROOT}"
+            curl -fsSL \
+              "https://gitlab.arm.com/api/v4/projects/tooling%2Fgnu-toolchains-for-arm/packages/generic/gnu-toolchain/15.3.rel1/arm-gnu-toolchain-15.3.rel1-x86_64-arm-none-eabi.tar.xz" \
+              | tar -xJ -C "${TOOLCHAIN_ROOT}"
+          fi
+          echo "GCC_TOOLCHAIN_15_3_1=${root}/bin" >> "${GITHUB_ENV}"
+          echo "${root}/bin" >> "${GITHUB_PATH}"
+
+      - name: Install LLVM Arm Toolchain for Embedded 22.1.0
+        if: steps.select.outputs.enabled == 'true' && matrix.toolchain == 'CLANG'
+        run: |
+          set -euo pipefail
+          root="${TOOLCHAIN_ROOT}/ATfE-22.1.0-Linux-x86_64"
+          if [[ ! -x "${root}/bin/clang" ]]; then
+            mkdir -p "${TOOLCHAIN_ROOT}"
+            curl -fsSL \
+              "https://github.com/arm/arm-toolchain/releases/download/release-22.1.0-ATfE/ATfE-22.1.0-Linux-x86_64.tar.xz" \
+              | tar -xJ -C "${TOOLCHAIN_ROOT}"
+          fi
+          echo "CLANG_TOOLCHAIN_22_1_0=${root}/bin" >> "${GITHUB_ENV}"
+          echo "${root}/bin" >> "${GITHUB_PATH}"
+
+      - name: Cache CMSIS packs
+        if: steps.select.outputs.enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          key: cmsis-packs-${{ hashFiles('platform/cmsis/audiomark.csolution.yml') }}
+          restore-keys: cmsis-packs-
+          path: /home/runner/.cache/arm/packs
+
+      - name: Install required CMSIS packs
+        if: steps.select.outputs.enabled == 'true'
+        working-directory: platform/cmsis
+        run: |
+          set -euo pipefail
+          mkdir -p "${CMSIS_PACK_ROOT}"
+          if [[ ! -f "${CMSIS_PACK_ROOT}/.Web/index.pidx" ]]; then
+            cpackget init -R "${CMSIS_PACK_ROOT}" https://www.keil.com/pack/index.pidx
+          fi
+
+          csolution list packs -s audiomark.csolution.yml -m > required_packs.txt
+          cpackget add -R "${CMSIS_PACK_ROOT}" --agree-embedded-license -f required_packs.txt
+
+      - name: Build CMSIS contexts
+        if: steps.select.outputs.enabled == 'true'
+        working-directory: platform/cmsis
+        run: |
+          set +e
+          set -o pipefail
+
+          mkdir -p "${BUILD_LOG_ROOT}/${{ matrix.key }}"
+          summary="${BUILD_LOG_ROOT}/${{ matrix.key }}/summary.tsv"
+          : > "${summary}"
+
+          if [[ "${SELECTED_CONTEXTS}" == "all" ]]; then
+            mapfile -t contexts < <(csolution list contexts audiomark.csolution.yml)
+          else
+            IFS=',' read -ra contexts <<< "${SELECTED_CONTEXTS}"
+          fi
+
+          status=0
+          for raw_context in "${contexts[@]}"; do
+            context="${raw_context//[[:space:]]/}"
+            if [[ -z "${context}" ]]; then
+              continue
+            fi
+
+            log_name="${context//[+.]/_}.log"
+            log_path="${BUILD_LOG_ROOT}/${{ matrix.key }}/${log_name}"
+
+            echo "### ${{ matrix.toolchain_label }} ${context}"
+            if cbuild --context "${context}" audiomark.csolution.yml --packs --toolchain "${{ matrix.toolchain_label }}" > "${log_path}" 2>&1; then
+              printf '%s\t%s\tPASS\n' '${{ matrix.toolchain_label }}' "${context}" | tee -a "${summary}"
+            else
+              printf '%s\t%s\tFAIL\n' '${{ matrix.toolchain_label }}' "${context}" | tee -a "${summary}"
+              tail -120 "${log_path}"
+              status=1
+            fi
+          done
+
+          {
+            echo "## ${{ matrix.toolchain_label }}"
+            echo ""
+            echo "- Context filter: \`${SELECTED_CONTEXTS}\`"
+            echo ""
+            echo '```text'
+            cat "${summary}"
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          exit "${status}"
+
+      - name: Run Corstone FVP unit tests
+        if: steps.select.outputs.enabled == 'true' && env.RUN_FVP == 'true'
+        working-directory: platform/cmsis
+        run: |
+          set +e
+          set -o pipefail
+
+          mkdir -p "${FVP_LOG_ROOT}/${{ matrix.key }}"
+          summary="${FVP_LOG_ROOT}/${{ matrix.key }}/summary.tsv"
+          : > "${summary}"
+
+          resolve_fvp() {
+            local path
+
+            for model in "$@"; do
+              path="$(command -v "${model}" || true)"
+              if [[ -n "${path}" ]]; then
+                echo "${path}"
+                return 0
+              fi
+
+              path="$(find \
+                "${GITHUB_WORKSPACE}/.vcpkg/downloads/artifacts" \
+                "${HOME}/.vcpkg/artifacts" \
+                -type f -name "${model}" -perm -111 -print -quit 2>/dev/null || true)"
+              if [[ -n "${path}" ]]; then
+                echo "${path}"
+                return 0
+              fi
+            done
+
+            return 1
+          }
+
+          fvp300="$(resolve_fvp FVP_Corstone_SSE-300 FVP_Corstone_SSE-300_Ethos-U55)"
+          fvp300_ethos="$(resolve_fvp FVP_Corstone_SSE-300_Ethos-U55 FVP_Corstone_SSE-300)"
+          fvp310="$(resolve_fvp FVP_Corstone_SSE-310)"
+          fvp310_ethos="${fvp310}"
+          if [[ -z "${fvp300}" || -z "${fvp300_ethos}" || -z "${fvp310}" || -z "${fvp310_ethos}" ]]; then
+            echo "Could not locate required FVP models."
+            echo "FVP_Corstone_SSE-300: ${fvp300:-missing}"
+            echo "FVP_Corstone_SSE-300_Ethos-U55: ${fvp300_ethos:-missing}"
+            echo "FVP_Corstone_SSE-310: ${fvp310:-missing}"
+            echo "FVP_Corstone_SSE-310 for Ethos-U55: ${fvp310_ethos:-missing}"
+            exit 1
+          fi
+
+          python_home="$(python3 -c 'import sys; print(sys.base_prefix)')"
+
+          if [[ "${SELECTED_FVP_CONTEXTS}" == "all" ]]; then
+            contexts=(
+              testabf.Release+MPS3-Corstone-300
+              testaec.Release+MPS3-Corstone-300
+              testanr.Release+MPS3-Corstone-300
+              testkws.Release+MPS3-Corstone-300
+              testkws.Release+Ethos-MPS3-Corstone-300
+              testabf.Release+MPS3-Corstone-310
+              testaec.Release+MPS3-Corstone-310
+              testanr.Release+MPS3-Corstone-310
+              testkws.Release+MPS3-Corstone-310
+              testkws.Release+Ethos-MPS3-Corstone-310
+            )
+          else
+            IFS=',' read -ra contexts <<< "${SELECTED_FVP_CONTEXTS}"
+          fi
+
+          selected_by_build_filter() {
+            local context="$1"
+
+            if [[ "${SELECTED_CONTEXTS}" == "all" ]]; then
+              return 0
+            fi
+
+            if [[ ",${SELECTED_CONTEXTS}," == *",${context},"* ]]; then
+              return 0
+            fi
+
+            return 1
+          }
+
+          status=0
+          ran=0
+          for raw_context in "${contexts[@]}"; do
+            context="${raw_context//[[:space:]]/}"
+            if [[ -z "${context}" ]]; then
+              continue
+            fi
+
+            if ! selected_by_build_filter "${context}"; then
+              printf '%s\t%s\tSKIP\tfiltered by build contexts\n' '${{ matrix.toolchain_label }}' "${context}" | tee -a "${summary}"
+              continue
+            fi
+
+            project="${context%%.*}"
+            target="${context#*+}"
+            image="out/${project}/${target}/Release/${project}.elf"
+            if [[ ! -f "${image}" ]]; then
+              image="out/${project}/${target}/Release/${project}.axf"
+            fi
+            log_name="${context//[+.]/_}.log"
+            log_path="${FVP_LOG_ROOT}/${{ matrix.key }}/${log_name}"
+            uart_log_path="${FVP_LOG_ROOT}/${{ matrix.key }}/${log_name%.log}.uart.log"
+
+            if [[ ! -f "${image}" ]]; then
+              printf '%s\t%s\tFAIL\tmissing image %s\n' '${{ matrix.toolchain_label }}' "${context}" "${image}" | tee -a "${summary}"
+              status=1
+              continue
+            fi
+
+            case "${target}" in
+              MPS3-Corstone-300)
+                fvp=("${fvp300}")
+                ;;
+              Ethos-MPS3-Corstone-300)
+                fvp=(
+                  "${fvp300_ethos}"
+                  -C ethosu.num_macs=128
+                )
+                ;;
+              MPS3-Corstone-310)
+                fvp=("${fvp310}")
+                ;;
+              Ethos-MPS3-Corstone-310)
+                fvp=("${fvp310_ethos}")
+                ;;
+              *)
+                printf '%s\t%s\tSKIP\tunsupported FVP target\n' '${{ matrix.toolchain_label }}' "${context}" | tee -a "${summary}"
+                continue
+                ;;
+            esac
+
+            fvp+=(
+              -a "${image}"
+              -C mps3_board.visualisation.disable-visualisation=1
+              -C mps3_board.telnetterminal0.start_telnet=0
+              -C mps3_board.uart0.out_file="${uart_log_path}"
+              -C mps3_board.uart0.unbuffered_output=1
+              -C mps3_board.uart0.shutdown_on_eot=1
+              --simlimit 180
+              --stat
+            )
+
+            echo "### FVP ${{ matrix.toolchain_label }} ${context}"
+            rm -f "${uart_log_path}"
+            {
+              printf 'FVP command:'
+              printf ' %q' "${fvp[@]}"
+              printf '\n'
+            } > "${log_path}"
+            if env PYTHONHOME="${python_home}" PYTHONPATH= timeout 240s "${fvp[@]}" >> "${log_path}" 2>&1; then
+              fvp_rc=0
+            else
+              fvp_rc=$?
+            fi
+
+            {
+              echo "FVP return code: ${fvp_rc}"
+              echo ""
+              echo "### UART output"
+              if [[ -f "${uart_log_path}" ]]; then
+                cat "${uart_log_path}"
+              else
+                echo "UART log was not created."
+              fi
+            } >> "${log_path}"
+
+            if [[ "${fvp_rc}" -eq 0 ]] && grep -qi "test passed" "${uart_log_path}"; then
+              printf '%s\t%s\tPASS\n' '${{ matrix.toolchain_label }}' "${context}" | tee -a "${summary}"
+            else
+              printf '%s\t%s\tFAIL\n' '${{ matrix.toolchain_label }}' "${context}" | tee -a "${summary}"
+              tail -120 "${log_path}"
+              status=1
+            fi
+            ran=$((ran + 1))
+          done
+
+          if [[ "${ran}" -eq 0 ]]; then
+            echo "No FVP contexts selected after applying filters."
+          fi
+
+          {
+            echo "## FVP ${{ matrix.toolchain_label }}"
+            echo ""
+            echo "- Build context filter: \`${SELECTED_CONTEXTS}\`"
+            echo "- FVP context filter: \`${SELECTED_FVP_CONTEXTS}\`"
+            echo ""
+            echo '```text'
+            cat "${summary}"
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          exit "${status}"
+
+      - name: Upload build logs
+        if: always() && steps.select.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmsis-audiomark-${{ matrix.key }}-logs
+          path: platform/cmsis/build_logs/ci/${{ matrix.key }}/
+
+      - name: Upload FVP logs
+        if: always() && steps.select.outputs.enabled == 'true' && env.RUN_FVP == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmsis-audiomark-${{ matrix.key }}-fvp-logs
+          path: platform/cmsis/build_logs/ci-fvp/${{ matrix.key }}/

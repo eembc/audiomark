@@ -28,8 +28,8 @@ layer:
 
   components:
     - component: ARM::CMSIS:CORE
-    - component: ARM::CMSIS:NN
+    - component: ARM::CMSIS:NN Lib
     - component: ARM::CMSIS:DSP&Source
       define:
         - ARM_MATH_LOOPUNROLL
-    - component: perf_counter:Core&SourceNoWrapper
+    - component: GorgonMeducer::Utilities:perf_counter:Core&SourceNoWrapper

@@ -45,12 +45,15 @@ itcm.bin        0x00000000                  0x00080000
         aec_f32_input_echo.o
         aec_f32_input_source.o
 }
+}
 
 ;-----------------------------------------------------
 ; 384kiB of 512kiB DTCM is used for any other RW or ZI
 ; data. Note: this region is internal to the Cortex-M
 ; CPU.
 ;-----------------------------------------------------
+LOAD_REGION_DTCM    0x20000000                  0x00080000
+{
 dtcm.bin        0x20000000                  0x00070000
 {
 ; Any R/W and/or zero initialised data
@@ -67,6 +70,7 @@ ARM_LIB_HEAP +0 ALIGN 8 EMPTY  HEAP_SIZE  {   ; Reserve empty region for heap
 ;-----------------------------------------------------
 ARM_LIB_STACK   0x20070000 EMPTY ALIGN 8    STACK_SIZE
 {}
+}
 
 ;-----------------------------------------------------
 ; FPGA internal SRAM of 2MiB - reserved for activation
@@ -74,6 +78,8 @@ ARM_LIB_STACK   0x20070000 EMPTY ALIGN 8    STACK_SIZE
 ; This region should have 3 cycle read latency from
 ; both Cortex-M55 and Ethos-U NPU
 ;-----------------------------------------------------
+LOAD_REGION_SRAM    0x31000000                  0x00200000
+{
 isram.bin       0x31000000  UNINIT ALIGN 16 0x00200000
 {
 ; Cache area (if used)
@@ -101,6 +107,7 @@ ddr.bin        0x70000000 ALIGN 16         0x02000000
 
 ; nn models default space
 *.o (nn_model)
+*.o (.nn_model)
 
 ; activation buffers a.k.a tensor arena when memory mode dedicated sram
 *.o (activation_buf_dram)

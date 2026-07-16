@@ -5,6 +5,7 @@ layer:
     - group: Printf retarget
       files:
         - file: stdout_USART.c
+        - file: fvp_shutdown.c
 
   components:
     - component: CMSIS-Compiler:CORE
@@ -28,15 +29,6 @@ layer:
         - +Corstone-315
         - +Ethos-Corstone-315
 
-    - component: Keil::Board Support&V2M-MPS2 IOT-Kit:Common@2.0.0
-      for-context:
-       - +MPS2-IOTKit-CM33
-
-    - component: Keil::Board Support&V2M-MPS2:Common@2.0.0
-      for-context:
-        - +MPS2-CMSDK_CM4_FP
-        - +MPS2-CMSDK_CM7_SP
-
     - component: Keil::CMSIS Driver:USART
       not-for-context:
         - +MPS3-Corstone-300
@@ -45,4 +37,3 @@ layer:
         - +Ethos-MPS3-Corstone-310
         - +Corstone-315
         - +Ethos-Corstone-315
-

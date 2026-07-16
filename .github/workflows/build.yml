@@ -10,13 +10,13 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake gcc g++
 
       - name: Configure project
-        run: cmake -S . -B build
+        run: cmake -S . -B build -DPORT_DIR=ports/arm
 
       - name: Build project
         run: cmake --build build

@@ -113,6 +113,7 @@ SECTIONS
 		*(.text.startup .text.startup.*)
 		*(.text .text.* .opd .opd.*)
 		*(.gnu.linkonce.t.*)
+		*(__lcxx_override)
 		KEEP (*(.fini .fini.*))
 		__text_end = .;
 
@@ -140,6 +141,7 @@ SECTIONS
 		. = ALIGN(8);
 
 		/* lists of constructors and destructors */
+		PROVIDE_HIDDEN ( __bothinit_array_start = . );
 		PROVIDE_HIDDEN ( __preinit_array_start = . );
 		KEEP (*(.preinit_array))
 		PROVIDE_HIDDEN ( __preinit_array_end = . );
@@ -148,6 +150,7 @@ SECTIONS
 		KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
 		KEEP (*(.init_array .ctors))
 		PROVIDE_HIDDEN ( __init_array_end = . );
+		PROVIDE_HIDDEN ( __bothinit_array_end = . );
 
 		PROVIDE_HIDDEN ( __fini_array_start = . );
 		KEEP (*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
@@ -216,7 +219,7 @@ SECTIONS
 		PROVIDE( __global_pointer$ = . + 0x800 );
 		*(.sdata .sdata.* .sdata2.*)
 		*(.gnu.linkonce.s.*)
-	} >DTCM AT>ITCM :ram_init
+	} >DTCM AT>DTCM :ram_init
 	PROVIDE(__data_start = ADDR(.data));
 	PROVIDE(__data_source = LOADADDR(.data));
 
@@ -232,7 +235,7 @@ SECTIONS
 		*(.tdata .tdata.* .gnu.linkonce.td.*)
 		PROVIDE(__data_end = .);
 		PROVIDE(__tdata_end = .);
-	} >DTCM AT>ITCM :tls :ram_init
+	} >DTCM AT>DTCM :tls :ram_init
 	PROVIDE( __tls_base = ADDR(.tdata));
 	PROVIDE( __tdata_start = ADDR(.tdata));
 	PROVIDE( __tdata_source = LOADADDR(.tdata) );
@@ -342,6 +345,7 @@ SECTIONS
 
         /* nn model's default space */
         * (nn_model)
+        * (.nn_model)
 
         /* labels */
         * (labels)
