@@ -12,10 +12,9 @@
     - `AN386`, `AN500`: Arm® Cortex™-M4 / Arm® Cortex™-M7 Prototyping System version 3.1 (VEM31)
   - Experimental Arm® Corstone™ SSE-315 FVP has been added. No public FPGA image is available for now.
 
-## CMSIS Build Tools Option
+## CMSIS Toolbox Build Flow
 
 See the CMSIS Toolbox installation documentation here: https://github.com/Open-CMSIS-Pack/cmsis-toolbox/blob/main/docs/installation.md
-
 
 If not installed, decompress cmsis-toolbox in your workspace and set up the environment variables as described in the link above.
 CMSIS Toolbox **v2.13.0** or above is required. This matches the version used
@@ -35,6 +34,13 @@ All CMSIS build tools used by CI can also be installed from the local
 Toolbox, CMake, Ninja, Arm Compiler and the Arm Virtual Hardware FVPs.
 
 ```shell
+cd audiomark/platform/cmsis
+vcpkg activate
+```
+
+For manual installation, set up CMSIS Toolbox in your workspace:
+
+```shell
 tar -zxvf cmsis-toolbox-linux64.tar.gz
 PATH=$PATH:<your_cmsis_tool_path>/cmsis-toolbox-linux64/bin/
 
@@ -44,14 +50,11 @@ export CMSIS_PACK_ROOT=<your_cmsis_pack_storage_path>cmsis-pack
 ```
 
 
-### Toolchains and Host Tools
+### Toolchains
 
 If not already installed, download **Arm Compiler 6.18** or later. It is
 recommended to use up to date Arm Compiler 6 releases. CI currently validates
 AC6 6.24, GCC 15.3.1 and LLVM Arm Toolchain for Embedded 22.1.
-
-Make sure the host also provides CMake **3.27** or above and Ninja **1.11** or
-above.
 
 Toolchain downloads:
 
@@ -59,10 +62,10 @@ Toolchain downloads:
 * Arm GNU Toolchain: https://gitlab.arm.com/tooling/gnu-toolchains-for-arm
 * LLVM Arm Toolchain for Embedded: https://github.com/arm/arm-toolchain/releases
 
-IAR support might be added later.
+IAR support may be added later.
 
-For GCC Helium builds, **`avoid GCC 15.2`** which has codegen issues which are fixed with GCC 15.3.1
-
+For GCC Helium builds, **avoid GCC 15.2**. It has code generation issues that
+are fixed in GCC 15.3.1.
 
 Following the CMSIS Toolbox installation steps, each compiler version must be
 registered by defining the corresponding environment variable, for example:
@@ -92,6 +95,12 @@ If you only want to inspect the pack list, you can still run:
 
 ```shell
 csolution list packs -s audiomark.csolution.yml -m
+```
+
+To list all available build contexts:
+
+```shell
+csolution list contexts audiomark.csolution.yml
 ```
 
 #### Build
@@ -188,7 +197,6 @@ cbuild --context audiomark_app.Release+Ethos-MPS3-Corstone-310 audiomark.csoluti
 
 Binaries can be run on FVP/Arm Virtual Hardware, but as for Cortex-M only variants, results will be different from FPGA or physical target because the simulation is not cycle-accurate.
 
-
 ```
 >> FVP_Corstone_SSE-300_Ethos-U55 -C ethosu.num_macs=128 -a out/audiomark_app/Ethos-MPS3-Corstone-300/Release/audiomark_app.axf -C mps3_board.uart0.out_file=-
 telnetterminal0: Listening for serial connection on port 5000
@@ -218,23 +226,7 @@ INFO - Allocating tensors
 INFO - Model INPUT tensors:
 INFO - 	tensor type is int8
 INFO - 	tensor occupies 490 bytes with dimensions
-INFO - 		0:   1
-INFO - 		1: 490
-INFO - Scale[0] = 1.084193
-INFO - ZeroPoint[0] = 100
-INFO - Model OUTPUT tensors:
-INFO - 	tensor type is int8
-INFO - 	tensor occupies 12 bytes with dimensions
-INFO - 		0:   1
-INFO - 		1:  12
-INFO - Scale[0] = 0.003906
-INFO - ZeroPoint[0] = -128
-INFO - Activation buffer (a.k.a tensor arena) size used: 22548
-INFO - Number of operators: 1
-INFO - 	Operator 0: ethos-u
-Computing run speed
-[warning ][main@0][2463 ns] TA0 is not enabled!
-[warning ][main@0][2463 ns] TA1 is not enabled!
+...
 Measuring
 Total runtime    : 10.974 seconds
 Total iterations : 10 iterations
@@ -248,5 +240,10 @@ Score            : 607.506470 AudioMarks
  - For Corstone-310, small TCMs prevent code and data from fitting entirely in TCM. Internal SRAM is used and benchmarks run with caches enabled. The linker scripts still apply explicit partitioning to fill TCMs with the most useful routines and data before placing the rest in SRAM; see [`linker/SSE-310-MPS3/clang_sse310_mps3.sct`](linker/SSE-310-MPS3/clang_sse310_mps3.sct) as one example. MPS3 FPGA system clock frequency runs at `25MHz`.
  - For MPS2+ Cortex-M33 IoTKit, default system clock frequency runs at `20MHz`.
  - For MPS2+ Cortex-M4/Cortex-M7, CMSDK default system clock frequency runs at `25MHz`.
- - For platforms utilizing the Ethos-U NPU and running the AudioMark DS-CNN network, it is assumed that, aside from the storage for Neural Network MFCC input and Soft Decisions output - which may be situated in cacheable memories necessitating cache maintenance operations - the rest of the shared Cortex-M and Ethos-U data are **Read-Only**. Consequently, these do not require cache clean and invalidation operations, allowing saving processing cycles. However, in the standard Ethos-U handling procedures, this approach may not be recommended. The TensorFlow Lite Micro runtime could organize and manage memory allocation in a different manner, involving write-accesses by both CPU and NPU, necessitating the use of appropriate cache operations to ensure data coherency between the CPU and NPU. For reference, typical cache and invalidation routines employed in general scenarios can be found in the ML Evaluation Kit CPU cache handling source code.
-    - https://git.gitlab.arm.com/artificial-intelligence/ethos-u/ml-embedded-evaluation-kit/-/blob/main/source/hal/source/components/npu/ethosu_cpu_cache.c?ref_type=heads
+
+For platforms using the Ethos-U NPU with the AudioMark DS-CNN network:
+
+ - The current integration assumes most shared Cortex-M/Ethos-U data is read-only.
+ - MFCC input and soft-decision output buffers may live in cacheable memory and require cache maintenance.
+ - This optimization saves cycles, but generic TensorFlow Lite Micro integrations may need more conservative cache clean/invalidate handling if CPU and NPU both write shared buffers.
+ - Typical cache maintenance routines can be found in the ML Evaluation Kit CPU cache handling source code: https://git.gitlab.arm.com/artificial-intelligence/ethos-u/ml-embedded-evaluation-kit/-/blob/main/source/hal/source/components/npu/ethosu_cpu_cache.c?ref_type=heads
