@@ -6,7 +6,9 @@ project(audiomark
 
 enable_testing()
 
-set(CMAKE_C_FLAGS "-O2")
+if(NOT CMAKE_C_FLAGS)
+  set(CMAKE_C_FLAGS "-O2" CACHE STRING "DEFAULT C FLAGS")
+endif()
 
 # Windows command line limit workaround
 set(CMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS ON)
