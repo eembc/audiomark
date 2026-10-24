@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "dsp.h"
+#include "riscv_dsp.h"
 
 const uint16_t
     riscvBitRevIndexTable_r8_128[RISCVBITREVINDEXTABLE_RADIX8_128_TABLE_LENGTH]

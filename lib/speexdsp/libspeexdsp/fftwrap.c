@@ -364,8 +364,8 @@ void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
 
 #elif defined(USE_RISCV_DSP)
 
-#include "dsp_types.h"
-#include "dsp.h"
+#include "riscv_dsp_types.h"
+#include "riscv_dsp.h"
 
 struct riscv_fft_config {
   riscv_rfft_fast_instance inst;
