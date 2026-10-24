@@ -27,7 +27,7 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include "dsp_types.h" /* each port brings their own types.h */
+#include "riscv_dsp_types.h" /* each port brings their own types.h */
 
 #define RISCVBITREVINDEXTABLE_RADIX4_128_TABLE_LENGTH ((uint16_t)112)
     extern const uint16_t riscvBitRevIndexTable_r4_128

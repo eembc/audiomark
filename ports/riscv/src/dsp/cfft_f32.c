@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#include <dsp_types.h>
-#include "dsp.h"
+#include <riscv_dsp_types.h>
+#include "riscv_dsp.h"
 #include "dsp_f32.h"
 #include <stdlib.h>
 

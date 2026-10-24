@@ -15,7 +15,7 @@
 
 #include <stddef.h>
 #include <string.h>
-#include <dsp_types.h>
+#include <riscv_dsp_types.h>
 
 #define TH_FLOAT32_TYPE               float
 #define TH_RFFT_INSTANCE_FLOAT32_TYPE riscv_rfft_fast_instance

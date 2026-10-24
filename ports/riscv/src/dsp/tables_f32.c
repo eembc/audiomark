@@ -18,7 +18,7 @@
  */
 
 #include "dsp_f32.h"
-#include "dsp_types.h"
+#include "riscv_dsp_types.h"
 
 const float32_t twiddleCoef_f32_128[256] = {
     1.000000000f,  0.000000000f,  0.998795456f,  0.049067674f,  0.995184727f,

@@ -18,8 +18,8 @@
  * limitations under the License.
  */
 
-#include <dsp_types.h>
-#include "dsp.h"
+#include <riscv_dsp_types.h>
+#include "riscv_dsp.h"
 #include "dsp_f32.h"
 #include "rvv_support_guard.h"
 #include "ee_api.h"

@@ -16,7 +16,7 @@
 
 #include "ee_audiomark.h"
 #include "ee_api.h"
-#include "dsp.h"
+#include "riscv_dsp.h"
 
 void
 th_rfft_f32(ee_rfft_f32_t *__EE_RESTRICT p_instance,

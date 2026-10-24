@@ -27,7 +27,7 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include <dsp_types.h> /* each port brings their own types.h */
+#include <riscv_dsp_types.h> /* each port brings their own types.h */
 
     extern const float32_t twiddleCoef_rfft_f32_512[512];
     extern const float32_t twiddleCoef_rfft_f32_1024[1024];
