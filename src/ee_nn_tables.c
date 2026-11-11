@@ -13,6 +13,17 @@
 
 #include <stdint.h>
 
+/*
+ * Note on the *_weights_oihw tables:
+ *
+ * For each conv2d layer, a second copy of the weights is provided with the
+ * suffix "_oihw". It holds exactly the same signed INT8 values as the
+ * corresponding "_weights" array, reordered (transposed) so that all weights
+ * of a given output channel are contiguous in memory (O, I, H, W order).
+ * This lets ports whose kernels prefer that access pattern use it directly
+ * instead of re-ordering the weights at runtime.
+ */
+
 const int32_t ds_cnn_s_layer_12_fc_bias[12]
     = { 93, 131, -99, -72, 175, -19, 2, -77, -6, -51, -3, 22 };
 
@@ -321,7 +332,7 @@ const int8_t ds_cnn_s_layer_1_conv2d_weights[2560]
         62,   45,   -106, -47,  40,   68,   24,   -62,  14,   19,   48,   -68,
         27,   -3,   38,   -36 };
 
-const int8_t ds_cnn_s_layer_1_conv2d_weights_rvv[2560] = {
+const int8_t ds_cnn_s_layer_1_conv2d_weights_oihw[2560] = {
     89,   -40,  -38,  -58,  5,    -57,  4,    -28,  -23,  -14,  -7,   65,
     -60,  39,   -36,  -50,  -46,  21,   -61,  -47,  127,  -16,  1,    -15,
     24,   -20,  41,   -29,  -50,  -51,  -14,  -13,  12,   21,   -54,  2,
@@ -986,7 +997,7 @@ const int8_t ds_cnn_s_layer_3_conv2d_weights[4096]
         -10,  78,   -43,  12,   -75,  20,   -57,  -66,  16,   5,    -74,  -7,
         -30,  -25,  -55,  95 };
 
-const int8_t ds_cnn_s_layer_3_conv2d_weights_rvv[4096] = {
+const int8_t ds_cnn_s_layer_3_conv2d_weights_oihw[4096] = {
     24,   -93,  51,   30,   -25,  10,   -10,  -60,  -55,  -59,  -15,  -127,
     60,   -14,  -104, -49,  -60,  26,   62,   -24,  -17,  -26,  27,   11,
     -112, -24,  -83,  -62,  -64,  44,   61,   72,   42,   -57,  43,   20,
@@ -1779,7 +1790,7 @@ const int8_t ds_cnn_s_layer_5_conv2d_weights[4096]
         -20,  23,   50,   -39,  93,   -8,   -41,  34,   -10,  -92,  6,    46,
         0,    14,   8,    3 };
 
-const int8_t ds_cnn_s_layer_5_conv2d_weights_rvv[4096] = {
+const int8_t ds_cnn_s_layer_5_conv2d_weights_oihw[4096] = {
     100,  2,    -119, 73,   -47,  -96,  -32,  -44,  -30,  2,    23,   -84,
     -82,  -80,  2,    4,    -81,  -48,  -33,  -16,  -3,   34,   50,   -38,
     42,   -36,  -85,  2,    39,   77,   59,   45,   52,   -21,  62,   22,
@@ -2574,7 +2585,7 @@ const int8_t ds_cnn_s_layer_7_conv2d_weights[4096]
         -31,  52,   54,   16,   -98,  35,   79,   -34,  7,    47,   -28,  26,
         14,   -35,  -43,  37 };
 
-const int8_t ds_cnn_s_layer_7_conv2d_weights_rvv[4096] = {
+const int8_t ds_cnn_s_layer_7_conv2d_weights_oihw[4096] = {
     4,    -52,  64,   -16,  -35,  -22,  -78,  25,   -38,  31,   -33,  -17,
     28,   19,   -100, -22,  36,   -48,  81,   -7,   -15,  24,   -6,   14,
     0,    -18,  -27,  -126, 7,    -85,  47,   -56,  -11,  -37,  -16,  22,
@@ -3369,7 +3380,7 @@ const int8_t ds_cnn_s_layer_9_conv2d_weights[4096]
         -57,  48,   47,   38,   -17,  -27,  61,   -30,  -66,  -30,  -62,  -45,
         4,    -56,  10,   -52 };
 
-const int8_t ds_cnn_s_layer_9_conv2d_weights_rvv[4096] = {
+const int8_t ds_cnn_s_layer_9_conv2d_weights_oihw[4096] = {
     -9,   -28,  -5,   -63,  66,   40,   1,    79,   -82,  -29,  -84,  5,
     10,   -67,  16,   -26,  -66,  -34,  7,    45,   67,   59,   48,   18,
     -21,  -79,  -28,  107,  -67,  88,   68,   -89,  -62,  24,   16,   6,
