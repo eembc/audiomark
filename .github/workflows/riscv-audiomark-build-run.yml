@@ -29,7 +29,7 @@ concurrency:
 jobs:
   build-test-benchmark:
     name: RISC-V (${{ matrix.march_display }}) AudioMark build and QEMU / CLANG@19.1.1
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       VERSION_QEMU: "9.2.4"
     strategy:
