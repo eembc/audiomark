@@ -362,6 +362,77 @@ void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
       out[i] *= scale;
 }
 
+#elif defined(USE_RISCV_DSP)
+
+#include "riscv_dsp_types.h"
+#include "riscv_dsp.h"
+
+struct riscv_fft_config {
+  riscv_rfft_fast_instance inst;
+  spx_word16_t *scratchIn;
+  spx_word16_t *scratchOut;
+  int N;
+};
+
+void *spx_fft_init(int size)
+{
+  struct riscv_fft_config *table;
+  table = (struct riscv_fft_config *)speex_alloc(sizeof(struct riscv_fft_config));
+  speex_assert(table != NULL);
+  table->scratchIn  = (spx_word16_t *)speex_alloc(size * 2 * sizeof(spx_word16_t));
+  table->scratchOut = (spx_word16_t *)speex_alloc(size * 2 * sizeof(spx_word16_t));
+  speex_assert(table->scratchIn  != NULL);
+  speex_assert(table->scratchOut != NULL);
+
+  speex_assert(riscv_rfft_fast_init_f32(&table->inst, size) == RISCV_MATH_SUCCESS);
+  table->N = size;
+  return table;
+}
+
+void spx_fft_destroy(void *table)
+{
+  struct riscv_fft_config *t = (struct riscv_fft_config *)table;
+  speex_free(t->scratchIn);
+  speex_free(t->scratchOut);
+  speex_free(t);
+}
+
+void spx_fft(void *table, spx_word16_t *in, spx_word16_t *out)
+{
+  struct riscv_fft_config *t = (struct riscv_fft_config *)table;
+  const int N = t->N;
+  spx_word16_t *scratchIn  = t->scratchIn;
+  spx_word16_t *scratchOut = t->scratchOut;
+
+  memcpy(scratchIn, in, N * sizeof(spx_word16_t));
+  riscv_rfft_fast_f32(&t->inst, scratchIn, scratchOut, 0);
+
+  float recpN = 1.0/N;  /* pre-computing reciprocal to avoid division in loop */
+  out[0]   = scratchOut[0] * recpN;
+  out[N-1] = scratchOut[1] * recpN;
+
+  for (int i = 1; i < N - 1; i++)
+    out[i] = scratchOut[i + 1] * recpN;
+}
+
+void spx_ifft(void *table, spx_word16_t *in, spx_word16_t *out)
+{
+  struct riscv_fft_config *t = (struct riscv_fft_config *)table;
+  const int N = t->N;
+  spx_word16_t *scratchIn  = t->scratchIn;
+  spx_word16_t *scratchOut = t->scratchOut;
+
+  // RFFT float reshuffling
+  memcpy(scratchIn + 2, in + 1, (N - 2) * sizeof(spx_word16_t));
+  scratchIn[0] = in[0];
+  scratchIn[1] = in[N-1];
+
+  riscv_rfft_fast_f32(&t->inst, scratchIn, scratchOut, 1);
+
+  for (int i = 0; i < N; i++)
+    out[i] = scratchOut[i] * (float)N;
+}
+
 #elif defined(USE_CMSIS_DSP)
 #include "arm_math.h"
 
@@ -505,6 +576,8 @@ void spx_fft_float(void *table, float *in, float *out)
    int N = ((struct drft_lookup *)table)->n;
 #elif defined(USE_KISS_FFT)
    int N = ((struct kiss_config *)table)->N;
+#elif defined(USE_RISCV_DSP)
+   int N = 0;
 #elif defined(USE_CMSIS_DSP)
    int N = 0;
 #else
@@ -530,6 +603,8 @@ void spx_ifft_float(void *table, float *in, float *out)
    int N = ((struct drft_lookup *)table)->n;
 #elif defined(USE_KISS_FFT)
    int N = ((struct kiss_config *)table)->N;
+#elif defined(USE_RISCV_DSP)
+   int N = 0;
 #elif defined(USE_CMSIS_DSP)
    int N = 0;
 #else

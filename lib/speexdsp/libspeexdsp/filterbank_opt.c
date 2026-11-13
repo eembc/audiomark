@@ -44,6 +44,18 @@
  */
 #include "filterbank_opt_helium.c"
 
+#elif defined(__riscv) && defined(__riscv_vector)
+
+#if defined(__riscv_v_elen_fp) && __riscv_v_elen_fp >= 32
+/*
+ * RISCV with v1.0 Vector Intrinsics
+ */
+#include "filterbank_opt_rvv.c"
+
+#else
+#include "filterbank_opt_generic.c"
+#endif
+
 #elif defined (OTHER_ARCH)
 /*
  * More architectures to be added

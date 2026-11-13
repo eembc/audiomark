@@ -51,6 +51,7 @@ The following "ports" directories are available:
 |---|---|
 | ports/barebones | Suitable For Linux and macOS environments. See [steps](#linux-and-macos) described below  |
 | ports/arm | For Arm Cortex-M processor systems using the [CMSIS-Toolbox](https://github.com/Open-CMSIS-Pack/cmsis-toolbox).<br> See this [README](platform/cmsis/README.md) for details. |
+| ports/riscv | For 32- and 64-bit RISC-V processor systems including an additional sub-port for the Vector (V) extension and its subsets.<br> See this [README](ports/riscv/README.md) for details. |
 
 ## Linux and macOS
 
